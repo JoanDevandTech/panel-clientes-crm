@@ -37,8 +37,8 @@ export default function ProjectsPage() {
     },
   })
 
-  const projects = data?.data ?? []
-  const total = data?.meta?.total ?? 0
+  const projects = Array.isArray(data) ? data : (data?.data ?? [])
+  const total = projects.length
 
   if (loading) {
     return (

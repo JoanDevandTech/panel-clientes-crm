@@ -167,9 +167,10 @@ export default function ProjectDetailPage() {
           animate="visible"
         >
           {milestones.map((milestone, index) => {
-            const config = milestoneIconConfig[milestone?.status] ?? milestoneIconConfig.pending
+            const status = milestone?.completed ? 'completed' : 'pending'
+            const config = milestoneIconConfig[status]
             const Icon = config.icon
-            const lineColor = lineColorConfig[milestone?.status] ?? lineColorConfig.pending
+            const lineColor = lineColorConfig[status]
             const isLast = index === milestones.length - 1
 
             return (
@@ -194,10 +195,10 @@ export default function ProjectDetailPage() {
                       <Calendar size={12} />
                       Fecha límite: {milestone?.due_date}
                     </span>
-                    {milestone?.completed_date && (
+                    {milestone?.completed_at && (
                       <span className="text-xs text-emerald-400 flex items-center gap-1">
                         <CheckCircle size={12} />
-                        Completado: {milestone?.completed_date}
+                        Completado: {milestone?.completed_at}
                       </span>
                     )}
                   </div>

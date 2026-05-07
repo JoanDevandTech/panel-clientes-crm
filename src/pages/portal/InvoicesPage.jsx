@@ -218,7 +218,7 @@ export default function InvoicesPage() {
         key={`mobile-${activeTab}-${selectedYear}`}
       >
         {filteredInvoices.map((invoice) => {
-          const status = statusConfig[invoice.status]
+          const status = statusConfig[invoice.status] ?? fallbackStatus
           return (
             <motion.div key={invoice.id} variants={fadeUp}>
               <Link

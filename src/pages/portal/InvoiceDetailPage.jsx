@@ -10,11 +10,15 @@ const BRAND_ADDRESS_LINE_1 = import.meta.env.VITE_BRAND_ADDRESS_LINE_1 || ''
 const BRAND_ADDRESS_LINE_2 = import.meta.env.VITE_BRAND_ADDRESS_LINE_2 || ''
 
 const statusConfig = {
-  pending: { label: 'Pendiente', bg: 'bg-amber-500/20', text: 'text-amber-400' },
+  sent: { label: 'Pendiente', bg: 'bg-amber-500/20', text: 'text-amber-400' },
   paid: { label: 'Pagada', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
+  partially_paid: { label: 'Parcial', bg: 'bg-amber-500/20', text: 'text-amber-300' },
   overdue: { label: 'Vencida', bg: 'bg-red-500/20', text: 'text-red-400' },
   draft: { label: 'Borrador', bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  cancelled: { label: 'Cancelada', bg: 'bg-slate-500/20', text: 'text-slate-400' },
 }
+
+const fallbackStatus = { label: '—', bg: 'bg-slate-500/20', text: 'text-slate-400' }
 
 function formatAmount(amount) {
   return Number(amount).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
@@ -104,7 +108,7 @@ export default function InvoiceDetailPage() {
     )
   }
 
-  const status = statusConfig[invoice.status]
+  const status = statusConfig[invoice.status] ?? fallbackStatus
 
   return (
     <div>

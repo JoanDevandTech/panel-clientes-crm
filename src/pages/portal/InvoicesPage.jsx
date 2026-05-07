@@ -6,15 +6,19 @@ import { useApi } from '../../hooks/useApi'
 import { getAccessToken, BASE_URL } from '../../services/api'
 
 const statusConfig = {
-  pending: { label: 'Pendiente', bg: 'bg-amber-500/20', text: 'text-amber-400' },
+  sent: { label: 'Pendiente', bg: 'bg-amber-500/20', text: 'text-amber-400' },
   paid: { label: 'Pagada', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
+  partially_paid: { label: 'Parcial', bg: 'bg-amber-500/20', text: 'text-amber-300' },
   overdue: { label: 'Vencida', bg: 'bg-red-500/20', text: 'text-red-400' },
   draft: { label: 'Borrador', bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  cancelled: { label: 'Cancelada', bg: 'bg-slate-500/20', text: 'text-slate-400' },
 }
+
+const fallbackStatus = { label: '—', bg: 'bg-slate-500/20', text: 'text-slate-400' }
 
 const tabs = [
   { key: 'all', label: 'Todas' },
-  { key: 'pending', label: 'Pendientes' },
+  { key: 'sent', label: 'Pendientes' },
   { key: 'paid', label: 'Pagadas' },
   { key: 'overdue', label: 'Vencidas' },
 ]
@@ -158,7 +162,7 @@ export default function InvoicesPage() {
           </thead>
           <tbody>
             {filteredInvoices.map((invoice) => {
-              const status = statusConfig[invoice.status]
+              const status = statusConfig[invoice.status] ?? fallbackStatus
               return (
                 <motion.tr
                   key={invoice.id}

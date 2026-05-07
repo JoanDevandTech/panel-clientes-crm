@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/fkfnfdgk/panel-clientes-crm/
+    - export DEPLOYPATH=/home/vlyyfgxf/clientes.joandev.com/
     - /bin/cp -R dist/* $DEPLOYPATH
     - /bin/cp dist/.htaccess $DEPLOYPATH

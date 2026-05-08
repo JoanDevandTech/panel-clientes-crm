@@ -59,7 +59,9 @@ const refreshAccessToken = async () => {
       return data.access_token
     } catch (error) {
       clearTokens()
-      window.location.href = '/login'
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
       throw error
     } finally {
       isRefreshing = false
@@ -85,12 +87,14 @@ export const apiRequest = async (endpoint, options = {}) => {
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
+  const sentBearer = Boolean(headers['Authorization'])
+
   let response = await fetch(url, {
     ...options,
     headers,
   })
 
-  if (response.status === 401) {
+  if (response.status === 401 && sentBearer) {
     try {
       const newToken = await refreshAccessToken()
       headers['Authorization'] = `Bearer ${newToken}`

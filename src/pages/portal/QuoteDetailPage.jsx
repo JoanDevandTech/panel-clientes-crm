@@ -1,26 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useRoute } from 'wouter'
 import { ArrowLeft, Download, Loader2, CheckCircle, XCircle } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
 import { api, getAccessToken, BASE_URL } from '../../services/api'
 
-const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Joan Dev & Tech'
-const BRAND_ADDRESS_LINE_1 = import.meta.env.VITE_BRAND_ADDRESS_LINE_1 || ''
-const BRAND_ADDRESS_LINE_2 = import.meta.env.VITE_BRAND_ADDRESS_LINE_2 || ''
-
 const statusConfig = {
   sent: { label: 'Pendiente', bg: 'bg-amber-500/20', text: 'text-amber-400' },
   approved: { label: 'Aprobado', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
   rejected: { label: 'Rechazado', bg: 'bg-red-500/20', text: 'text-red-400' },
   expired: { label: 'Expirado', bg: 'bg-slate-500/20', text: 'text-slate-400' },
-}
-
-function formatAmount(amount, currency = 'EUR') {
-  const symbols = { EUR: '€', USD: '$', COP: 'COP ' }
-  const symbol = symbols[currency] ?? (currency + ' ')
-  const formatted = Number(amount).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  return currency === 'EUR' ? `${formatted} ${symbol}` : `${symbol}${formatted}`
 }
 
 function formatDate(dateString) {
@@ -41,6 +30,45 @@ export default function QuoteDetailPage() {
   const { data: quote, loading, error, refetch, setData } = useApi(`/client/quotes/${params?.id}`, {
     immediate: !!params?.id,
   })
+
+  const [pdfUrl, setPdfUrl] = useState(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
+  const [pdfError, setPdfError] = useState(null)
+
+  useEffect(() => {
+    if (!params?.id) return
+
+    let revokedUrl = null
+    let cancelled = false
+
+    setPdfLoading(true)
+    setPdfError(null)
+
+    fetch(`${BASE_URL}/client/quotes/${params.id}/pdf`, {
+      headers: { 'Authorization': `Bearer ${getAccessToken()}` },
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`PDF no disponible (${res.status})`)
+        return res.blob()
+      })
+      .then((blob) => {
+        if (cancelled) return
+        revokedUrl = URL.createObjectURL(blob)
+        setPdfUrl(revokedUrl)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setPdfError(err.message || 'No se pudo cargar la previsualización.')
+      })
+      .finally(() => {
+        if (!cancelled) setPdfLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+      if (revokedUrl) URL.revokeObjectURL(revokedUrl)
+    }
+  }, [params?.id])
 
   const handleDownloadPdf = async () => {
     setDownloading(true)
@@ -164,146 +192,71 @@ export default function QuoteDetailPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.15 }}
-        className="bg-surface-dark rounded-2xl p-6 sm:p-8 border border-white/5"
+        className="bg-surface-dark rounded-2xl border border-white/5 overflow-hidden"
       >
-        {quote.title && (
-          <div className="mb-6 pb-6 border-b border-white/5">
-            <h2 className="text-xl font-display font-bold text-white mb-2">{quote.title}</h2>
-            {quote.introduction && (
-              <p className="text-sm text-slate-400 whitespace-pre-wrap">{quote.introduction}</p>
-            )}
+        {pdfLoading && (
+          <div className="flex items-center justify-center py-32">
+            <Loader2 size={32} className="animate-spin text-primary" />
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row md:justify-between gap-6 mb-8 pb-6 border-b border-white/5">
-          <div>
-            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Emisor</h3>
-            <p className="text-white font-medium">{BRAND_NAME}</p>
-            {BRAND_ADDRESS_LINE_1 && <p className="text-sm text-slate-400">{BRAND_ADDRESS_LINE_1}</p>}
-            {BRAND_ADDRESS_LINE_2 && <p className="text-sm text-slate-400">{BRAND_ADDRESS_LINE_2}</p>}
-          </div>
-
-          <div className="md:text-right">
-            <div className="mb-3">
-              <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Fecha emisión</h3>
-              <p className="text-white">{formatDate(quote.issue_date)}</p>
-            </div>
-            <div>
-              <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Válido hasta</h3>
-              <p className="text-white">{formatDate(quote.valid_until)}</p>
-            </div>
-          </div>
-        </div>
-
-        {quote.objective && (
-          <div className="mb-6">
-            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Objetivo</h3>
-            <p className="text-sm text-slate-300 whitespace-pre-wrap">{quote.objective}</p>
+        {pdfError && !pdfLoading && (
+          <div className="text-center py-16 px-6">
+            <p className="text-red-400 mb-4">{pdfError}</p>
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloading}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium cursor-pointer hover:bg-primary/80 transition-colors"
+            >
+              {downloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+              Descargar PDF
+            </button>
           </div>
         )}
 
-        {quote.deliverables && (
-          <div className="mb-6">
-            <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Entregables</h3>
-            <p className="text-sm text-slate-300 whitespace-pre-wrap">{quote.deliverables}</p>
-          </div>
+        {pdfUrl && !pdfError && (
+          <iframe
+            src={pdfUrl}
+            title={`Presupuesto ${quote.quote_number}`}
+            className="block w-full bg-white"
+            style={{ height: 'min(900px, calc(100vh - 200px))' }}
+          />
         )}
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left pb-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Descripción</th>
-                <th className="text-center pb-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Cantidad</th>
-                <th className="text-right pb-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Precio Unit.</th>
-                <th className="text-right pb-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(quote.items || []).map((item, index) => (
-                <tr key={index} className="border-b border-white/5">
-                  <td className="py-4 text-sm text-white">{item.description}</td>
-                  <td className="py-4 text-sm text-slate-400 text-center">{item.quantity}</td>
-                  <td className="py-4 text-sm text-slate-400 text-right">{formatAmount(item.unit_price, quote.currency)}</td>
-                  <td className="py-4 text-sm text-white text-right font-medium">{formatAmount(item.total, quote.currency)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="mt-6 pt-4 border-t border-white/10 space-y-3 max-w-xs ml-auto">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Subtotal</span>
-            <span className="text-white">{formatAmount(quote.subtotal, quote.currency)}</span>
-          </div>
-          {Number(quote.discount_amount) > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Descuento</span>
-              <span className="text-emerald-400">- {formatAmount(quote.discount_amount, quote.currency)}</span>
-            </div>
-          )}
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-400">IVA ({quote.tax_rate}%)</span>
-            <span className="text-white">{formatAmount(quote.tax_amount, quote.currency)}</span>
-          </div>
-          <div className="flex justify-between pt-3 border-t border-white/10">
-            <span className="text-xl font-bold text-white">Total</span>
-            <span className="text-xl font-bold text-white">{formatAmount(quote.total, quote.currency)}</span>
-          </div>
-        </div>
-
-        {(quote.terms || quote.notes) && (
-          <div className="mt-8 pt-6 border-t border-white/5">
-            {quote.terms && (
-              <div className="mb-4">
-                <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Términos</h3>
-                <p className="text-sm text-slate-400 whitespace-pre-wrap">{quote.terms}</p>
-              </div>
-            )}
-            {quote.notes && (
-              <div>
-                <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Notas</h3>
-                <p className="text-sm text-slate-400 whitespace-pre-wrap">{quote.notes}</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:justify-end">
-          <button
-            onClick={handleDownloadPdf}
-            disabled={downloading}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-medium hover:bg-white/10 transition-all cursor-pointer disabled:opacity-50"
-          >
-            {downloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-            Descargar PDF
-          </button>
-
-          {canDecide && (
-            <>
-              <button
-                onClick={() => decide('reject')}
-                disabled={!!deciding}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm font-medium hover:bg-red-500/30 transition-all cursor-pointer disabled:opacity-50"
-              >
-                {deciding === 'reject' ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
-                Rechazar
-              </button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => decide('accept')}
-                disabled={!!deciding}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm hover:shadow-lg hover:shadow-primary/30 transition-all cursor-pointer disabled:opacity-50"
-              >
-                {deciding === 'accept' ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
-                Aceptar
-              </motion.button>
-            </>
-          )}
-        </div>
       </motion.div>
+
+      <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:justify-end">
+        <button
+          onClick={handleDownloadPdf}
+          disabled={downloading}
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-medium hover:bg-white/10 transition-all cursor-pointer disabled:opacity-50"
+        >
+          {downloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+          Descargar PDF
+        </button>
+
+        {canDecide && (
+          <>
+            <button
+              onClick={() => decide('reject')}
+              disabled={!!deciding}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-300 text-sm font-medium hover:bg-red-500/30 transition-all cursor-pointer disabled:opacity-50"
+            >
+              {deciding === 'reject' ? <Loader2 size={18} className="animate-spin" /> : <XCircle size={18} />}
+              Rechazar
+            </button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => decide('accept')}
+              disabled={!!deciding}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm hover:shadow-lg hover:shadow-primary/30 transition-all cursor-pointer disabled:opacity-50"
+            >
+              {deciding === 'accept' ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle size={18} />}
+              Aceptar
+            </motion.button>
+          </>
+        )}
+      </div>
     </div>
   )
 }

@@ -16,7 +16,6 @@ import {
 import { useAuth } from '../../hooks/useAuth'
 
 const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Joan Dev & Tech'
-const BRAND_INITIALS = import.meta.env.VITE_BRAND_INITIALS || 'JD'
 const BRAND_SUBTITLE = import.meta.env.VITE_BRAND_SUBTITLE || 'Portal cliente'
 
 const navLinks = [
@@ -57,15 +56,12 @@ function NavItem({ icon: Icon, label, href, isActive }) {
 function BrandAvatar() {
   return (
     <div className="flex items-center gap-3">
-      <div
-        className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center font-bold text-white text-sm"
-        style={{
-          background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #22d3ee 100%)',
-          boxShadow: '0 8px 28px -8px rgba(99, 102, 241, 0.55)',
-        }}
-      >
-        {BRAND_INITIALS}
-      </div>
+      <img
+        src="/brand-logo.jpg"
+        alt={BRAND_NAME}
+        className="w-10 h-10 rounded-xl shrink-0 object-cover"
+        style={{ boxShadow: '0 8px 28px -8px rgba(99, 102, 241, 0.55)' }}
+      />
       <div className="min-w-0">
         <p className="text-sm font-semibold text-white leading-tight truncate">{BRAND_NAME}</p>
         <p className="text-[11px] text-slate-500 leading-tight truncate">{BRAND_SUBTITLE}</p>

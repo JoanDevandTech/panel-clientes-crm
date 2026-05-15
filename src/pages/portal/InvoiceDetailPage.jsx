@@ -127,25 +127,19 @@ export default function InvoiceDetailPage() {
     }
   }
 
-  const handlePay = async () => {
-    if (!params?.id || paying) return
+  const handlePay = () => {
+    if (!params?.id) return
     setPaying(true)
-    try {
-      const res = await api.post(`/client/invoices/${params.id}/pay`, {})
-      if (res?.redirect_url) {
-        window.location.href = res.redirect_url
-        return
-      }
-      showToast('Pago online próximamente disponible.')
-    } catch (err) {
-      if (err?.status === 501) {
-        showToast('Pago online próximamente disponible.')
-      } else {
-        showToast(err?.message || 'No se pudo iniciar el pago.')
-      }
-    } finally {
-      setPaying(false)
+    // Pasarela actual: Revolut.me. El cliente introduce el importe y paga.
+    // Cuando el backend integre Stripe/Redsys via /client/invoices/{id}/pay
+    // y devuelva redirect_url, sustituir por esa URL.
+    const win = window.open('https://revolut.me/joantorres27', '_blank', 'noopener,noreferrer')
+    if (!win) {
+      showToast('El navegador bloqueó la nueva pestaña. Permite popups e intenta de nuevo.')
+    } else {
+      showToast('Abriendo pasarela de pago en una pestaña nueva.')
     }
+    setPaying(false)
   }
 
   const handleRemind = async () => {

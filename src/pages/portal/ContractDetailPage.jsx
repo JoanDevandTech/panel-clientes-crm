@@ -20,9 +20,11 @@ import {
   Server,
   Shield,
   ChevronRight,
+  X,
+  Check,
 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
-import { api } from '../../services/api'
+import { api, BASE_URL, getAccessToken } from '../../services/api'
 import './contracts.css'
 
 /* ---------- helpers (same map as list) ---------- */
@@ -43,7 +45,18 @@ const TYPE_HEURISTICS = [
   { match: /desarrollo|development|web|app|build/i, type: 'Desarrollo', accent: 'green', icon: Code },
 ]
 
+const CATEGORY_MAP = {
+  maintenance: { type: 'Mantenimiento', accent: 'purple', Icon: Sparkles },
+  hosting: { type: 'Hosting', accent: 'cyan', Icon: Cloud },
+  licenses: { type: 'Licencias', accent: 'blue', Icon: CreditCard },
+  license: { type: 'Licencias', accent: 'blue', Icon: CreditCard },
+  development: { type: 'Desarrollo', accent: 'green', Icon: Code },
+  service: { type: 'Servicio', accent: 'purple', Icon: Server },
+}
+
 function deriveType(contract) {
+  const key = (contract.category || contract.contract_type || '').toString().toLowerCase()
+  if (key && CATEGORY_MAP[key]) return CATEGORY_MAP[key]
   const haystack = [contract.title, contract.items_summary].filter(Boolean).join(' ')
   const hit = TYPE_HEURISTICS.find((h) => h.match.test(haystack))
   if (hit) return { type: hit.type, accent: hit.accent, Icon: hit.icon }
@@ -131,6 +144,65 @@ export default function ContractDetailPage() {
   const [notesPage, setNotesPage] = useState(1)
   const [notesLoading, setNotesLoading] = useState(false)
   const [notesError, setNotesError] = useState(null)
+
+  const [signOpen, setSignOpen] = useState(false)
+  const [signName, setSignName] = useState('')
+  const [signAccept, setSignAccept] = useState(false)
+  const [signSubmitting, setSignSubmitting] = useState(false)
+  const [signError, setSignError] = useState(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  const showToast = (type, message) => {
+    setToast({ type, message })
+    setTimeout(() => setToast(null), 5000)
+  }
+
+  const handleSignSubmit = async () => {
+    if (!signName.trim() || !signAccept || signSubmitting) return
+    setSignSubmitting(true)
+    setSignError(null)
+    try {
+      await api.post(`/client/recurring-services/${id}/sign`, {
+        signed_by: signName.trim(),
+        accepted_terms: true,
+      })
+      setSignOpen(false)
+      setSignName('')
+      setSignAccept(false)
+      showToast('success', 'Contrato firmado correctamente.')
+      refetch()
+    } catch (e) {
+      setSignError(e.message || 'No se pudo firmar el contrato.')
+    } finally {
+      setSignSubmitting(false)
+    }
+  }
+
+  const handleDownloadPdf = async () => {
+    if (pdfLoading) return
+    setPdfLoading(true)
+    try {
+      const res = await fetch(`${BASE_URL}/client/recurring-services/${id}/pdf`, {
+        headers: { Authorization: `Bearer ${getAccessToken()}` },
+      })
+      if (!res.ok) throw new Error(`Descarga falló (${res.status})`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const fname = `${contract?.contract_number || `contrato-${id}`}.pdf`
+      a.download = fname
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      showToast('error', e.message || 'No se pudo descargar el PDF.')
+    } finally {
+      setPdfLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!id) return
@@ -278,12 +350,19 @@ export default function ContractDetailPage() {
           </div>
           <div className="pr-contract-actions">
             {status === 'pending_signature' && (
-              <button className="pr-btn primary sm">
+              <button
+                className="pr-btn primary sm"
+                onClick={() => setSignOpen(true)}
+              >
                 <FileSignature size={13} /> Firmar
               </button>
             )}
-            <button className="pr-btn ghost sm" disabled title="Próximamente">
-              <Download size={13} /> PDF
+            <button
+              className="pr-btn ghost sm"
+              onClick={handleDownloadPdf}
+              disabled={pdfLoading}
+            >
+              <Download size={13} /> {pdfLoading ? 'Descargando…' : 'PDF'}
             </button>
           </div>
         </div>
@@ -614,6 +693,175 @@ export default function ContractDetailPage() {
           </button>
         )}
       </motion.div>
+
+      {/* Sign modal */}
+      {signOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => !signSubmitting && setSignOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: 16,
+          }}
+        >
+          <div
+            className="pr-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 460 }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 12,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div className="pr-card-head-icon pr-accent-purple">
+                  <FileSignature size={14} />
+                </div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--pr-text-primary)' }}>
+                  Firmar contrato
+                </div>
+              </div>
+              <button
+                type="button"
+                className="pr-btn ghost sm icon-only"
+                onClick={() => !signSubmitting && setSignOpen(false)}
+                aria-label="Cerrar"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            <p
+              style={{
+                fontSize: 13,
+                color: 'var(--pr-text-muted)',
+                marginBottom: 14,
+                lineHeight: 1.5,
+              }}
+            >
+              Confirma tu nombre o razón social y acepta los términos para activar el
+              servicio.
+            </p>
+
+            <label
+              style={{
+                display: 'block',
+                fontSize: 12,
+                color: 'var(--pr-text-muted)',
+                marginBottom: 6,
+              }}
+            >
+              Nombre o razón social
+            </label>
+            <input
+              type="text"
+              value={signName}
+              onChange={(e) => setSignName(e.target.value)}
+              disabled={signSubmitting}
+              placeholder="Ej. Acme S.L."
+              autoFocus
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                fontSize: 14,
+                background: 'var(--pr-bg-elev, rgba(255,255,255,0.04))',
+                color: 'var(--pr-text-primary)',
+                border: '1px solid var(--pr-border, rgba(255,255,255,0.1))',
+                borderRadius: 8,
+                outline: 'none',
+                marginBottom: 14,
+              }}
+            />
+
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+                fontSize: 13,
+                color: 'var(--pr-text-primary)',
+                cursor: 'pointer',
+                marginBottom: 16,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={signAccept}
+                onChange={(e) => setSignAccept(e.target.checked)}
+                disabled={signSubmitting}
+                style={{ marginTop: 2 }}
+              />
+              <span>Acepto los términos y condiciones del contrato.</span>
+            </label>
+
+            {signError && (
+              <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{signError}</p>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button
+                type="button"
+                className="pr-btn ghost sm"
+                onClick={() => setSignOpen(false)}
+                disabled={signSubmitting}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="pr-btn primary sm"
+                onClick={handleSignSubmit}
+                disabled={!signName.trim() || !signAccept || signSubmitting}
+              >
+                <Check size={13} />
+                {signSubmitting ? 'Firmando…' : 'Confirmar firma'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            right: 24,
+            zIndex: 1100,
+            background:
+              toast.type === 'success'
+                ? 'rgba(16,185,129,0.15)'
+                : 'rgba(239,68,68,0.15)',
+            border: `1px solid ${
+              toast.type === 'success' ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'
+            }`,
+            color: toast.type === 'success' ? '#34d399' : '#f87171',
+            padding: '10px 14px',
+            borderRadius: 8,
+            fontSize: 13,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+          }}
+        >
+          {toast.type === 'success' ? <Check size={14} /> : <AlertCircle size={14} />}
+          <span>{toast.message}</span>
+        </div>
+      )}
     </div>
   )
 }

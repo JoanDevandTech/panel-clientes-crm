@@ -15,8 +15,10 @@ import {
   Code,
   CreditCard,
   Sparkles,
+  Download,
 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { BASE_URL, getAccessToken } from '../../services/api'
 import './contracts.css'
 
 /* ---------- helpers ---------- */
@@ -37,11 +39,38 @@ const TYPE_HEURISTICS = [
   { match: /desarrollo|development|web|app|build/i, type: 'Desarrollo', accent: 'green', icon: Code },
 ]
 
+const CATEGORY_MAP = {
+  maintenance: { type: 'Mantenimiento', accent: 'purple', Icon: Sparkles },
+  hosting: { type: 'Hosting', accent: 'cyan', Icon: Cloud },
+  licenses: { type: 'Licencias', accent: 'blue', Icon: CreditCard },
+  license: { type: 'Licencias', accent: 'blue', Icon: CreditCard },
+  development: { type: 'Desarrollo', accent: 'green', Icon: Code },
+  service: { type: 'Servicio', accent: 'purple', Icon: Server },
+}
+
 function deriveType(contract) {
+  const key = (contract.category || contract.contract_type || '').toString().toLowerCase()
+  if (key && CATEGORY_MAP[key]) return CATEGORY_MAP[key]
   const haystack = [contract.title, contract.items_summary].filter(Boolean).join(' ')
   const hit = TYPE_HEURISTICS.find((h) => h.match.test(haystack))
   if (hit) return { type: hit.type, accent: hit.accent, Icon: hit.icon }
   return { type: 'Servicio', accent: 'purple', Icon: Server }
+}
+
+async function downloadBlob(endpoint, filename) {
+  const res = await fetch(`${BASE_URL}${endpoint}`, {
+    headers: { Authorization: `Bearer ${getAccessToken()}` },
+  })
+  if (!res.ok) throw new Error(`Descarga falló (${res.status})`)
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }
 
 function formatAmount(amount, currency = 'EUR') {
@@ -288,9 +317,24 @@ function ContractCard({ c, onNav }) {
 export default function ContractsPage() {
   const [filter, setFilter] = useState('all')
   const [query, setQuery] = useState('')
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState(null)
   const [, setLocation] = useLocation()
 
   const { data: contracts, loading, error, refetch } = useApi('/client/recurring-services')
+
+  const handleExportAll = async () => {
+    if (exporting) return
+    setExporting(true)
+    setExportError(null)
+    try {
+      await downloadBlob('/client/recurring-services/export-zip', `contratos-${Date.now()}.zip`)
+    } catch (e) {
+      setExportError(e.message || 'No se pudo exportar')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const list = Array.isArray(contracts) ? contracts : []
 
@@ -379,6 +423,22 @@ export default function ContractsPage() {
               Servicios recurrentes contratados y su ciclo de facturación.
             </p>
           </div>
+          {list.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+              <button
+                type="button"
+                className="pr-btn ghost sm"
+                onClick={handleExportAll}
+                disabled={exporting}
+              >
+                <Download size={13} />
+                {exporting ? 'Exportando…' : 'Exportar todos'}
+              </button>
+              {exportError && (
+                <span style={{ fontSize: 11, color: '#f87171' }}>{exportError}</span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

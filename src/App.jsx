@@ -7,6 +7,7 @@ import NotFoundPage from './pages/NotFoundPage'
 
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'))
+const ImpersonatePage = lazy(() => import('./pages/ImpersonatePage'))
 
 const DashboardPage = lazy(() => import('./pages/portal/DashboardPage'))
 const ProjectsPage = lazy(() => import('./pages/portal/ProjectsPage'))
@@ -65,6 +66,9 @@ export default function App() {
           </Route>
           <Route path="/set-password/:token">
             {() => <SetPasswordPage />}
+          </Route>
+          <Route path="/auth/impersonate">
+            {() => <ImpersonatePage />}
           </Route>
           <Route path="/portal/dashboard">
             {() => <PortalLayout title="Dashboard"><DashboardPage /></PortalLayout>}

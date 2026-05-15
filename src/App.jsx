@@ -26,8 +26,16 @@ const ProfilePage = lazy(() => import('./pages/portal/ProfilePage'))
 
 function LazyFallback() {
   return (
-    <div className="min-h-screen bg-background-dark flex items-center justify-center">
-      <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--pr-bg-primary, #0a0e1a)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div className="pr-spinner" />
     </div>
   )
 }

@@ -12,9 +12,10 @@ import {
   AlertTriangle,
   Wallet,
   FileText,
+  Bell,
 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
-import { getAccessToken, BASE_URL } from '../../services/api'
+import { api, getAccessToken, BASE_URL } from '../../services/api'
 import './invoices.css'
 
 const statusConfig = {
@@ -53,6 +54,15 @@ function daysUntil(dateString) {
 export default function InvoiceDetailPage() {
   const [, params] = useRoute('/portal/invoices/:id')
   const [downloading, setDownloading] = useState(false)
+  const [paying, setPaying] = useState(false)
+  const [reminding, setReminding] = useState(false)
+  const [toasts, setToasts] = useState([])
+
+  const showToast = (msg) => {
+    const id = Math.random().toString(36).slice(2)
+    setToasts((ts) => [...ts, { id, msg }])
+    setTimeout(() => setToasts((ts) => ts.filter((t) => t.id !== id)), 2800)
+  }
 
   const { data: invoice, loading, error, refetch } = useApi(`/client/invoices/${params?.id}`, {
     immediate: !!params?.id,
@@ -114,6 +124,40 @@ export default function InvoiceDetailPage() {
       // silently fail
     } finally {
       setDownloading(false)
+    }
+  }
+
+  const handlePay = async () => {
+    if (!params?.id || paying) return
+    setPaying(true)
+    try {
+      const res = await api.post(`/client/invoices/${params.id}/pay`, {})
+      if (res?.redirect_url) {
+        window.location.href = res.redirect_url
+        return
+      }
+      showToast('Pago online próximamente disponible.')
+    } catch (err) {
+      if (err?.status === 501) {
+        showToast('Pago online próximamente disponible.')
+      } else {
+        showToast(err?.message || 'No se pudo iniciar el pago.')
+      }
+    } finally {
+      setPaying(false)
+    }
+  }
+
+  const handleRemind = async () => {
+    if (!params?.id || reminding) return
+    setReminding(true)
+    try {
+      await api.post(`/client/invoices/${params.id}/remind`, {})
+      showToast('Recordatorio enviado.')
+    } catch (err) {
+      showToast(err?.message || 'No se pudo enviar el recordatorio.')
+    } finally {
+      setReminding(false)
     }
   }
 
@@ -406,18 +450,35 @@ export default function InvoiceDetailPage() {
           {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
           Descargar PDF
         </button>
+        {!isPaid && !isCancelled && ['sent', 'partially_paid', 'overdue'].includes(invoice.status) && (
+          <button
+            type="button"
+            className="pr-btn ghost"
+            onClick={handleRemind}
+            disabled={reminding}
+          >
+            {reminding ? <Loader2 size={14} className="animate-spin" /> : <Bell size={14} />}
+            Recordar
+          </button>
+        )}
         {!isPaid && !isCancelled && (
           <button
             type="button"
             className="pr-btn primary"
-            onClick={() => {
-              // TODO: integrar pasarela de pago cuando esté disponible en backend
-              window.alert('El pago online aún no está disponible. Te avisaremos cuando se habilite.')
-            }}
+            onClick={handlePay}
+            disabled={paying}
           >
-            <CreditCard size={14} /> Pagar {formatAmount(balanceDue)}
+            {paying ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
+            Pagar {formatAmount(balanceDue)}
           </button>
         )}
+      </div>
+
+      {/* Toasts */}
+      <div className="pr-toast-stack">
+        {toasts.map((t) => (
+          <div key={t.id} className="pr-toast">{t.msg}</div>
+        ))}
       </div>
 
       <style>{`.animate-spin { animation: pr-spin 1s linear infinite; }`}</style>

@@ -29,7 +29,7 @@ const fallbackStatus = { cls: 'gray', label: '—', icon: Clock }
 
 const tabs = [
   { key: 'all', label: 'Todas' },
-  { key: 'sent', label: 'Pendientes' },
+  { key: 'open', label: 'Pendientes' },
   { key: 'paid', label: 'Pagadas' },
   { key: 'overdue', label: 'Vencidas' },
 ]
@@ -114,6 +114,14 @@ export default function InvoicesPage() {
     },
   })
 
+  const { data: summaryData } = useApi('/client/invoices/summary', {
+    params: { year: selectedYear },
+  })
+
+  const { data: monthlyData } = useApi('/client/invoices/monthly', {
+    params: { year: selectedYear },
+  })
+
   const allInvoices = useMemo(() => {
     if (Array.isArray(data)) return data
     if (Array.isArray(data?.data)) return data.data
@@ -131,7 +139,9 @@ export default function InvoicesPage() {
     })
   }, [allInvoices, query])
 
-  const kpis = useMemo(() => {
+  // Fallback (client-side) totals — usados si el endpoint /summary no responde
+  // o no devuelve un campo concreto. Defensivo.
+  const fallbackKpis = useMemo(() => {
     const totals = allInvoices.reduce(
       (acc, inv) => {
         const total = Number(inv.total || 0)
@@ -154,17 +164,60 @@ export default function InvoicesPage() {
     return totals
   }, [allInvoices])
 
+  const kpis = useMemo(() => {
+    const s = summaryData || {}
+    const pick = (...keys) => {
+      for (const k of keys) {
+        if (s[k] != null) return Number(s[k])
+      }
+      return null
+    }
+    const totalBilled = pick('invoiced', 'total_invoiced', 'billed', 'total') ?? fallbackKpis.totalBilled
+    const totalPaid = pick('paid', 'total_paid', 'collected') ?? fallbackKpis.totalPaid
+    const pending = pick('pending', 'total_pending', 'open') ?? fallbackKpis.pending
+    const overdue = pick('overdue', 'total_overdue') ?? fallbackKpis.overdue
+    const pendingCount = pick('pending_count', 'open_count') ?? fallbackKpis.pendingCount
+    const overdueCount = pick('overdue_count') ?? fallbackKpis.overdueCount
+    const count = pick('count', 'invoices_count') ?? allInvoices.length
+    return { totalBilled, totalPaid, pending, overdue, pendingCount, overdueCount, count }
+  }, [summaryData, fallbackKpis, allInvoices.length])
+
   const tabCounts = useMemo(() => {
-    const c = { all: allInvoices.length, sent: 0, paid: 0, overdue: 0 }
+    const c = { all: allInvoices.length, open: 0, paid: 0, overdue: 0 }
     for (const inv of allInvoices) {
       if (isPaid(inv)) c.paid += 1
       else if (isInvoiceOverdue(inv)) c.overdue += 1
-      else if (inv.status === 'sent' || inv.status === 'partially_paid') c.sent += 1
+      else if (inv.status === 'sent' || inv.status === 'partially_paid') c.open += 1
     }
     return c
   }, [allInvoices])
 
   const chart = useMemo(() => {
+    // Soporta dos formatos: array simple de 12 entradas o { months: [...] }
+    const raw = Array.isArray(monthlyData)
+      ? monthlyData
+      : Array.isArray(monthlyData?.months)
+        ? monthlyData.months
+        : null
+
+    if (raw && raw.length > 0) {
+      // Normaliza a buckets de 12 meses con month/billed/paid
+      const buckets = monthsShort.map((m, idx) => {
+        const entry = raw.find((r) => {
+          const mn = Number(r.month ?? r.month_number ?? r.m)
+          if (Number.isFinite(mn)) return mn === idx + 1
+          return false
+        })
+        return {
+          month: m,
+          billed: Number(entry?.invoiced ?? entry?.billed ?? entry?.total ?? 0),
+          paid: Number(entry?.paid ?? entry?.collected ?? 0),
+        }
+      })
+      return buckets
+    }
+
+    // Fallback client-side si /monthly no responde
     const buckets = monthsShort.map((m) => ({ month: m, billed: 0, paid: 0 }))
     for (const inv of allInvoices) {
       if (!inv.issue_date) continue
@@ -176,12 +229,17 @@ export default function InvoicesPage() {
       if (isPaid(inv)) buckets[idx].paid += total
     }
     return buckets
-  }, [allInvoices, selectedYear])
+  }, [monthlyData, allInvoices, selectedYear])
 
+  const hasChartData = chart.some((c) => c.billed > 0 || c.paid > 0)
   const maxChart = Math.max(...chart.map((c) => c.billed), 1)
-  const paymentRate = kpis.totalBilled
-    ? Math.round((kpis.totalPaid / kpis.totalBilled) * 100)
-    : 0
+  const paymentRate = (() => {
+    const s = summaryData || {}
+    if (s.payment_rate != null) return Math.round(Number(s.payment_rate))
+    return kpis.totalBilled
+      ? Math.round((kpis.totalPaid / kpis.totalBilled) * 100)
+      : 0
+  })()
 
   const handleDownloadPdf = async (e, invoiceId, invoiceNumber) => {
     e.stopPropagation()
@@ -259,7 +317,7 @@ export default function InvoicesPage() {
             accent="cyan"
             value={`${formatAmountShort(kpis.totalBilled)}`}
             label={`Facturado ${selectedYear}`}
-            sub={`${allInvoices.length} ${allInvoices.length === 1 ? 'factura emitida' : 'facturas emitidas'}`}
+            sub={`${kpis.count} ${kpis.count === 1 ? 'factura emitida' : 'facturas emitidas'}`}
           />
           <KpiTile
             icon={CheckCircle2}
@@ -296,41 +354,47 @@ export default function InvoicesPage() {
               </div>
             </div>
           </div>
-          <div className="inv-chart">
-            {chart.map((c, i) => {
-              const paidH = maxChart ? (c.paid / maxChart) * 100 : 0
-              const pendH = maxChart ? ((c.billed - c.paid) / maxChart) * 100 : 0
-              return (
-                <div
-                  key={i}
-                  className="inv-chart-col"
-                  title={`${c.month}: ${formatAmountShort(c.billed)} facturado, ${formatAmountShort(c.paid)} cobrado`}
-                >
-                  <div className="inv-chart-col-bars">
-                    {pendH > 0 && (
-                      <div
-                        className="inv-chart-bar-pending"
-                        style={{
-                          height: `${pendH}%`,
-                          borderRadius: '4px 4px 0 0',
-                        }}
-                      />
-                    )}
-                    {paidH > 0 && (
-                      <div
-                        className="inv-chart-bar-paid"
-                        style={{
-                          height: `${paidH}%`,
-                          borderRadius: pendH > 0 ? 0 : '4px 4px 0 0',
-                        }}
-                      />
-                    )}
+          {hasChartData ? (
+            <div className="inv-chart">
+              {chart.map((c, i) => {
+                const paidH = maxChart ? (c.paid / maxChart) * 100 : 0
+                const pendH = maxChart ? ((c.billed - c.paid) / maxChart) * 100 : 0
+                return (
+                  <div
+                    key={i}
+                    className="inv-chart-col"
+                    title={`${c.month}: ${formatAmountShort(c.billed)} facturado, ${formatAmountShort(c.paid)} cobrado`}
+                  >
+                    <div className="inv-chart-col-bars">
+                      {pendH > 0 && (
+                        <div
+                          className="inv-chart-bar-pending"
+                          style={{
+                            height: `${pendH}%`,
+                            borderRadius: '4px 4px 0 0',
+                          }}
+                        />
+                      )}
+                      {paidH > 0 && (
+                        <div
+                          className="inv-chart-bar-paid"
+                          style={{
+                            height: `${paidH}%`,
+                            borderRadius: pendH > 0 ? 0 : '4px 4px 0 0',
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div className="inv-chart-label">{c.month}</div>
                   </div>
-                  <div className="inv-chart-label">{c.month}</div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div style={{ padding: '32px 8px', textAlign: 'center', color: 'var(--pr-text-muted)', fontSize: 12 }}>
+              Sin datos suficientes para mostrar el gráfico de {selectedYear}.
+            </div>
+          )}
         </div>
       </div>
 
@@ -404,7 +468,7 @@ export default function InvoicesPage() {
                     const dueClass = overdue
                       ? 'overdue'
                       : ''
-                    const projectName = inv.project?.name || inv.project_name || '—'
+                    const projectName = inv.project_name || inv.project?.name || ''
                     const concept = inv.concept || inv.description || inv.notes || ''
                     return (
                       <motion.tr
@@ -415,13 +479,18 @@ export default function InvoicesPage() {
                       >
                         <td className="num">{inv.invoice_number}</td>
                         <td className="project-cell">
-                          <div className="project-title" style={{ fontSize: 13, fontWeight: 500, color: 'var(--pr-text-primary)', marginBottom: 2 }}>
-                            {projectName}
-                          </div>
+                          {projectName && (
+                            <div className="project-title" style={{ fontSize: 13, fontWeight: 500, color: 'var(--pr-text-primary)', marginBottom: 2 }}>
+                              {projectName}
+                            </div>
+                          )}
                           {concept && (
                             <div className="project-sub" style={{ fontSize: 11, color: 'var(--pr-text-muted)' }}>
                               {concept}
                             </div>
+                          )}
+                          {!projectName && !concept && (
+                            <span style={{ color: 'var(--pr-text-muted)', fontSize: 12 }}>—</span>
                           )}
                         </td>
                         <td>{formatShortDate(inv.issue_date)}</td>
@@ -429,9 +498,9 @@ export default function InvoicesPage() {
                         <td className="total">{formatAmount(inv.total)}</td>
                         <td>
                           <StatusBadge status={overdue && !paid ? 'overdue' : inv.status} />
-                          {paid && inv.payments?.[0]?.payment_date && (
+                          {paid && (inv.paid_at || inv.payments?.[0]?.payment_date) && (
                             <div className="inv-paid-meta">
-                              Pagada {formatShortDate(inv.payments[0].payment_date)}
+                              Pagada {formatShortDate(inv.paid_at || inv.payments?.[0]?.payment_date)}
                             </div>
                           )}
                         </td>
@@ -491,7 +560,8 @@ export default function InvoicesPage() {
             {filteredInvoices.map((inv) => {
               const overdue = isInvoiceOverdue(inv)
               const paid = isPaid(inv)
-              const projectName = inv.project?.name || inv.project_name || '—'
+              const projectName = inv.project_name || inv.project?.name || ''
+              const concept = inv.concept || inv.description || inv.notes || ''
               return (
                 <motion.div key={inv.id} variants={fadeUp}>
                   <Link to={`/portal/invoices/${inv.id}`} className="inv-mobile-card">
@@ -501,9 +571,16 @@ export default function InvoicesPage() {
                       </span>
                       <StatusBadge status={overdue && !paid ? 'overdue' : inv.status} />
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--pr-text-primary)' }}>
-                      {projectName}
-                    </div>
+                    {projectName && (
+                      <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--pr-text-primary)' }}>
+                        {projectName}
+                      </div>
+                    )}
+                    {concept && (
+                      <div style={{ fontSize: 11, color: 'var(--pr-text-muted)', marginTop: 2 }}>
+                        {concept}
+                      </div>
+                    )}
                     <div className="inv-mobile-row">
                       <span className="label">Emisión</span>
                       <span className="value">{formatShortDate(inv.issue_date)}</span>

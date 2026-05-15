@@ -1,220 +1,489 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useLocation } from 'wouter'
-import { Eye, Loader2, Repeat, Calendar, MessageSquare } from 'lucide-react'
+import {
+  ArrowLeft,
+  FileSignature,
+  RotateCcw,
+  Calendar,
+  MoreHorizontal,
+  Check,
+  AlertCircle,
+  Search,
+  Server,
+  Cloud,
+  Code,
+  CreditCard,
+  Sparkles,
+} from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import './contracts.css'
 
-const statusConfig = {
-  active: { label: 'Activo', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
-  completed: { label: 'Finalizado', bg: 'bg-slate-500/20', text: 'text-slate-300' },
+/* ---------- helpers ---------- */
+
+const STATUS = {
+  active: { cls: 'green', dot: true, label: 'Activo' },
+  pending_signature: { cls: 'amber', dot: true, label: 'Pendiente de firma' },
+  paused: { cls: 'amber', dot: true, label: 'Pausado' },
+  completed: { cls: 'gray', dot: false, label: 'Finalizado' },
+  finished: { cls: 'gray', dot: false, label: 'Finalizado' },
+  cancelled: { cls: 'red', dot: false, label: 'Cancelado' },
 }
 
-const tabs = [
-  { key: 'all', label: 'Todos' },
-  { key: 'active', label: 'Activos' },
-  { key: 'completed', label: 'Finalizados' },
+const TYPE_HEURISTICS = [
+  { match: /mantenim|maintenance|soporte|support/i, type: 'Mantenimiento', accent: 'purple', icon: Sparkles },
+  { match: /hosting|servidor|cloud|server/i, type: 'Hosting', accent: 'cyan', icon: Cloud },
+  { match: /licenc|license|suscrip|subscription|saas|figma|adobe/i, type: 'Licencias', accent: 'blue', icon: CreditCard },
+  { match: /desarrollo|development|web|app|build/i, type: 'Desarrollo', accent: 'green', icon: Code },
 ]
 
+function deriveType(contract) {
+  const haystack = [contract.title, contract.items_summary].filter(Boolean).join(' ')
+  const hit = TYPE_HEURISTICS.find((h) => h.match.test(haystack))
+  if (hit) return { type: hit.type, accent: hit.accent, Icon: hit.icon }
+  return { type: 'Servicio', accent: 'purple', Icon: Server }
+}
+
 function formatAmount(amount, currency = 'EUR') {
+  const n = Number(amount || 0)
   return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(Number(amount || 0))
+  }).format(n) + (currency === 'EUR' ? ' €' : ` ${currency}`)
 }
 
 function formatDate(dateString) {
   if (!dateString) return '—'
   return new Date(dateString).toLocaleDateString('es-ES', {
     day: '2-digit',
-    month: '2-digit',
+    month: 'short',
     year: 'numeric',
   })
 }
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.08 } },
+function safePct(v) {
+  const n = Number(v)
+  if (!Number.isFinite(n)) return 0
+  return Math.min(100, Math.max(0, Math.round(n)))
 }
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+/* ---------- KPI helper ---------- */
+
+function Kpi({ icon: Icon, accent, value, label, sub }) {
+  return (
+    <div className="pr-kpi">
+      <div className="pr-kpi-head">
+        <div className={`pr-kpi-icon pr-accent-${accent}`}>
+          <Icon size={14} />
+        </div>
+        <div className="pr-kpi-label">{label}</div>
+      </div>
+      <div className="pr-kpi-value">{value}</div>
+      <div className="pr-kpi-sub">{sub}</div>
+    </div>
+  )
 }
+
+/* ---------- Status badge ---------- */
+
+function StatusBadge({ status }) {
+  const m = STATUS[status] || STATUS.completed
+  return (
+    <span className={`pr-badge ${m.cls}`}>
+      {m.dot && <span className="pr-badge-dot solo" />}
+      {m.label}
+    </span>
+  )
+}
+
+/* ---------- Contract card ---------- */
+
+function ContractCard({ c, onNav }) {
+  const { type, accent, Icon } = deriveType(c)
+  const status = c.status || 'active'
+  const monthlyFee = c.monthly_fee ?? null
+  const totalPerCycle = Number(c.total_per_cycle || 0)
+  const cyclePct = safePct(c.progress?.cycle_percent)
+  const daysToBill = c.progress?.days_until_next_invoice
+  const services = useMemo(() => {
+    if (Array.isArray(c.items) && c.items.length > 0) {
+      return c.items.map((it) => it.description).filter(Boolean).slice(0, 6)
+    }
+    if (c.items_summary) return [c.items_summary]
+    return []
+  }, [c])
+  const showMonthlyProgress =
+    status === 'active' && /mensual|monthly/i.test(c.billing_cycle_label || '') && cyclePct > 0
+  const isAutoRenew = c.auto_renew ?? (c.duration_type !== 'fixed')
+
+  const handleClick = () => onNav?.(c.id)
+  const stop = (e) => e.stopPropagation()
+
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleClick()}
+      className="pr-card hoverable pr-contract-card"
+      style={{ cursor: 'pointer' }}
+    >
+      {/* Header band */}
+      <div className="pr-contract-card-head">
+        <div className={`pr-contract-head-icon pr-accent-${accent}`}>
+          <Icon size={18} />
+        </div>
+        <div className="pr-contract-head-info">
+          <div className="pr-contract-title-row">
+            <h3 className="pr-contract-title">{c.title}</h3>
+            <StatusBadge status={status} />
+            {isAutoRenew && status === 'active' && (
+              <span className="pr-contract-renew-chip">
+                <RotateCcw size={10} /> Renovación automática
+              </span>
+            )}
+          </div>
+          <div className="pr-contract-meta-row">
+            <span>{type}</span>
+            <span className="pr-dot">·</span>
+            <span>{c.billing_cycle_label || '—'}</span>
+            <span className="pr-dot">·</span>
+            <span className="pr-contract-code">{c.contract_number || `#${c.id}`}</span>
+          </div>
+        </div>
+        <div className="pr-contract-actions">
+          {status === 'pending_signature' && (
+            <button
+              className="pr-btn primary sm"
+              onClick={(e) => {
+                stop(e)
+                handleClick()
+              }}
+            >
+              <FileSignature size={13} /> Firmar
+            </button>
+          )}
+          <Link
+            to={`/portal/contracts/${c.id}`}
+            onClick={stop}
+            className="pr-btn ghost sm"
+          >
+            Ver detalle
+          </Link>
+          <button className="pr-btn ghost sm icon-only" onClick={stop} aria-label="Más acciones">
+            <MoreHorizontal size={14} />
+          </button>
+        </div>
+      </div>
+
+      {/* Body 3 zones */}
+      <div className="pr-contract-body">
+        {/* Services */}
+        <div className="pr-contract-zone">
+          <div className="pr-contract-zone-label">Servicios incluidos</div>
+          {services.length > 0 ? (
+            <div className="pr-contract-services">
+              {services.map((s, i) => (
+                <div key={i} className="pr-contract-service-item">
+                  <Check size={12} />
+                  <span>{s}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ fontSize: 12, color: 'var(--pr-text-muted)' }}>
+              Sin desglose disponible
+            </div>
+          )}
+        </div>
+
+        {/* Period + billing */}
+        <div className="pr-contract-zone pr-contract-period">
+          <div>
+            <div className="pr-contract-zone-label">Periodo</div>
+            <div className="pr-contract-period-row">
+              <Calendar size={12} />
+              <span>{formatDate(c.start_date)}</span>
+              <span className="pr-arrow">→</span>
+              <span>{c.duration_type === 'fixed' ? formatDate(c.end_date) : 'Indefinido'}</span>
+            </div>
+          </div>
+
+          {status === 'active' && c.next_billing_date && (
+            <div>
+              <div className="pr-contract-zone-label">Próxima facturación</div>
+              <div
+                className={`pr-contract-next-billing${
+                  daysToBill !== undefined && daysToBill !== null && daysToBill <= 14 ? ' warn' : ''
+                }`}
+              >
+                <div className="pr-contract-next-billing-date">{formatDate(c.next_billing_date)}</div>
+                <div className="pr-contract-next-billing-sub">
+                  {daysToBill === 0
+                    ? 'Se factura hoy'
+                    : daysToBill !== undefined && daysToBill !== null
+                      ? `En ${daysToBill} día${daysToBill === 1 ? '' : 's'}`
+                      : '—'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {showMonthlyProgress && (
+            <div>
+              <div className="pr-contract-progress-row">
+                <span className="pr-contract-progress-label">Uso del ciclo</span>
+                <span className="pr-contract-progress-value">{cyclePct}%</span>
+              </div>
+              <div className="pr-contract-progress-track">
+                <div
+                  className={`pr-contract-progress-fill${cyclePct >= 90 ? ' high' : ''}`}
+                  style={{ width: `${cyclePct}%` }}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Money + signature */}
+        <div className="pr-contract-zone pr-contract-money">
+          <div>
+            <div className="pr-contract-zone-label">
+              {monthlyFee ? 'Cuota mensual' : c.billing_cycle_label || 'Importe'}
+            </div>
+            <div className="pr-contract-money-amount">
+              {formatAmount(monthlyFee ?? totalPerCycle, c.currency).replace(/ €$/, '')}
+              <span className="pr-cur">{c.currency === 'EUR' ? '€' : c.currency || ''}</span>
+            </div>
+            {monthlyFee && (
+              <div className="pr-contract-money-sub">
+                {formatAmount(monthlyFee * 12, c.currency)} / año
+              </div>
+            )}
+          </div>
+
+          {status === 'pending_signature' ? (
+            <div className="pr-contract-warn-pending">
+              <AlertCircle size={12} />
+              <span>Tu firma desbloqueará el inicio del servicio</span>
+            </div>
+          ) : c.signed_at || c.signed_by ? (
+            <div className="pr-contract-signed">
+              <div className="pr-contract-zone-label">Firmado</div>
+              {c.signed_by && <div className="pr-contract-signed-name">{c.signed_by}</div>}
+              <div className="pr-contract-signed-date">
+                {c.signed_at ? `el ${formatDate(c.signed_at)}` : ''}
+                {c.document_size ? ` · ${c.document_size}` : ''}
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------- Page ---------- */
 
 export default function ContractsPage() {
-  const [activeTab, setActiveTab] = useState('all')
+  const [filter, setFilter] = useState('all')
+  const [query, setQuery] = useState('')
   const [, setLocation] = useLocation()
 
   const { data: contracts, loading, error, refetch } = useApi('/client/recurring-services')
 
+  const list = Array.isArray(contracts) ? contracts : []
+
+  const groups = useMemo(() => {
+    const count = (k) => list.filter((c) => c.status === k).length
+    return [
+      { key: 'all', label: 'Todos', count: list.length },
+      { key: 'active', label: 'Activos', count: count('active') },
+      { key: 'pending_signature', label: 'Pendientes', count: count('pending_signature') },
+      { key: 'paused', label: 'Pausados', count: count('paused') },
+      { key: 'completed', label: 'Finalizados', count: count('completed') },
+      { key: 'cancelled', label: 'Cancelados', count: count('cancelled') },
+    ].filter((g) => g.key === 'all' || g.count > 0)
+  }, [list])
+
+  const kpi = useMemo(() => {
+    const active = list.filter((c) => c.status === 'active')
+    const pending = list.filter((c) => c.status === 'pending_signature').length
+    const monthlyRecurring = active
+      .filter((c) => /mensual|monthly/i.test(c.billing_cycle_label || ''))
+      .reduce((s, c) => s + Number(c.total_per_cycle || 0), 0)
+    const soonest = active
+      .filter((c) => c.progress?.days_until_next_invoice != null)
+      .sort(
+        (a, b) =>
+          Number(a.progress.days_until_next_invoice) -
+          Number(b.progress.days_until_next_invoice),
+      )[0]
+    return {
+      total: list.length,
+      active: active.length,
+      pending,
+      monthlyRecurring,
+      soonest,
+    }
+  }, [list])
+
+  const filtered = list
+    .filter((c) => filter === 'all' || c.status === filter)
+    .filter((c) => {
+      if (!query) return true
+      const q = query.toLowerCase()
+      return (
+        (c.title || '').toLowerCase().includes(q) ||
+        (c.contract_number || '').toLowerCase().includes(q) ||
+        (c.items_summary || '').toLowerCase().includes(q)
+      )
+    })
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <Loader2 size={32} className="animate-spin text-primary" />
+      <div className="pr-loading">
+        <span className="pr-spinner" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-center py-16">
-        <p className="text-red-400 mb-4">{error}</p>
-        <button
-          onClick={refetch}
-          className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium cursor-pointer hover:bg-primary/80 transition-colors"
-        >
+      <div className="pr-empty">
+        <div className="pr-empty-art">
+          <AlertCircle size={32} />
+        </div>
+        <div>
+          <p className="pr-empty-title">No pudimos cargar los contratos</p>
+          <p className="pr-empty-desc">{error}</p>
+        </div>
+        <button className="pr-btn primary sm" onClick={refetch}>
           Reintentar
         </button>
       </div>
     )
   }
 
-  const list = (contracts || []).filter((c) =>
-    activeTab === 'all' ? true : c.status === activeTab
-  )
-
   return (
     <div>
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-white">Contratos</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Servicios recurrentes contratados y su ciclo de facturación.
-          </p>
+      <Link to="/portal" className="pr-page-crumb">
+        <ArrowLeft size={14} /> Volver al dashboard
+      </Link>
+
+      <div className="pr-page-header">
+        <div className="pr-page-header-row">
+          <div>
+            <h1 className="pr-page-title">Contratos</h1>
+            <p className="pr-page-sub">
+              Servicios recurrentes contratados y su ciclo de facturación.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-2 flex-wrap mt-6">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-              activeTab === tab.key
-                ? 'bg-primary text-white'
-                : 'bg-white/5 text-slate-400 hover:text-white'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* KPI strip */}
+      <div className="pr-grid-4" style={{ marginBottom: 20 }}>
+        <Kpi
+          icon={FileSignature}
+          accent="green"
+          value={kpi.active}
+          label="Contratos activos"
+          sub={`de ${kpi.total} totales`}
+        />
+        <Kpi
+          icon={RotateCcw}
+          accent="purple"
+          value={`${kpi.monthlyRecurring.toLocaleString('es-ES', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+          })} €/mes`}
+          label="Recurrente mensual"
+          sub="suma de mensualidades"
+        />
+        <Kpi
+          icon={Calendar}
+          accent="amber"
+          value={
+            kpi.soonest?.progress?.days_until_next_invoice != null
+              ? `${kpi.soonest.progress.days_until_next_invoice}d`
+              : '—'
+          }
+          label="Próxima factura"
+          sub={kpi.soonest?.title ? kpi.soonest.title : 'Sin facturas próximas'}
+        />
+        <Kpi
+          icon={AlertCircle}
+          accent={kpi.pending > 0 ? 'red' : 'gray'}
+          value={kpi.pending}
+          label="Pendiente de firmar"
+          sub={kpi.pending > 0 ? 'Acción requerida' : 'Sin pendientes'}
+        />
       </div>
 
-      <motion.div
-        key={activeTab}
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6"
-      >
-        {list.map((c) => {
-          const status = statusConfig[c.status] || statusConfig.active
-          const cyclePct = Math.min(100, Math.max(0, Number(c.progress?.cycle_percent ?? 0)))
-          const contractPct = Math.min(100, Math.max(0, Number(c.progress?.contract_percent ?? 0)))
-          const daysLeft = c.progress?.days_until_next_invoice
+      {/* Filter bar */}
+      <div className="pr-filterbar">
+        <div className="pr-filterbar-tabs">
+          {groups.map((g) => (
+            <button
+              key={g.key}
+              type="button"
+              className={`pr-filter-tab ${filter === g.key ? 'active' : ''}`}
+              onClick={() => setFilter(g.key)}
+            >
+              {g.label}
+              <span className="pr-filter-tab-count">{g.count}</span>
+            </button>
+          ))}
+        </div>
+        <div className="pr-filterbar-right">
+          <div className="pr-search">
+            <Search size={14} />
+            <input
+              placeholder="Buscar por título o nº contrato…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
 
-          return (
+      {filtered.length === 0 ? (
+        <div className="pr-card">
+          <div className="pr-empty">
+            <div className="pr-empty-art">
+              <FileSignature size={32} />
+            </div>
+            <div>
+              <p className="pr-empty-title">Sin contratos en esta categoría</p>
+              <p className="pr-empty-desc">
+                Cuando contrates servicios recurrentes aparecerán aquí.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <motion.div
+          key={filter}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
+          className="pr-contract-list"
+        >
+          {filtered.map((c) => (
             <motion.div
               key={c.id}
-              variants={fadeUp}
-              onClick={() => setLocation(`/portal/contracts/${c.id}`)}
-              className="bg-surface-dark rounded-2xl p-5 border border-white/5 hover:border-white/10 transition-all cursor-pointer group"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
             >
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Repeat size={14} className="text-primary shrink-0" />
-                    <span className="text-xs font-mono text-slate-500">{c.contract_number}</span>
-                  </div>
-                  <h3 className="text-base font-semibold text-white group-hover:text-primary transition-colors truncate">
-                    {c.title}
-                  </h3>
-                  {c.items_summary && (
-                    <p className="text-xs text-slate-500 mt-1 line-clamp-1">{c.items_summary}</p>
-                  )}
-                </div>
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  <span className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${status.bg} ${status.text}`}>
-                    {status.label}
-                  </span>
-                  <span className="text-[11px] text-slate-500">{c.billing_cycle_label}</span>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="text-slate-500">Ciclo actual</span>
-                  <span className="text-slate-400">
-                    {daysLeft !== undefined && daysLeft !== null
-                      ? daysLeft === 0
-                        ? 'Factura hoy'
-                        : `${daysLeft} día${daysLeft === 1 ? '' : 's'} para próxima factura`
-                      : '—'}
-                  </span>
-                </div>
-                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
-                    style={{ width: `${cyclePct}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/5">
-                <div className="min-w-0">
-                  <p className="text-[11px] text-slate-500 uppercase tracking-wider">Próximo cobro</p>
-                  <div className="flex items-baseline gap-2 mt-0.5">
-                    <span className="text-base font-bold text-white">
-                      {formatAmount(c.total_per_cycle, c.currency)}
-                    </span>
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
-                      <Calendar size={12} />
-                      {formatDate(c.next_billing_date)}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {c.has_public_notes && (
-                    <span className="text-slate-500" title="Tiene notas">
-                      <MessageSquare size={16} />
-                    </span>
-                  )}
-                  <Link
-                    to={`/portal/contracts/${c.id}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-slate-400 hover:text-primary transition-colors"
-                    title="Ver detalle"
-                  >
-                    <Eye size={18} />
-                  </Link>
-                </div>
-              </div>
-
-              {c.duration_type === 'fixed' && (
-                <div className="mt-3">
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-                    <span>Contrato</span>
-                    <span>{Math.round(contractPct)}%</span>
-                  </div>
-                  <div className="h-1 rounded-full bg-white/5 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-white/20"
-                      style={{ width: `${contractPct}%` }}
-                    />
-                  </div>
-                </div>
-              )}
+              <ContractCard
+                c={c}
+                onNav={(id) => setLocation(`/portal/contracts/${id}`)}
+              />
             </motion.div>
-          )
-        })}
-      </motion.div>
-
-      {list.length === 0 && (
-        <div className="text-center py-16 text-slate-500">
-          No hay contratos en esta categoría.
-        </div>
+          ))}
+        </motion.div>
       )}
     </div>
   )

@@ -143,6 +143,10 @@ export const api = {
     method: 'PUT',
     body: prepareBody(data),
   }),
+  patch: (endpoint, data) => apiRequest(endpoint, {
+    method: 'PATCH',
+    body: prepareBody(data),
+  }),
   delete: (endpoint) => apiRequest(endpoint, { method: 'DELETE' }),
 }
 

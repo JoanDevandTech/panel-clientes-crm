@@ -88,9 +88,7 @@ function deriveCover(p) {
 }
 
 function deriveTeam(p) {
-  if (Array.isArray(p?.team) && p.team.length) return p.team
-  const members = p?.team_members
-  if (!Array.isArray(members)) return []
+  const members = Array.isArray(p?.team) ? p.team : []
   return members.map((m, idx) => ({
     name: m.name || m.full_name || 'Miembro',
     avatar:
@@ -110,19 +108,11 @@ function getPhaseKey(p) {
 }
 
 function deriveHealth(p) {
-  if (p?.health) {
-    return {
-      kind: p.health,
-      label: p.healthLabel || HEALTH_META[p.health]?.defaultLabel || '—',
-    }
+  const kind = p?.health || 'good'
+  return {
+    kind,
+    label: p?.healthLabel || HEALTH_META[kind]?.defaultLabel || '—',
   }
-  // Heurística mínima si el back no lo manda.
-  const phase = getPhaseKey(p)
-  if (phase === 'paused' || phase === 'cancelled') return { kind: 'risk', label: 'Pausado' }
-  if (phase === 'review') return { kind: 'warning', label: 'En revisión' }
-  if (phase === 'completed') return { kind: 'good', label: 'En garantía' }
-  if (phase === 'maintenance') return { kind: 'good', label: 'Plan activo' }
-  return { kind: 'good', label: 'En plazo' }
 }
 
 function daysBetween(fromIso, toIso) {
@@ -135,7 +125,11 @@ function daysBetween(fromIso, toIso) {
 
 function deriveDaysRemaining(p) {
   if (typeof p?.daysRemaining === 'number' || p?.daysRemaining === null) return p.daysRemaining
-  const target = p?.estimated_end_date || p?.estimated_date || p?.warranty_until
+  const phase = getPhaseKey(p)
+  const target =
+    phase === 'completed'
+      ? p?.warranty_until
+      : p?.estimated_end_date || p?.estimated_date || p?.warranty_until
   return daysBetween(new Date().toISOString(), target)
 }
 
@@ -148,21 +142,13 @@ function fmtDate(value) {
 
 function deriveBudget(p) {
   if (p?.budget && typeof p.budget === 'object') return p.budget
-  const total = p?.budget_total ?? p?.total_amount
-  if (total == null) return null
-  return { total, paid: p?.budget_paid ?? p?.paid_amount ?? 0, recurring: !!p?.recurring }
+  return null
 }
 
 function deriveMilestones(p) {
-  if (p?.milestones && typeof p.milestones === 'object') return p.milestones
-  const total = p?.milestones_total
-  if (total == null) return null
-  return {
-    total,
-    done: p?.milestones_done ?? 0,
-    current: p?.milestones_current ?? 0,
-    late: p?.milestones_late ?? 0,
-  }
+  const m = p?.milestones_summary || p?.milestones
+  if (m && typeof m === 'object' && m.total != null) return m
+  return null
 }
 
 const staggerContainer = {
@@ -291,7 +277,8 @@ function ProgressWithMarkers({ progress, milestones, deliverables, phase }) {
 
 function ProjectCard({ project }) {
   const phaseKey = getPhaseKey(project)
-  const phase = PHASE_META[phaseKey] ?? { label: project?.status_label || 'En curso', badge: 'gray' }
+  const phase = PHASE_META[phaseKey] ?? { label: project?.phase_label || project?.status_label || 'En curso', badge: 'gray' }
+  const phaseLabel = project?.phase_label || phase.label
   const cover = deriveCover(project)
   const team = deriveTeam(project)
   const lead = project?.lead || team[0]?.name
@@ -333,7 +320,7 @@ function ProjectCard({ project }) {
               <h3 className="pl-title">{project?.name}</h3>
               <span className={`pr-badge ${phase.badge}`}>
                 <span className="pr-badge-dot" />
-                {project?.statusLabel || phase.label}
+                {phaseLabel}
               </span>
               <span className={`pl-health ${health.kind}`}>
                 <HealthIcon size={10} strokeWidth={2} />
@@ -524,6 +511,7 @@ export default function ProjectsPage() {
   const [sort, setSort] = useState('recent')
 
   const { data, loading, error, refetch } = useApi('/client/projects')
+  const { data: summaryData, error: summaryError } = useApi('/client/projects/summary')
 
   const projects = useMemo(() => {
     if (Array.isArray(data)) return data
@@ -543,27 +531,45 @@ export default function ProjectsPage() {
   }, [projects])
 
   const kpi = useMemo(() => {
-    const active = projects.filter((p) => ACTIVE_PHASES.has(getPhaseKey(p))).length
-    const upcoming = projects.filter((p) => {
-      const phase = getPhaseKey(p)
-      if (phase === 'completed' || phase === 'maintenance') return false
-      const d = deriveDaysRemaining(p)
-      return d != null && d <= 30
-    }).length
-    const unread = projects.reduce(
-      (sum, p) => sum + (p.unreadMessages ?? p.unread_messages ?? 0),
-      0
-    )
-    const totalBudget = projects.reduce((sum, p) => {
-      const b = deriveBudget(p)
-      return sum + (b?.total ?? 0)
-    }, 0)
-    const totalPaid = projects.reduce((sum, p) => {
-      const b = deriveBudget(p)
-      return sum + (b?.paid ?? 0)
-    }, 0)
-    return { active, upcoming, unread, totalBudget, totalPaid }
-  }, [projects])
+    const fallback = () => {
+      const active = projects.filter((p) => ACTIVE_PHASES.has(getPhaseKey(p))).length
+      const upcoming = projects.filter((p) => {
+        const phase = getPhaseKey(p)
+        if (phase === 'completed' || phase === 'maintenance') return false
+        const d = deriveDaysRemaining(p)
+        return d != null && d <= 30
+      }).length
+      const unread = projects.reduce(
+        (sum, p) => sum + (p.unreadMessages ?? p.unread_messages ?? 0),
+        0
+      )
+      const openTickets = projects.reduce(
+        (sum, p) => sum + (p.openTickets ?? p.open_tickets ?? 0),
+        0
+      )
+      const totalBudget = projects.reduce((sum, p) => {
+        const b = deriveBudget(p)
+        return sum + (b?.total ?? 0)
+      }, 0)
+      const totalPaid = projects.reduce((sum, p) => {
+        const b = deriveBudget(p)
+        return sum + (b?.paid ?? 0)
+      }, 0)
+      return { active, upcoming, unread, openTickets, totalBudget, totalPaid }
+    }
+
+    if (summaryError || !summaryData) return fallback()
+    const s = summaryData?.data ?? summaryData
+    const local = fallback()
+    return {
+      active: s.active ?? local.active,
+      upcoming: s.upcoming_deadlines ?? local.upcoming,
+      unread: s.unread_messages ?? local.unread,
+      openTickets: s.open_tickets ?? local.openTickets,
+      totalBudget: s.total_budget ?? local.totalBudget,
+      totalPaid: s.total_paid ?? local.totalPaid,
+    }
+  }, [projects, summaryData, summaryError])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()

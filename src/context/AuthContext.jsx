@@ -3,6 +3,20 @@ import { api, setAccessToken, setRefreshToken, clearTokens, getRefreshToken, BAS
 
 export const AuthContext = createContext(null)
 
+const IMP_KEY = 'impersonation_active'
+const IMP_NAME = 'impersonator_name'
+
+function clearImpersonationFlags() {
+  try {
+    localStorage.removeItem(IMP_KEY)
+    localStorage.removeItem(IMP_NAME)
+    sessionStorage.removeItem(IMP_KEY)
+    sessionStorage.removeItem(IMP_NAME)
+  } catch {
+    // ignore
+  }
+}
+
 export function AuthProvider({ children }) {
   const [client, setClient] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -41,6 +55,7 @@ export function AuthProvider({ children }) {
         setIsAuthenticated(true)
       } catch {
         clearTokens()
+        clearImpersonationFlags()
         setClient(null)
         setIsAuthenticated(false)
       } finally {
@@ -101,6 +116,7 @@ export function AuthProvider({ children }) {
     }
 
     clearTokens()
+    clearImpersonationFlags()
     setClient(null)
     setIsAuthenticated(false)
     window.location.href = '/login'
@@ -110,6 +126,48 @@ export function AuthProvider({ children }) {
     setClient((prev) => ({ ...prev, ...data }))
   }, [])
 
+  // Hidrata sesión a partir de tokens emitidos por el backend desde el CRM
+  // (botón "Ver portal como cliente"). NO llama a /auth/logout previo para no
+  // revocar la sesión real del cliente impersonado; sustituye en local.
+  const applyImpersonation = useCallback(async ({ accessToken, refreshToken, impersonator }) => {
+    if (!accessToken || !refreshToken) {
+      throw new Error('Tokens de impersonación faltantes')
+    }
+
+    if (client?.id) {
+      // eslint-disable-next-line no-console
+      console.warn('Impersonation overriding existing session for client.id=', client.id)
+    }
+
+    // Reset local sin tocar backend
+    clearTokens()
+    clearImpersonationFlags()
+    setClient(null)
+    setIsAuthenticated(false)
+
+    // Aplica nuevos tokens
+    setAccessToken(accessToken)
+    setRefreshToken(refreshToken)
+
+    // Marca impersonación (dual-store: sessionStorage por defecto + localStorage
+    // para sobrevivir reload completo)
+    const name = impersonator || 'Admin'
+    try {
+      sessionStorage.setItem(IMP_KEY, '1')
+      sessionStorage.setItem(IMP_NAME, name)
+      localStorage.setItem(IMP_KEY, '1')
+      localStorage.setItem(IMP_NAME, name)
+    } catch {
+      // ignore
+    }
+
+    const userData = await api.get('/auth/me')
+    setClient(userData.data || userData)
+    setIsAuthenticated(true)
+
+    return { success: true }
+  }, [client?.id])
+
   const value = {
     client,
     isAuthenticated,
@@ -118,6 +176,7 @@ export function AuthProvider({ children }) {
     verify2FA,
     logout,
     updateClient,
+    applyImpersonation,
   }
 
   return (

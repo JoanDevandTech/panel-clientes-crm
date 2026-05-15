@@ -1,93 +1,243 @@
-import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
-import { FileText, File, FolderKanban, Download, LayoutGrid, List, Loader2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Link } from 'wouter'
+import {
+  ArrowLeft,
+  Upload,
+  Download,
+  Eye,
+  Share2,
+  FileText,
+  FileDown,
+  Folder,
+  Sparkles,
+  Search,
+  LayoutGrid,
+  List as ListIcon,
+  Check,
+  Image as ImageIcon,
+} from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
 import { getAccessToken, BASE_URL } from '../../services/api'
+import './documents.css'
 
-const typeConfig = {
-  proposal: { label: 'Propuesta', bg: 'bg-primary/20', text: 'text-primary' },
-  contract: { label: 'Contrato', bg: 'bg-amber-500/20', text: 'text-amber-400' },
-  report: { label: 'Informe', bg: 'bg-accent/20', text: 'text-accent' },
-  deliverable: { label: 'Entregable', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
+// Categorías UI <-> tipo backend
+const CATEGORY_META = {
+  proposal: {
+    label: 'Propuestas',
+    badge: 'purple',
+    accent: 'purple',
+    glyph: 'PDF',
+    color: '#c084fc',
+  },
+  contract: {
+    label: 'Contratos',
+    badge: 'blue',
+    accent: 'blue',
+    glyph: 'DOC',
+    color: '#60a5fa',
+  },
+  report: {
+    label: 'Informes',
+    badge: 'cyan',
+    accent: 'cyan',
+    glyph: 'PDF',
+    color: '#22d3ee',
+  },
+  deliverable: {
+    label: 'Entregables',
+    badge: 'green',
+    accent: 'green',
+    glyph: 'FILE',
+    color: '#34d399',
+  },
 }
 
-const tabs = [
-  { key: 'all', label: 'Todos' },
-  { key: 'proposal', label: 'Propuestas' },
-  { key: 'contract', label: 'Contratos' },
-  { key: 'report', label: 'Informes' },
-  { key: 'deliverable', label: 'Entregables' },
-]
+const FALLBACK_CATEGORY = {
+  label: 'Otro',
+  badge: 'gray',
+  accent: 'gray',
+  glyph: 'DOC',
+  color: '#cbd5e1',
+}
+
+// Iconos lucide por tipo de fichero (basado en mime/ext)
+function getFileIcon(doc) {
+  const mime = (doc.mime_type || '').toLowerCase()
+  const ext = (doc.extension || extractExt(doc.file_name || doc.name) || '').toLowerCase()
+  if (mime.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext)) {
+    return ImageIcon
+  }
+  if (mime === 'application/pdf' || ext === 'pdf') return FileText
+  return FileDown
+}
+
+function extractExt(name) {
+  if (!name || typeof name !== 'string') return ''
+  const dot = name.lastIndexOf('.')
+  return dot >= 0 ? name.slice(dot + 1) : ''
+}
 
 function formatSize(bytes) {
-  if (bytes >= 1000000) {
-    return (bytes / 1000000).toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' MB'
-  }
-  return Math.round(bytes / 1000).toLocaleString('es-ES') + ' KB'
+  if (bytes == null || isNaN(bytes)) return '—'
+  const n = Number(bytes)
+  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + ' GB'
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + ' MB'
+  if (n >= 1_000) return Math.round(n / 1000) + ' KB'
+  return n + ' B'
 }
+
+const MONTHS_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 
 function formatDate(dateString) {
-  return new Date(dateString).toLocaleDateString('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
+  if (!dateString) return '—'
+  const d = new Date(dateString)
+  if (isNaN(d.getTime())) return '—'
+  return `${String(d.getDate()).padStart(2, '0')} ${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}`
 }
 
-function isPdf(mimeType) {
-  return mimeType === 'application/pdf'
+// Hue determinista por id/nombre para que la portada no parpadee
+function hueFor(seed) {
+  let str = String(seed ?? '')
+  let hash = 0
+  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) | 0
+  return Math.abs(hash) % 360
 }
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+function previewStyle(doc) {
+  const h = hueFor(doc.id ?? doc.file_name ?? doc.name)
+  return {
+    background: `linear-gradient(135deg, hsl(${h}, 55%, 28%) 0%, hsl(${(h + 30) % 360}, 45%, 18%) 100%)`,
+  }
 }
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+function thumbStyle(meta) {
+  return {
+    background: `${meta.color}15`,
+    borderColor: `${meta.color}30`,
+    color: meta.color,
+  }
+}
+
+function glyphStyle(meta) {
+  return {
+    color: meta.color,
+    borderColor: `${meta.color}40`,
+  }
+}
+
+// Toasts ligeros locales
+function useToasts() {
+  const [toasts, setToasts] = useState([])
+  const showToast = (msg) => {
+    const id = Date.now() + Math.random()
+    setToasts((ts) => [...ts, { id, msg }])
+    setTimeout(() => setToasts((ts) => ts.filter((t) => t.id !== id)), 2400)
+  }
+  const ToastStack = () => (
+    <div className="pr-toast-stack">
+      {toasts.map((t) => (
+        <div key={t.id} className="pr-toast">
+          <Check size={14} /> {t.msg}
+        </div>
+      ))}
+    </div>
+  )
+  return { showToast, ToastStack }
 }
 
 export default function DocumentsPage() {
   const [activeTab, setActiveTab] = useState('all')
-  const [selectedProject, setSelectedProject] = useState(null)
-  const [viewMode, setViewMode] = useState('grid')
+  const [project, setProject] = useState('all')
+  const [query, setQuery] = useState('')
+  const [view, setView] = useState('grid')
   const [downloading, setDownloading] = useState(null)
+  const { showToast, ToastStack } = useToasts()
 
-  const { data: documents, loading, error, refetch } = useApi('/client/documents', {
+  const { data, loading, error, refetch } = useApi('/client/documents', {
     params: {
       type: activeTab !== 'all' ? activeTab : undefined,
-      project_id: selectedProject !== null ? selectedProject : undefined,
     },
   })
 
+  const documents = useMemo(() => {
+    if (!data) return []
+    return Array.isArray(data) ? data : (data?.data ?? [])
+  }, [data])
+
+  // Lista de proyectos para el select
   const projects = useMemo(() => {
-    if (!documents || !Array.isArray(documents)) return [{ id: null, name: 'Todos los proyectos' }]
-    const projectMap = new Map()
-    documents.forEach((doc) => {
-      if (doc.project_id && doc.project_name) {
-        projectMap.set(doc.project_id, doc.project_name)
+    const set = new Map()
+    documents.forEach((d) => {
+      if (d.project_id != null && d.project_name) {
+        set.set(String(d.project_id), d.project_name)
+      } else if (d.project_name) {
+        set.set(d.project_name, d.project_name)
       }
     })
-    return [
-      { id: null, name: 'Todos los proyectos' },
-      ...Array.from(projectMap, ([id, name]) => ({ id, name })),
-    ]
+    return Array.from(set, ([id, name]) => ({ id, name }))
   }, [documents])
+
+  // Filtrado en cliente (búsqueda + proyecto)
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return documents.filter((d) => {
+      if (project !== 'all') {
+        const pid = d.project_id != null ? String(d.project_id) : d.project_name
+        if (pid !== project) return false
+      }
+      if (!q) return true
+      const name = (d.file_name || d.name || '').toLowerCase()
+      const proj = (d.project_name || '').toLowerCase()
+      return name.includes(q) || proj.includes(q)
+    })
+  }, [documents, project, query])
+
+  // Conteos por categoría (sobre el dataset crudo, ignorando filtros para que las pestañas no salten)
+  const counts = useMemo(() => {
+    const c = { all: documents.length, proposal: 0, contract: 0, report: 0, deliverable: 0 }
+    documents.forEach((d) => {
+      if (c[d.type] != null) c[d.type] += 1
+    })
+    return c
+  }, [documents])
+
+  // KPIs
+  const kpis = useMemo(() => {
+    const total = documents.length
+    const contracts = documents.filter((d) => d.type === 'contract').length
+    const deliverables = documents.filter((d) => d.type === 'deliverable').length
+    const projectCount = projects.length
+    const sorted = [...documents].sort((a, b) => {
+      const da = new Date(a.uploaded_at || a.created_at || 0).getTime()
+      const db = new Date(b.uploaded_at || b.created_at || 0).getTime()
+      return db - da
+    })
+    const latest = sorted[0]
+    return { total, contracts, deliverables, projectCount, latest }
+  }, [documents, projects.length])
+
+  const tabs = [
+    { key: 'all', label: 'Todos', count: counts.all },
+    { key: 'proposal', label: 'Propuestas', count: counts.proposal },
+    { key: 'contract', label: 'Contratos', count: counts.contract },
+    { key: 'report', label: 'Informes', count: counts.report },
+    { key: 'deliverable', label: 'Entregables', count: counts.deliverable },
+  ]
 
   const handleDownload = async (e, doc) => {
     e.preventDefault()
     e.stopPropagation()
     setDownloading(doc.id)
+    showToast(`Descargando ${doc.file_name || doc.name}…`)
     try {
       const response = await fetch(`${BASE_URL}/client/documents/${doc.id}/download`, {
-        headers: { 'Authorization': `Bearer ${getAccessToken()}` }
+        headers: { Authorization: `Bearer ${getAccessToken()}` },
       })
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = doc.name
+      a.download = doc.file_name || doc.name || `documento-${doc.id}`
       a.click()
       window.URL.revokeObjectURL(url)
     } catch {
@@ -97,13 +247,17 @@ export default function DocumentsPage() {
     }
   }
 
+  const handlePreview = (e, doc) => {
+    e.preventDefault()
+    e.stopPropagation()
+    showToast(`Abriendo ${doc.file_name || doc.name}…`)
+    window.open(`${BASE_URL}/client/documents/${doc.id}/download`, '_blank', 'noopener,noreferrer')
+  }
+
   if (loading) {
     return (
-      <div>
-        <h1 className="text-2xl font-display font-bold text-white">Documentos</h1>
-        <div className="flex items-center justify-center py-32">
-          <Loader2 size={32} className="animate-spin text-primary" />
-        </div>
+      <div className="pr-loading">
+        <span className="pr-spinner" />
       </div>
     )
   }
@@ -111,262 +265,352 @@ export default function DocumentsPage() {
   if (error) {
     return (
       <div>
-        <h1 className="text-2xl font-display font-bold text-white">Documentos</h1>
-        <div className="text-center py-16">
-          <p className="text-red-400 mb-4">{error}</p>
-          <button
-            onClick={refetch}
-            className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium cursor-pointer hover:bg-primary/80 transition-colors"
-          >
-            Reintentar
-          </button>
+        <PageHeader />
+        <div className="pr-card">
+          <div className="pr-empty">
+            <div className="pr-empty-art"><FileText size={32} /></div>
+            <div>
+              <p className="pr-empty-title">No se pudieron cargar los documentos</p>
+              <p className="pr-empty-desc">{error}</p>
+            </div>
+            <button className="pr-btn primary sm" onClick={refetch}>Reintentar</button>
+          </div>
         </div>
       </div>
     )
   }
 
-  const filteredDocuments = documents || []
-
   return (
     <div>
-      <h1 className="text-2xl font-display font-bold text-white">Documentos</h1>
+      <PageHeader onUpload={() => showToast('Subida de documentos no disponible aún.')} onDownloadAll={() => showToast('Generando ZIP con todo…')} />
 
-      <div className="flex flex-col gap-4 mt-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex gap-2 flex-wrap">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-                  activeTab === tab.key
-                    ? 'bg-primary text-white'
-                    : 'bg-white/5 text-slate-400 hover:text-white'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+      {/* KPIs */}
+      <div className="docs-kpi-row">
+        <Kpi
+          icon={FileText}
+          accent="purple"
+          value={kpis.total}
+          label="Documentos"
+          sub={`${kpis.projectCount} proyecto${kpis.projectCount === 1 ? '' : 's'} cubierto${kpis.projectCount === 1 ? '' : 's'}`}
+        />
+        <Kpi
+          icon={FileText}
+          accent="blue"
+          value={kpis.contracts}
+          label="Contratos"
+          sub="firmas registradas"
+        />
+        <Kpi
+          icon={Download}
+          accent="green"
+          value={kpis.deliverables}
+          label="Entregables"
+          sub="archivos finales"
+        />
+        <Kpi
+          icon={Sparkles}
+          accent="cyan"
+          value={kpis.latest ? truncate(kpis.latest.file_name || kpis.latest.name || '—', 24) : '—'}
+          label="Más reciente"
+          sub={kpis.latest ? formatDate(kpis.latest.uploaded_at || kpis.latest.created_at) : '—'}
+        />
+      </div>
+
+      {/* Filter bar */}
+      <div className="pr-filterbar">
+        <div className="pr-filterbar-tabs">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              className={`pr-filter-tab ${activeTab === t.key ? 'active' : ''}`}
+              onClick={() => setActiveTab(t.key)}
+            >
+              {t.label}
+              <span className="pr-filter-tab-count">{t.count}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="pr-filterbar-right">
+          <div className="pr-search" style={{ width: 240 }}>
+            <Search size={14} />
+            <input
+              placeholder="Buscar documentos…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
           </div>
 
-          <div className="flex items-center gap-3">
-            <select
-              value={selectedProject === null ? '' : selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value === '' ? null : Number(e.target.value))}
-              className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-sm outline-none focus:border-primary transition-colors cursor-pointer"
-            >
-              {projects.map((p) => (
-                <option key={p.id ?? 'all'} value={p.id ?? ''} className="bg-surface-dark">
-                  {p.name}
-                </option>
-              ))}
-            </select>
+          <select
+            className="pr-select"
+            value={project}
+            onChange={(e) => setProject(e.target.value)}
+            style={{ maxWidth: 220 }}
+          >
+            <option value="all">Todos los proyectos</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
 
-            <div className="flex bg-white/5 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-md transition-all cursor-pointer ${
-                  viewMode === 'grid' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-                }`}
-                title="Vista cuadrícula"
-              >
-                <LayoutGrid size={18} />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-md transition-all cursor-pointer ${
-                  viewMode === 'list' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'
-                }`}
-                title="Vista lista"
-              >
-                <List size={18} />
-              </button>
-            </div>
+          <div className="docs-view-toggle">
+            <button
+              className={view === 'grid' ? 'active' : ''}
+              onClick={() => setView('grid')}
+              title="Vista cuadrícula"
+              type="button"
+            >
+              <LayoutGrid size={14} />
+            </button>
+            <button
+              className={view === 'list' ? 'active' : ''}
+              onClick={() => setView('list')}
+              title="Vista lista"
+              type="button"
+            >
+              <ListIcon size={14} />
+            </button>
           </div>
         </div>
       </div>
 
-      {viewMode === 'grid' && (
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-          key={`grid-${activeTab}-${selectedProject}`}
-        >
-          {filteredDocuments.map((doc) => {
-            const typeInfo = typeConfig[doc.type] || { label: doc.type, bg: 'bg-slate-500/20', text: 'text-slate-400' }
-            const FileIcon = isPdf(doc.mime_type) ? FileText : File
-            return (
-              <motion.div
-                key={doc.id}
-                variants={fadeUp}
-                className="bg-surface-dark rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-all"
-              >
-                <div className="mb-4">
-                  <FileIcon size={40} className="text-primary" />
-                </div>
-
-                <h3 className="text-white font-medium truncate mb-2" title={doc.name}>
-                  {doc.name}
-                </h3>
-
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${typeInfo.bg} ${typeInfo.text} mb-3`}>
-                  {typeInfo.label}
-                </span>
-
-                {doc.project_name && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-3">
-                    <FolderKanban size={12} />
-                    <span>{doc.project_name}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 text-xs text-slate-500 mb-2">
-                  <span>{formatSize(doc.size_bytes)}</span>
-                  <span>&middot;</span>
-                  <span>{formatDate(doc.uploaded_at)}</span>
-                </div>
-
-                <p className="text-xs text-slate-500 mb-4">
-                  Subido por {doc.uploaded_by}
-                </p>
-
-                <button
-                  onClick={(e) => handleDownload(e, doc)}
-                  disabled={downloading === doc.id}
-                  className="flex items-center gap-2 text-primary hover:text-white transition-colors text-sm cursor-pointer"
-                >
-                  {downloading === doc.id ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                  <span>Descargar</span>
-                </button>
-              </motion.div>
-            )
-          })}
-        </motion.div>
-      )}
-
-      {viewMode === 'list' && (
-        <motion.div
-          className="mt-6 bg-surface-dark rounded-2xl border border-white/5 overflow-hidden"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="visible"
-          key={`list-${activeTab}-${selectedProject}`}
-        >
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-white/5">
-                  <th className="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Nombre</th>
-                  <th className="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Tipo</th>
-                  <th className="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Proyecto</th>
-                  <th className="text-right px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Tamaño</th>
-                  <th className="text-left px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Fecha</th>
-                  <th className="text-center px-6 py-4 text-xs font-medium text-slate-400 uppercase tracking-wider">Descargar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredDocuments.map((doc) => {
-                  const typeInfo = typeConfig[doc.type] || { label: doc.type, bg: 'bg-slate-500/20', text: 'text-slate-400' }
-                  const FileIcon = isPdf(doc.mime_type) ? FileText : File
-                  return (
-                    <motion.tr
-                      key={doc.id}
-                      variants={fadeUp}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <FileIcon size={20} className="text-primary shrink-0" />
-                          <span className="text-white text-sm font-medium truncate max-w-xs" title={doc.name}>
-                            {doc.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${typeInfo.bg} ${typeInfo.text}`}>
-                          {typeInfo.label}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">
-                        {doc.project_name || '—'}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-400 text-right">
-                        {formatSize(doc.size_bytes)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-400">
-                        {formatDate(doc.uploaded_at)}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={(e) => handleDownload(e, doc)}
-                          disabled={downloading === doc.id}
-                          className="text-slate-400 hover:text-primary transition-colors cursor-pointer"
-                          title="Descargar"
-                        >
-                          {downloading === doc.id ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-                        </button>
-                      </td>
-                    </motion.tr>
-                  )
-                })}
-              </tbody>
-            </table>
+      {/* Content */}
+      {filtered.length === 0 ? (
+        <div className="pr-card">
+          <div className="pr-empty">
+            <div className="pr-empty-art"><FileText size={32} /></div>
+            <div>
+              <p className="pr-empty-title">Sin documentos en esta categoría</p>
+              <p className="pr-empty-desc">Los entregables, contratos y propuestas aparecerán aquí.</p>
+            </div>
           </div>
-
-          <div className="md:hidden divide-y divide-white/5">
-            {filteredDocuments.map((doc) => {
-              const typeInfo = typeConfig[doc.type] || { label: doc.type, bg: 'bg-slate-500/20', text: 'text-slate-400' }
-              const FileIcon = isPdf(doc.mime_type) ? FileText : File
-              return (
-                <motion.div
-                  key={doc.id}
-                  variants={fadeUp}
-                  className="p-5"
-                >
-                  <div className="flex items-start gap-3">
-                    <FileIcon size={24} className="text-primary shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-white text-sm font-medium truncate">{doc.name}</h3>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${typeInfo.bg} ${typeInfo.text}`}>
-                          {typeInfo.label}
-                        </span>
-                        {doc.project_name && (
-                          <span className="text-xs text-slate-500 flex items-center gap-1">
-                            <FolderKanban size={10} />
-                            {doc.project_name}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-                        <span>{formatSize(doc.size_bytes)}</span>
-                        <span>&middot;</span>
-                        <span>{formatDate(doc.uploaded_at)}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => handleDownload(e, doc)}
-                      disabled={downloading === doc.id}
-                      className="text-slate-400 hover:text-primary transition-colors shrink-0 cursor-pointer"
-                      title="Descargar"
-                    >
-                      {downloading === doc.id ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-                    </button>
-                  </div>
-                </motion.div>
-              )
-            })}
+        </div>
+      ) : view === 'grid' ? (
+        <div className="docs-grid">
+          {filtered.map((doc) => (
+            <DocCard
+              key={doc.id}
+              doc={doc}
+              onDownload={(e) => handleDownload(e, doc)}
+              onPreview={(e) => handlePreview(e, doc)}
+              downloading={downloading === doc.id}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="docs-list-card">
+          <div className="docs-list-head">
+            <div></div>
+            <div>Documento</div>
+            <div>Categoría · Proyecto</div>
+            <div>Tamaño</div>
+            <div>Fecha</div>
+            <div></div>
           </div>
-        </motion.div>
-      )}
-
-      {filteredDocuments.length === 0 && (
-        <div className="text-center py-16 text-slate-500">
-          No hay documentos en esta categoría.
+          {filtered.map((doc) => (
+            <DocRow
+              key={doc.id}
+              doc={doc}
+              onDownload={(e) => handleDownload(e, doc)}
+              onPreview={(e) => handlePreview(e, doc)}
+              onShare={() => showToast('Compartir documento no disponible aún.')}
+              downloading={downloading === doc.id}
+            />
+          ))}
+          <div className="docs-mobile-list">
+            {filtered.map((doc) => (
+              <MobileRow
+                key={`m-${doc.id}`}
+                doc={doc}
+                onDownload={(e) => handleDownload(e, doc)}
+                onPreview={(e) => handlePreview(e, doc)}
+                downloading={downloading === doc.id}
+              />
+            ))}
+          </div>
         </div>
       )}
+
+      <ToastStack />
     </div>
   )
+}
+
+function PageHeader({ onUpload, onDownloadAll }) {
+  return (
+    <div className="pr-page-header">
+      <Link href="/portal" className="pr-page-crumb">
+        <ArrowLeft size={14} /> Volver al dashboard
+      </Link>
+      <div className="pr-page-header-row">
+        <div>
+          <h1 className="pr-page-title">Documentos</h1>
+          <p className="pr-page-sub">
+            Todos los archivos compartidos contigo — propuestas, contratos, informes y entregables.
+          </p>
+        </div>
+        {(onUpload || onDownloadAll) && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {onUpload && (
+              <button className="pr-btn ghost sm" onClick={onUpload}>
+                <Upload size={14} /> Subir
+              </button>
+            )}
+            {onDownloadAll && (
+              <button className="pr-btn primary sm" onClick={onDownloadAll}>
+                <Download size={14} /> Descargar todos
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Kpi({ icon: Icon, accent, value, label, sub }) {
+  return (
+    <div className="pr-kpi">
+      <div className="pr-kpi-head">
+        <div className={`pr-kpi-icon pr-accent-${accent}`}>
+          <Icon size={14} />
+        </div>
+        <div className="pr-kpi-label">{label}</div>
+      </div>
+      <div className="pr-kpi-value">{value}</div>
+      <div className="pr-kpi-sub">{sub}</div>
+    </div>
+  )
+}
+
+function DocCard({ doc, onDownload, onPreview, downloading }) {
+  const meta = CATEGORY_META[doc.type] || FALLBACK_CATEGORY
+  const rawExt = doc.extension || extractExt(doc.file_name || doc.name) || meta.glyph
+  const ext = rawExt.toLowerCase()
+  const glyph = rawExt.toUpperCase().slice(0, 4)
+  return (
+    <div className="docs-card">
+      <div className="docs-preview" style={previewStyle(doc)}>
+        <div className="docs-preview-glyph" style={glyphStyle(meta)}>
+          {glyph}
+        </div>
+      </div>
+      <div className="docs-card-body">
+        <div className="docs-card-title" title={doc.file_name || doc.name}>
+          {doc.file_name || doc.name || 'Documento sin nombre'}
+        </div>
+        <div className="docs-card-tags">
+          <span className={`pr-badge ${meta.badge}`}>{meta.label}</span>
+        </div>
+        {doc.project_name && (
+          <div className="docs-card-project" title={doc.project_name}>
+            <Folder size={11} /> {doc.project_name}
+          </div>
+        )}
+        <div className="docs-card-meta">
+          <span className="ext">.{ext} · {formatSize(doc.size_bytes ?? doc.size)}</span>
+          <span>{formatDate(doc.uploaded_at || doc.created_at)}</span>
+        </div>
+        <div className="docs-card-actions">
+          <button className="pr-btn ghost sm" onClick={onPreview} type="button">
+            <Eye size={12} /> Ver
+          </button>
+          <button
+            className="pr-btn sm docs-btn-download"
+            onClick={onDownload}
+            disabled={downloading}
+            type="button"
+          >
+            {downloading ? <span className="pr-spinner" style={{ width: 12, height: 12, borderWidth: 1.5 }} /> : <Download size={12} />}
+            Bajar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DocRow({ doc, onDownload, onPreview, onShare, downloading }) {
+  const meta = CATEGORY_META[doc.type] || FALLBACK_CATEGORY
+  const ext = (doc.extension || extractExt(doc.file_name || doc.name) || meta.glyph).toUpperCase().slice(0, 4)
+  return (
+    <div className="docs-list-row">
+      <div className="docs-list-thumb" style={thumbStyle(meta)}>{ext}</div>
+      <div className="docs-list-cell-name">
+        <div className="docs-list-name" title={doc.file_name || doc.name}>
+          {doc.file_name || doc.name || 'Documento sin nombre'}
+        </div>
+        {doc.uploaded_by && (
+          <div className="docs-list-author">Subido por {doc.uploaded_by}</div>
+        )}
+      </div>
+      <div className="docs-list-cell-cat">
+        <span className={`pr-badge ${meta.badge}`}>{meta.label}</span>
+        {doc.project_name && (
+          <div className="docs-list-cell-cat-project" title={doc.project_name}>
+            {doc.project_name}
+          </div>
+        )}
+      </div>
+      <div className="docs-list-size">{formatSize(doc.size_bytes ?? doc.size)}</div>
+      <div className="docs-list-date">{formatDate(doc.uploaded_at || doc.created_at)}</div>
+      <div className="docs-list-actions">
+        <button className="pr-btn ghost sm icon-only" onClick={onPreview} title="Ver" type="button">
+          <Eye size={13} />
+        </button>
+        <button
+          className="pr-btn ghost sm icon-only"
+          onClick={onDownload}
+          disabled={downloading}
+          title="Descargar"
+          type="button"
+        >
+          {downloading ? <span className="pr-spinner" style={{ width: 13, height: 13, borderWidth: 1.5 }} /> : <Download size={13} />}
+        </button>
+        <button className="pr-btn ghost sm icon-only" onClick={onShare} title="Compartir" type="button">
+          <Share2 size={13} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function MobileRow({ doc, onDownload, onPreview, downloading }) {
+  const meta = CATEGORY_META[doc.type] || FALLBACK_CATEGORY
+  const ext = (doc.extension || extractExt(doc.file_name || doc.name) || meta.glyph).toUpperCase().slice(0, 4)
+  return (
+    <div className="docs-mobile-row">
+      <div className="docs-list-thumb" style={thumbStyle(meta)}>{ext}</div>
+      <div className="docs-mobile-body">
+        <div className="docs-list-name" title={doc.file_name || doc.name}>
+          {doc.file_name || doc.name || 'Documento sin nombre'}
+        </div>
+        <div className="docs-mobile-meta">
+          <span className={`pr-badge ${meta.badge}`}>{meta.label}</span>
+          {doc.project_name && <span>{doc.project_name}</span>}
+          <span>{formatSize(doc.size_bytes ?? doc.size)}</span>
+          <span>{formatDate(doc.uploaded_at || doc.created_at)}</span>
+        </div>
+      </div>
+      <div className="docs-mobile-actions">
+        <button className="pr-btn ghost sm icon-only" onClick={onPreview} title="Ver" type="button">
+          <Eye size={13} />
+        </button>
+        <button
+          className="pr-btn ghost sm icon-only"
+          onClick={onDownload}
+          disabled={downloading}
+          title="Descargar"
+          type="button"
+        >
+          {downloading ? <span className="pr-spinner" style={{ width: 13, height: 13, borderWidth: 1.5 }} /> : <Download size={13} />}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function truncate(str, max) {
+  if (!str) return ''
+  return str.length > max ? str.slice(0, max - 1) + '…' : str
 }

@@ -20,10 +20,11 @@ import {
   MessageSquare,
   Receipt,
   Search,
+  Star,
   Ticket,
   User,
 } from 'lucide-react'
-import { api } from '../../services/api'
+import { api, getAccessToken, BASE_URL } from '../../services/api'
 import './activity.css'
 
 /* -------- Tipos del backend → presentación visual ----------
@@ -117,14 +118,20 @@ function refToHref(e) {
   return null
 }
 
-function ActivityRow({ event, isLast }) {
+function ActivityRow({ event, isLast, onMarkRead }) {
   const cfg = typeMap[event.type] ?? typeMap.activity
   const Icon = cfg.icon
   const date = getEventDate(event)
   const href = refToHref(event)
   const important = Boolean(event.important)
-  const project = event.project ?? event.context?.project ?? null
-  const actor = event.actor?.name ?? event.user ?? null
+  const project = event.project?.name ?? null
+  const actor = event.actor?.name ?? null
+  const color = event.color ?? cfg.color
+  const unread = event.read_at == null
+
+  const handleClick = () => {
+    if (unread) onMarkRead?.(event)
+  }
 
   const text = (
     <>
@@ -134,9 +141,9 @@ function ActivityRow({ event, isLast }) {
   )
 
   return (
-    <div className="act-row">
+    <div className={`act-row${unread ? ' unread' : ''}`}>
       <div className="act-row-node">
-        <div className={`act-row-icon pr-accent-${cfg.color}${important ? ` important ${cfg.color}` : ''}`}>
+        <div className={`act-row-icon pr-accent-${color}${important ? ` important ${color}` : ''}`}>
           <Icon size={15} />
         </div>
         {!isLast && <div className="act-row-connector" />}
@@ -144,9 +151,9 @@ function ActivityRow({ event, isLast }) {
 
       <div className="act-row-content">
         {href ? (
-          <Link href={href} className="act-row-text">{text}</Link>
+          <Link href={href} className="act-row-text" onClick={handleClick}>{text}</Link>
         ) : (
-          <span className="act-row-text">{text}</span>
+          <span className="act-row-text" onClick={handleClick} style={{ cursor: unread ? 'pointer' : 'default' }}>{text}</span>
         )}
         {(project || actor) && (
           <div className="act-row-meta">
@@ -166,7 +173,7 @@ function ActivityRow({ event, isLast }) {
             {href && (
               <>
                 <span className="act-row-meta-sep">·</span>
-                <Link href={href} className="act-row-meta-item" style={{ color: 'var(--pr-accent-purple)' }}>
+                <Link href={href} className="act-row-meta-item" style={{ color: 'var(--pr-accent-purple)' }} onClick={handleClick}>
                   Abrir <ChevronRight size={10} />
                 </Link>
               </>
@@ -191,17 +198,30 @@ export default function ActivityPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
   const [query, setQuery] = useState('')
+  const [from, setFrom] = useState('')
+  const [to, setTo] = useState('')
+  const [projectId, setProjectId] = useState('')
+  const [importantOnly, setImportantOnly] = useState(false)
+  const [exporting, setExporting] = useState(false)
+
+  const buildFilterParams = useCallback(() => {
+    const params = new URLSearchParams()
+    if (filter !== 'all') params.set('type', filter)
+    if (from) params.set('from', from)
+    if (to) params.set('to', to)
+    if (projectId) params.set('project_id', String(projectId))
+    if (importantOnly) params.set('important', '1')
+    return params
+  }, [filter, from, to, projectId, importantOnly])
 
   const fetchActivity = useCallback(async (targetPage, append) => {
     if (append) setLoadingMore(true)
     else setLoading(true)
     setError(null)
     try {
-      const params = new URLSearchParams({
-        page: String(targetPage),
-        per_page: String(PER_PAGE),
-      })
-      if (filter !== 'all') params.set('type', filter)
+      const params = buildFilterParams()
+      params.set('page', String(targetPage))
+      params.set('per_page', String(PER_PAGE))
       const response = await api.get(`/client/activity?${params.toString()}`)
       const fresh = response?.data ?? []
       setEvents((prev) => (append ? [...prev, ...fresh] : fresh))
@@ -212,13 +232,13 @@ export default function ActivityPage() {
       if (append) setLoadingMore(false)
       else setLoading(false)
     }
-  }, [filter])
+  }, [buildFilterParams])
 
-  // Reset al cambiar filtro
+  // Reset al cambiar filtros
   useEffect(() => {
     setPage(1)
     fetchActivity(1, false)
-  }, [filter, fetchActivity])
+  }, [filter, from, to, projectId, importantOnly, fetchActivity])
 
   const changeFilter = (key) => {
     if (key === filter) return
@@ -232,6 +252,64 @@ export default function ActivityPage() {
     fetchActivity(next, true)
   }
 
+  // ---------- Marcar como leído (optimista) ----------
+  const handleMarkRead = useCallback(async (event) => {
+    if (!event?.id || event.read_at != null) return
+    const nowIso = new Date().toISOString()
+    setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, read_at: nowIso } : e)))
+    setMeta((prev) => {
+      if (!prev || typeof prev.unread_count !== 'number') return prev
+      return { ...prev, unread_count: Math.max(0, prev.unread_count - 1) }
+    })
+    try {
+      await api.post(`/client/activity/${event.id}/read`, {})
+    } catch {
+      // Rollback en caso de error
+      setEvents((prev) => prev.map((e) => (e.id === event.id ? { ...e, read_at: null } : e)))
+      setMeta((prev) => {
+        if (!prev || typeof prev.unread_count !== 'number') return prev
+        return { ...prev, unread_count: prev.unread_count + 1 }
+      })
+    }
+  }, [])
+
+  // ---------- Export CSV ----------
+  const handleExport = async () => {
+    if (exporting) return
+    setExporting(true)
+    setError(null)
+    try {
+      const params = new URLSearchParams()
+      params.set('format', 'csv')
+      if (from) params.set('from', from)
+      if (to) params.set('to', to)
+      if (filter !== 'all') params.set('type', filter)
+      const token = getAccessToken()
+      const response = await fetch(`${BASE_URL}/client/activity/export?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          Accept: 'text/csv',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      })
+      if (!response.ok) throw new Error(`Error ${response.status}`)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      const stamp = new Date().toISOString().slice(0, 10)
+      a.download = `actividad-${stamp}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      setError(err?.message || 'Error al exportar CSV.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   // ---------- Filtrado local por búsqueda ----------
   const filtered = useMemo(() => {
     if (!query.trim()) return events
@@ -239,10 +317,8 @@ export default function ActivityPage() {
     return events.filter((e) => {
       const haystack = [
         e.message,
-        e.project,
-        e.context?.project,
+        e.project?.name,
         e.actor?.name,
-        e.user,
       ].filter(Boolean).join(' ').toLowerCase()
       return haystack.includes(q)
     })
@@ -266,21 +342,29 @@ export default function ActivityPage() {
         if (t >= startOfToday - 6 * 86400000) week += 1
       }
       if (e.important) important += 1
-      const p = e.project ?? e.context?.project
+      const p = e.project?.name
       if (p) projects.add(p)
     }
     return { today, week, important, projects: projects.size }
   }, [events])
 
   // ---------- Agrupado por sección ----------
+  // Prefiere group_label del backend; si no, deriva por fecha.
   const grouped = useMemo(() => {
     const map = {}
+    const order = []
     for (const e of filtered) {
-      const g = getGroupKey(getEventDate(e))
-      if (!map[g]) map[g] = []
+      const g = e.group_label ?? getGroupKey(getEventDate(e))
+      if (!map[g]) {
+        map[g] = []
+        order.push(g)
+      }
       map[g].push(e)
     }
-    return GROUP_ORDER.filter((g) => map[g]).map((g) => ({ key: g, items: map[g] }))
+    // Si todas las claves caen en GROUP_ORDER, respeta ese orden; si no, usa el orden de aparición.
+    const allKnown = order.every((g) => GROUP_ORDER.includes(g))
+    const finalOrder = allKnown ? GROUP_ORDER.filter((g) => map[g]) : order
+    return finalOrder.map((g) => ({ key: g, items: map[g] }))
   }, [filtered])
 
   // ---------- Counts por filtro (sobre eventos cargados) ----------
@@ -303,14 +387,28 @@ export default function ActivityPage() {
         </Link>
         <div className="pr-page-header-row">
           <div>
-            <h1 className="pr-page-title">Actividad</h1>
+            <h1 className="pr-page-title">
+              Actividad
+              {meta?.unread_count > 0 && (
+                <span style={{ marginLeft: 8, color: 'var(--pr-text-muted, #94a3b8)', fontWeight: 500, fontSize: '0.7em' }}>
+                  · {meta.unread_count} sin leer
+                </span>
+              )}
+            </h1>
             <p className="pr-page-sub">
               Historial completo de eventos en tu cuenta — proyectos, facturación, accesos y seguridad.
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button type="button" className="pr-btn ghost sm" disabled title="Próximamente">
-              <Download size={14} /> Exportar
+            <button
+              type="button"
+              className="pr-btn ghost sm"
+              onClick={handleExport}
+              disabled={exporting}
+              title="Descargar CSV"
+            >
+              {exporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+              Exportar
             </button>
           </div>
         </div>
@@ -357,6 +455,7 @@ export default function ActivityPage() {
         <div className="pr-filterbar-tabs">
           {FILTERS.map((f) => {
             const count = filterCounts[f.key] ?? 0
+            const showUnread = f.key === 'all' && meta?.unread_count > 0
             return (
               <button
                 key={f.key}
@@ -365,12 +464,46 @@ export default function ActivityPage() {
                 className={`pr-filter-tab${filter === f.key ? ' active' : ''}`}
               >
                 {f.label}
-                <span className="pr-filter-tab-count">{count}</span>
+                <span className="pr-filter-tab-count">{showUnread ? meta.unread_count : count}</span>
               </button>
             )
           })}
         </div>
-        <div className="pr-filterbar-right">
+        <div className="pr-filterbar-right" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <input
+            type="date"
+            className="pr-input sm"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            aria-label="Desde"
+            title="Desde"
+          />
+          <input
+            type="date"
+            className="pr-input sm"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            aria-label="Hasta"
+            title="Hasta"
+          />
+          <input
+            type="number"
+            className="pr-input sm"
+            placeholder="Proyecto ID"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            style={{ width: 110 }}
+            aria-label="Proyecto"
+            min="1"
+          />
+          <button
+            type="button"
+            onClick={() => setImportantOnly((v) => !v)}
+            className={`pr-filter-tab${importantOnly ? ' active' : ''}`}
+            title="Solo importantes"
+          >
+            <Star size={12} /> Importantes
+          </button>
           <div className="pr-search">
             <Search size={14} />
             <input
@@ -440,6 +573,7 @@ export default function ActivityPage() {
                     key={`${event.type}-${event.id ?? i}-${event.date ?? event.created_at ?? i}`}
                     event={event}
                     isLast={i === group.items.length - 1}
+                    onMarkRead={handleMarkRead}
                   />
                 ))}
               </div>

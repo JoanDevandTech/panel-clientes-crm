@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Repeat,
+  Calendar,
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useApi } from '../../hooks/useApi'
@@ -232,6 +233,8 @@ export default function DashboardPage() {
   const recurring = d.recurring_services || {}
   const recentActivity = Array.isArray(d.recent_activity) ? d.recent_activity : []
   const recentProjects = Array.isArray(projects.recent) ? projects.recent : []
+  const recentMessages = Array.isArray(d.recent_messages) ? d.recent_messages : []
+  const upcomingMilestones = Array.isArray(d.upcoming_milestones) ? d.upcoming_milestones : []
 
   /* ---- KPIs derivados del backend real ---- */
   const nextInvoiceDays = invoices.next_due ? getDaysUntil(invoices.next_due.due_date) : null
@@ -485,6 +488,18 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* ============== Próximos hitos + Mensajes recientes ============== */}
+      {(upcomingMilestones.length > 0 || recentMessages.length > 0) && (
+        <div className="dash-grid-half">
+          {upcomingMilestones.length > 0 && (
+            <UpcomingMilestonesCard milestones={upcomingMilestones} />
+          )}
+          {recentMessages.length > 0 && (
+            <RecentMessagesCard messages={recentMessages} />
+          )}
+        </div>
+      )}
+
       {/* ============== Recurring services + Quotes overview ============== */}
       {(recurring.active_count > 0 || (quotes.latest && quotes.latest.length > 0)) && (
         <div className="dash-grid-half">
@@ -588,7 +603,8 @@ export default function DashboardPage() {
 /* ============================== sub components ============================== */
 
 function ProjectTile({ project }) {
-  const statusBadge = projectStatusBadge(project.status)
+  const statusBadge = projectStatusBadge(project.phase || project.status)
+  const phaseLabel = project.phase_label || statusBadge.label
   const team = Array.isArray(project.team)
     ? project.team
     : Array.isArray(project.team_members)
@@ -598,6 +614,12 @@ function ProjectTile({ project }) {
     .map((m) => (typeof m === 'string' ? m : (m?.initials || getInitials(m?.name))))
     .filter(Boolean)
     .slice(0, 4)
+
+  const nextLine = project.next_milestone
+    ? project.next_milestone
+    : project.estimated_end_date
+      ? `Estimado ${formatDateLong(project.estimated_end_date)}`
+      : null
 
   return (
     <Link href={`/portal/projects/${project.id}`} className="dash-project-card">
@@ -610,7 +632,7 @@ function ProjectTile({ project }) {
         </div>
         <span className={`pr-badge ${statusBadge.color}`} style={{ fontSize: 10, padding: '2px 8px' }}>
           <span className="pr-badge-dot solo" />
-          {statusBadge.label}
+          {phaseLabel}
         </span>
       </div>
       <div>
@@ -623,22 +645,14 @@ function ProjectTile({ project }) {
         </div>
       </div>
       <div className="dash-project-foot">
-        {teamInitials.length > 0 ? (
+        {teamInitials.length > 0 && (
           <div className="dash-avatars">
             {teamInitials.map((m, i) => (
               <div key={i} className="dash-avatar">{m}</div>
             ))}
           </div>
-        ) : (
-          <div className="dash-avatars">
-            <div className="dash-avatar">JD</div>
-          </div>
         )}
-        <div className="dash-project-next">
-          {project.next_milestone || project.estimated_end_date
-            ? project.next_milestone || `Estimado ${formatDateLong(project.estimated_end_date)}`
-            : '—'}
-        </div>
+        {nextLine && <div className="dash-project-next">{nextLine}</div>}
       </div>
     </Link>
   )
@@ -672,6 +686,227 @@ function activityMeta(type) {
     message: { icon: MessageSquare, accent: 'green' },
   }
   return map[type] || { icon: Activity, accent: 'blue' }
+}
+
+/* ============================== Upcoming milestones ============================== */
+
+function UpcomingMilestonesCard({ milestones }) {
+  const list = Array.isArray(milestones) ? milestones.slice(0, 4) : []
+  if (list.length === 0) return null
+
+  const thisWeek = list.filter((m) => {
+    const days = getDaysUntil(m.date)
+    return days != null && days >= 0 && days <= 7
+  }).length
+  const upcoming = list.length - thisWeek
+
+  return (
+    <div className="dash-card-flush">
+      <div className="dash-card-flush-head">
+        <div className="pr-card-head-icon pr-accent-cyan">
+          <Calendar size={16} />
+        </div>
+        <div className="head-meta">
+          <div className="head-title">Próximos hitos</div>
+          <div className="head-sub">
+            {thisWeek > 0
+              ? `${thisWeek} esta semana${upcoming > 0 ? ` · ${upcoming} próximos` : ''}`
+              : `${list.length} ${list.length === 1 ? 'próximo' : 'próximos'}`}
+          </div>
+        </div>
+      </div>
+      <div>
+        {list.map((m, i) => {
+          const dt = m.date ? new Date(m.date) : null
+          const day = dt ? String(dt.getDate()).padStart(2, '0') : '--'
+          const month = dt
+            ? dt.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '')
+            : ''
+          const dayOfWeek = dt
+            ? dt.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')
+            : ''
+          const isCurrent = m.status === 'current'
+          return (
+            <div
+              key={m.id || i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                padding: '12px 20px',
+                borderBottom: i < list.length - 1 ? '1px solid var(--pr-border)' : 'none',
+              }}
+            >
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 10,
+                  background: isCurrent ? 'rgba(6,182,212,0.12)' : 'rgba(255,255,255,0.04)',
+                  border: isCurrent ? '1px solid rgba(6,182,212,0.3)' : '1px solid var(--pr-border)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    color: 'var(--pr-text-muted)',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {month}
+                </div>
+                <div
+                  style={{
+                    fontSize: 18,
+                    fontWeight: 700,
+                    color: isCurrent ? '#22d3ee' : 'var(--pr-text-primary)',
+                    lineHeight: 1,
+                    fontVariantNumeric: 'tabular-nums',
+                  }}
+                >
+                  {day}
+                </div>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 2 }}>
+                  {m.title || 'Hito sin título'}
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--pr-text-muted)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {[m.project, dayOfWeek].filter(Boolean).join(' · ')}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ============================== Recent messages ============================== */
+
+function RecentMessagesCard({ messages }) {
+  const list = Array.isArray(messages) ? messages.slice(0, 4) : []
+  if (list.length === 0) return null
+  const unread = list.filter((m) => m.unread).length
+
+  return (
+    <div className="dash-card-flush">
+      <div className="dash-card-flush-head">
+        <div className="pr-card-head-icon pr-accent-green">
+          <MessageSquare size={16} />
+        </div>
+        <div className="head-meta">
+          <div className="head-title">Mensajes recientes</div>
+          <div className="head-sub">
+            {unread > 0
+              ? `${unread} sin leer`
+              : `${list.length} ${list.length === 1 ? 'mensaje' : 'mensajes'}`}
+          </div>
+        </div>
+      </div>
+      <div>
+        {list.map((m, i) => {
+          const initials = m.avatar || getInitials(m.author)
+          return (
+            <div
+              key={m.id || i}
+              style={{
+                display: 'flex',
+                gap: 12,
+                padding: '14px 20px',
+                borderBottom: i < list.length - 1 ? '1px solid var(--pr-border)' : 'none',
+                position: 'relative',
+              }}
+            >
+              {m.unread && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: 4,
+                    height: 28,
+                    background: 'var(--pr-accent-cyan)',
+                    borderRadius: 4,
+                  }}
+                />
+              )}
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg,#a855f7,#06b6d4)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: 'white',
+                  flexShrink: 0,
+                }}
+              >
+                {initials}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: m.unread ? 600 : 500 }}>
+                    {m.author || 'Sin autor'}
+                  </span>
+                  {m.time && (
+                    <span style={{ fontSize: 11, color: 'var(--pr-text-muted)', flexShrink: 0 }}>
+                      {m.time}
+                    </span>
+                  )}
+                </div>
+                {m.project && (
+                  <div style={{ fontSize: 11, color: 'var(--pr-text-muted)', marginBottom: 4 }}>
+                    {m.project}
+                  </div>
+                )}
+                {m.preview && (
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: m.unread ? 'var(--pr-text-primary)' : 'var(--pr-text-secondary)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {m.preview}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 /* ============================== Financial summary ============================== */

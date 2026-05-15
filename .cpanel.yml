@@ -1,6 +1,22 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/vlyyfgxf/clientes.joandev.com/
-    - /bin/cp -R dist/* $DEPLOYPATH
-    - /bin/cp dist/.htaccess $DEPLOYPATH
+    - |
+      case "$USER" in
+        vlyyfgxf)
+          DEPLOYPATH="/home/vlyyfgxf/clientes.joandev.com/"
+          ;;
+        fkfnfdgk)
+          DEPLOYPATH="/home/fkfnfdgk/clientes.novalintelligence.com/"
+          ;;
+        mycapstore)
+          DEPLOYPATH="/home/mycapstore/clientes.mycapstore.com/"
+          ;;
+        *)
+          echo "Usuario cPanel desconocido: $USER. Añade un case nuevo en .cpanel.yml"
+          exit 1
+          ;;
+      esac
+      echo "Desplegando como $USER en $DEPLOYPATH"
+      /bin/cp -R dist/* "$DEPLOYPATH"
+      /bin/cp dist/.htaccess "$DEPLOYPATH" 2>/dev/null || true

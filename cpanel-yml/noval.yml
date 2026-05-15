@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/fkfnfdgk/clientes.novalintelligence.com/
+    - /bin/cp -R dist/* $DEPLOYPATH
+    - /bin/cp dist/.htaccess $DEPLOYPATH

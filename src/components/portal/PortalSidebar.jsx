@@ -4,10 +4,10 @@ import {
   LayoutDashboard,
   FolderKanban,
   LifeBuoy,
+  ClipboardList,
+  FileSignature,
   Receipt,
   FileText,
-  ClipboardList,
-  Repeat,
   Activity,
   User,
   LogOut,
@@ -18,122 +18,80 @@ import { useAuth } from '../../hooks/useAuth'
 const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Joan Dev & Tech'
 const BRAND_SUBTITLE = import.meta.env.VITE_BRAND_SUBTITLE || 'Portal cliente'
 
-const navLinks = [
+const NAV_MAIN = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/portal/dashboard' },
   { icon: FolderKanban, label: 'Proyectos', href: '/portal/projects' },
   { icon: LifeBuoy, label: 'Tickets', href: '/portal/tickets' },
   { icon: ClipboardList, label: 'Presupuestos', href: '/portal/quotes' },
-  { icon: Repeat, label: 'Contratos', href: '/portal/contracts' },
+  { icon: FileSignature, label: 'Contratos', href: '/portal/contracts' },
   { icon: Receipt, label: 'Facturas', href: '/portal/invoices' },
   { icon: FileText, label: 'Documentos', href: '/portal/documents' },
   { icon: Activity, label: 'Actividad', href: '/portal/activity' },
 ]
 
-const bottomLinks = [
-  { icon: User, label: 'Mi Perfil', href: '/portal/profile' },
-]
+const NAV_ACCOUNT = [{ icon: User, label: 'Mi Perfil', href: '/portal/profile' }]
 
-function NavItem({ icon: Icon, label, href, isActive }) {
+function NavItem({ icon: Icon, label, href, isActive, onClick }) {
   return (
     <Link
       href={href}
-      className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
-        isActive
-          ? 'portal-active-nav font-semibold'
-          : 'text-slate-300 hover:text-white hover:bg-white/[0.04]'
-      }`}
+      className={`pr-sidebar-link ${isActive ? 'active' : ''}`}
+      onClick={onClick}
     >
-      <Icon
-        size={18}
-        className={`shrink-0 ${isActive ? '' : 'text-slate-500 group-hover:text-slate-300'}`}
-        strokeWidth={1.8}
-      />
+      <Icon size={18} strokeWidth={1.6} />
       <span>{label}</span>
     </Link>
   )
 }
 
-function BrandAvatar() {
+function SidebarBody({ location, onLinkClick, onLogout }) {
   return (
-    <div className="flex items-center gap-3">
-      <img
-        src="/brand-logo.jpg"
-        alt={BRAND_NAME}
-        className="w-10 h-10 rounded-xl shrink-0 object-cover"
-        style={{ boxShadow: '0 8px 28px -8px rgba(99, 102, 241, 0.55)' }}
-      />
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-white leading-tight truncate">{BRAND_NAME}</p>
-        <p className="text-[11px] text-slate-500 leading-tight truncate">{BRAND_SUBTITLE}</p>
-      </div>
-    </div>
-  )
-}
+    <>
+      <Link href="/portal/dashboard" className="pr-sidebar-brand" onClick={onLinkClick}>
+        <div className="pr-sidebar-brand-logo">
+          <img src="/brand-logo.jpg" alt={BRAND_NAME} />
+        </div>
+        <div>
+          <div className="pr-sidebar-brand-name">{BRAND_NAME}</div>
+          <div className="pr-sidebar-brand-sub">{BRAND_SUBTITLE}</div>
+        </div>
+      </Link>
 
-function SectionLabel({ children }) {
-  return (
-    <p className="px-3 pt-4 pb-2 text-[10px] font-semibold text-slate-500 uppercase tracking-[.12em]">
-      {children}
-    </p>
-  )
-}
-
-function SidebarContent({ location, onClose, onLogout }) {
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-5 py-5 border-b border-white/5">
-        <Link href="/portal/dashboard" className="min-w-0 flex-1">
-          <BrandAvatar />
-        </Link>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="lg:hidden p-2 ml-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
-            aria-label="Cerrar"
-          >
-            <X size={18} />
-          </button>
-        )}
+      <div className="pr-sidebar-section">
+        <div className="pr-sidebar-section-title">Principal</div>
+        {NAV_MAIN.map((it) => (
+          <NavItem
+            key={it.href}
+            icon={it.icon}
+            label={it.label}
+            href={it.href}
+            isActive={location === it.href || location.startsWith(it.href + '/')}
+            onClick={onLinkClick}
+          />
+        ))}
       </div>
 
-      <nav className="flex-1 px-3 py-3 overflow-y-auto">
-        <SectionLabel>Principal</SectionLabel>
-        <div className="space-y-0.5">
-          {navLinks.map((link) => (
-            <NavItem
-              key={link.href}
-              icon={link.icon}
-              label={link.label}
-              href={link.href}
-              isActive={location === link.href || location.startsWith(link.href + '/')}
-            />
-          ))}
-        </div>
+      <div className="pr-sidebar-section">
+        <div className="pr-sidebar-section-title">Cuenta</div>
+        {NAV_ACCOUNT.map((it) => (
+          <NavItem
+            key={it.href}
+            icon={it.icon}
+            label={it.label}
+            href={it.href}
+            isActive={location === it.href}
+            onClick={onLinkClick}
+          />
+        ))}
+      </div>
 
-        <SectionLabel>Cuenta</SectionLabel>
-        <div className="space-y-0.5">
-          {bottomLinks.map((link) => (
-            <NavItem
-              key={link.href}
-              icon={link.icon}
-              label={link.label}
-              href={link.href}
-              isActive={location === link.href}
-            />
-          ))}
-        </div>
-      </nav>
-
-      <div className="px-3 py-3 border-t border-white/5">
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/[0.04] transition-all w-full"
-        >
-          <LogOut size={18} strokeWidth={1.8} className="shrink-0" />
+      <div className="pr-sidebar-bottom">
+        <button type="button" onClick={onLogout} className="pr-sidebar-link">
+          <LogOut size={18} strokeWidth={1.6} />
           <span>Cerrar sesión</span>
         </button>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -141,19 +99,10 @@ export default function PortalSidebar({ isOpen, onClose }) {
   const [location] = useLocation()
   const { logout } = useAuth()
 
-  const glassStyle = {
-    backgroundColor: 'rgba(11, 18, 38, 0.72)',
-    backdropFilter: 'blur(18px) saturate(140%)',
-    WebkitBackdropFilter: 'blur(18px) saturate(140%)',
-  }
-
   return (
     <>
-      <aside
-        className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:w-64 border-r border-white/5 z-30"
-        style={glassStyle}
-      >
-        <SidebarContent location={location} onLogout={logout} />
+      <aside className="pr-sidebar" style={{ display: 'flex' }}>
+        <SidebarBody location={location} onLogout={logout} />
       </aside>
 
       <AnimatePresence>
@@ -164,18 +113,50 @@ export default function PortalSidebar({ isOpen, onClose }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
               onClick={onClose}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(4px)',
+                zIndex: 60,
+              }}
+              className="pr-sidebar-overlay"
             />
             <motion.aside
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
-              className="fixed inset-y-0 left-0 w-72 border-r border-white/5 z-50 lg:hidden"
-              style={glassStyle}
+              transition={{ type: 'tween', duration: 0.25 }}
+              className="pr-sidebar pr-sidebar-mobile"
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: 280,
+                height: '100vh',
+                zIndex: 61,
+                display: 'flex',
+              }}
             >
-              <SidebarContent location={location} onClose={onClose} onLogout={logout} />
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Cerrar"
+                style={{
+                  position: 'absolute',
+                  top: 14,
+                  right: 14,
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--pr-text-muted)',
+                  cursor: 'pointer',
+                  padding: 4,
+                }}
+              >
+                <X size={18} />
+              </button>
+              <SidebarBody location={location} onLinkClick={onClose} onLogout={logout} />
             </motion.aside>
           </>
         )}

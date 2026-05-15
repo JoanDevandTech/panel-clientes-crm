@@ -8,6 +8,5 @@ node_modules
 .ftpquota
 .unlighthouse
 *.log
-dist/
 .design-extracted/
 .design-extracted-perfil/

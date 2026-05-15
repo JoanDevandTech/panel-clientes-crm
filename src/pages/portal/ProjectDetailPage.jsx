@@ -54,7 +54,20 @@ const TAB_META = {
   activity: { label: 'Actividad', Icon: Activity },
 }
 
-const DEFAULT_TABS = ['summary', 'messages', 'notes', 'activity']
+// Por defecto mostramos todas las tabs (credenciales incluido).
+// Cada tab maneja su propio empty state si no hay datos. Si el backend
+// quiere ocultar alguna tab por permisos/fase, debe enviar `available_tabs`
+// en el resource de /client/projects/{id}.
+const DEFAULT_TABS = [
+  'summary',
+  'milestones',
+  'deliverables',
+  'credentials',
+  'screenshots',
+  'messages',
+  'notes',
+  'activity',
+]
 
 function defaultPhaseLabel(phaseKey, fallback) {
   return PHASES[phaseKey]?.label || fallback || 'En progreso'

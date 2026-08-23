@@ -13,8 +13,13 @@
   RewriteEngine On
   RewriteBase /
 
-  # Force HTTPS
+  # Force HTTPS.
+  # Detrás de un proxy (Cloudflare) %{HTTPS} es "off" aunque el visitante
+  # venga por HTTPS: si Cloudflare está en modo Flexible, redirigir solo con
+  # esa condición provoca un bucle infinito (ERR_TOO_MANY_REDIRECTS).
+  # Por eso se comprueba también X-Forwarded-Proto, que el proxy sí envía.
   RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
   # Force non-www
@@ -27,12 +32,17 @@
   RewriteRule ^ index.html [QSA,L]
 </IfModule>
 
-# Brotli + gzip
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml image/svg+xml
-</IfModule>
-<IfModule mod_brotli.c>
-  AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml image/svg+xml
+# Brotli + gzip.
+# AddOutputFilterByType lo define mod_filter, NO mod_deflate/mod_brotli: si se
+# envuelve solo en <IfModule mod_deflate.c> y mod_filter no está cargado,
+# Apache responde 500 en todo el sitio. Por eso el guard exterior es mod_filter.
+<IfModule mod_filter.c>
+  <IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml image/svg+xml
+  </IfModule>
+  <IfModule mod_brotli.c>
+    AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml image/svg+xml
+  </IfModule>
 </IfModule>
 
 # Cache-Control headers

@@ -108,7 +108,7 @@ function Spinner() {
         style={{
           width: 32,
           height: 32,
-          border: '2px solid #a855f7',
+          border: '2px solid var(--pr-accent-cyan)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
           animation: 'pd-spin 1s linear infinite',
@@ -286,11 +286,11 @@ export default function TabMensajes({ projectId, onShowToast }) {
           style={{
             padding: 24,
             textAlign: 'center',
-            borderColor: 'rgba(239,68,68,0.35)',
-            background: 'rgba(239,68,68,0.08)',
+            borderColor: 'rgba(255, 23, 68,0.35)',
+            background: 'rgba(255, 23, 68,0.08)',
           }}
         >
-          <p style={{ color: '#f87171', marginBottom: 16, fontSize: 13 }}>{error}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16, fontSize: 13 }}>{error}</p>
           <button type="button" className="pd-btn pd-btn-ghost pd-sm" onClick={refetch}>
             Reintentar
           </button>
@@ -420,7 +420,7 @@ export default function TabMensajes({ projectId, onShowToast }) {
                   width: '100%',
                   padding: '14px 16px',
                   borderBottom: '1px solid var(--pd-border)',
-                  background: 'rgba(168,85,247,0.08)',
+                  background: 'rgba(0, 229, 255,0.08)',
                   textAlign: 'left',
                   display: 'flex',
                   flexDirection: 'column',
@@ -438,8 +438,7 @@ export default function TabMensajes({ projectId, onShowToast }) {
                     top: 14,
                     bottom: 14,
                     width: 3,
-                    background: 'linear-gradient(180deg, var(--pd-purple), var(--pd-cyan))',
-                    borderRadius: '0 2px 2px 0',
+                    background: 'var(--pr-accent-cyan)',
                   }}
                 />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -462,7 +461,7 @@ export default function TabMensajes({ projectId, onShowToast }) {
                   width: '100%',
                   padding: '14px 16px',
                   borderBottom: '1px solid var(--pd-border)',
-                  background: t.id === activeThreadId && !creatingNew ? 'rgba(168,85,247,0.08)' : 'transparent',
+                  background: t.id === activeThreadId && !creatingNew ? 'rgba(0, 229, 255,0.08)' : 'transparent',
                   textAlign: 'left',
                   display: 'flex',
                   flexDirection: 'column',
@@ -475,7 +474,7 @@ export default function TabMensajes({ projectId, onShowToast }) {
                 }}
                 onMouseEnter={(e) => {
                   if (t.id !== activeThreadId || creatingNew) {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
+                    e.currentTarget.style.background = 'rgba(248, 249, 250,0.03)'
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -492,8 +491,7 @@ export default function TabMensajes({ projectId, onShowToast }) {
                       top: 14,
                       bottom: 14,
                       width: 3,
-                      background: 'linear-gradient(180deg, var(--pd-purple), var(--pd-cyan))',
-                      borderRadius: '0 2px 2px 0',
+                      background: 'var(--pr-accent-cyan)',
                     }}
                   />
                 )}
@@ -515,10 +513,10 @@ export default function TabMensajes({ projectId, onShowToast }) {
                       style={{
                         fontSize: 10,
                         fontWeight: 600,
+                        fontFamily: 'var(--pr-font-mono)',
                         background: 'var(--pd-red)',
-                        color: 'white',
+                        color: 'var(--pr-bg-primary)',
                         padding: '2px 6px',
-                        borderRadius: 999,
                         minWidth: 18,
                         textAlign: 'center',
                       }}
@@ -635,15 +633,16 @@ export default function TabMensajes({ projectId, onShowToast }) {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: '50%',
                       background: isClient
-                        ? 'linear-gradient(135deg,#a855f7,#06b6d4)'
-                        : 'linear-gradient(135deg,#94a3b8,#64748b)',
+                        ? 'var(--pr-bg-card-hover)'
+                        : 'var(--pr-bg-card-strong)',
+                      border: '1px solid var(--pr-border-strong)',
                       display: 'grid',
                       placeItems: 'center',
+                      fontFamily: 'var(--pr-font-mono)',
                       fontSize: 11,
                       fontWeight: 600,
-                      color: 'white',
+                      color: isClient ? 'var(--pr-accent-cyan)' : 'var(--pr-text-read)',
                       flexShrink: 0,
                       overflow: 'hidden',
                     }}
@@ -677,11 +676,10 @@ export default function TabMensajes({ projectId, onShowToast }) {
                       <div
                         style={{
                           padding: '10px 14px',
-                          borderRadius: isClient ? '12px 12px 4px 12px' : '12px 12px 12px 4px',
                           background: isClient
-                            ? 'linear-gradient(135deg, rgba(168,85,247,0.18), rgba(168,85,247,0.10))'
-                            : 'rgba(255,255,255,0.05)',
-                          border: isClient ? '1px solid rgba(168,85,247,0.25)' : '1px solid var(--pd-border)',
+                            ? 'var(--pr-cyan-bg)'
+                            : 'rgba(248, 249, 250, 0.05)',
+                          border: isClient ? '1px solid var(--pr-cyan-border)' : '1px solid var(--pd-border)',
                           fontSize: 13,
                           lineHeight: 1.5,
                           color: 'var(--pd-text-primary)',
@@ -712,9 +710,8 @@ export default function TabMensajes({ projectId, onShowToast }) {
                               alignItems: 'center',
                               gap: 6,
                               padding: '6px 10px',
-                              borderRadius: 8,
                               border: '1px solid var(--pd-border)',
-                              background: 'rgba(255,255,255,0.04)',
+                              background: 'rgba(248, 249, 250,0.04)',
                               color: 'var(--pd-text-primary)',
                               fontSize: 12,
                               textDecoration: 'none',
@@ -765,7 +762,6 @@ export default function TabMensajes({ projectId, onShowToast }) {
                       alignItems: 'center',
                       gap: 6,
                       padding: '4px 8px',
-                      borderRadius: 6,
                       border: '1px solid var(--pd-border)',
                       background: 'var(--pd-bg-input)',
                       fontSize: 11,
@@ -841,7 +837,6 @@ export default function TabMensajes({ projectId, onShowToast }) {
                   resize: 'none',
                   background: 'var(--pd-bg-input)',
                   border: '1px solid var(--pd-border)',
-                  borderRadius: 8,
                   padding: '10px 12px',
                   outline: 'none',
                   color: 'var(--pd-text-primary)',

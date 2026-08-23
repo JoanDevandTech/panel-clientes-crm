@@ -127,7 +127,7 @@ export default function TabSesiones({ profile, onShowToast }) {
     >
       <FormCard
         icon={Laptop}
-        iconAccent="purple"
+        iconAccent="cyan"
         title="Sesiones activas"
         subtitle="Dispositivos donde tu cuenta está conectada"
       >
@@ -162,7 +162,7 @@ export default function TabSesiones({ profile, onShowToast }) {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
-                color: '#f87171',
+                color: '#FF5C7A',
                 fontSize: 13,
               }}
             >

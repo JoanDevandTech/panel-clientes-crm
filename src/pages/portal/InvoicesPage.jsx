@@ -274,7 +274,7 @@ export default function InvoicesPage() {
   if (error) {
     return (
       <div className="pr-card" style={{ textAlign: 'center', padding: 40 }}>
-        <p style={{ color: '#f87171', marginBottom: 16 }}>{error}</p>
+        <p style={{ color: '#FF5C7A', marginBottom: 16 }}>{error}</p>
         <button onClick={refetch} className="pr-btn primary">
           Reintentar
         </button>
@@ -290,7 +290,7 @@ export default function InvoicesPage() {
           <div>
             <h1 className="pr-page-title">Facturas</h1>
             <p className="pr-page-sub">
-              Tu historial completo y tu salud financiera con Joan Dev &amp; Tech.
+              Tu historial completo y tu salud financiera con {import.meta.env.VITE_BRAND_NAME || 'Krom'}.
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -300,7 +300,7 @@ export default function InvoicesPage() {
               onChange={(e) => setSelectedYear(Number(e.target.value))}
             >
               {years.map((y) => (
-                <option key={y} value={y} style={{ background: '#0a0e1a' }}>
+                <option key={y} value={y} style={{ background: 'var(--pr-bg-primary)' }}>
                   Año {y}
                 </option>
               ))}
@@ -344,7 +344,7 @@ export default function InvoicesPage() {
 
         <div className="pr-card" style={{ padding: 20 }}>
           <div className="pr-card-head" style={{ marginBottom: 14 }}>
-            <div className="pr-card-head-icon pr-accent-purple">
+            <div className="pr-card-head-icon pr-accent-cyan">
               <TrendingUp size={16} />
             </div>
             <div style={{ flex: 1 }}>
@@ -371,7 +371,6 @@ export default function InvoicesPage() {
                           className="inv-chart-bar-pending"
                           style={{
                             height: `${pendH}%`,
-                            borderRadius: '4px 4px 0 0',
                           }}
                         />
                       )}
@@ -380,7 +379,6 @@ export default function InvoicesPage() {
                           className="inv-chart-bar-paid"
                           style={{
                             height: `${paidH}%`,
-                            borderRadius: pendH > 0 ? 0 : '4px 4px 0 0',
                           }}
                         />
                       )}
@@ -566,7 +564,7 @@ export default function InvoicesPage() {
                 <motion.div key={inv.id} variants={fadeUp}>
                   <Link to={`/portal/invoices/${inv.id}`} className="inv-mobile-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12, fontWeight: 500, color: 'var(--pr-text-primary)' }}>
+                      <span style={{ fontFamily: 'var(--pr-font-mono)', fontSize: 12, fontWeight: 500, color: 'var(--pr-text-primary)' }}>
                         {inv.invoice_number}
                       </span>
                       <StatusBadge status={overdue && !paid ? 'overdue' : inv.status} />
@@ -587,7 +585,7 @@ export default function InvoicesPage() {
                     </div>
                     <div className="inv-mobile-row">
                       <span className="label">Vencimiento</span>
-                      <span className={`value ${overdue ? 'overdue' : ''}`} style={overdue ? { color: '#f87171', fontWeight: 600 } : undefined}>
+                      <span className={`value ${overdue ? 'overdue' : ''}`} style={overdue ? { color: '#FF5C7A', fontWeight: 600 } : undefined}>
                         {formatShortDate(inv.due_date)}
                       </span>
                     </div>

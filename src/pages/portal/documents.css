@@ -23,11 +23,9 @@
   padding: 3px;
   background: var(--pr-bg-input);
   border: 1px solid var(--pr-border);
-  border-radius: 8px;
 }
 .docs-view-toggle button {
   padding: 7px;
-  border-radius: 6px;
   background: transparent;
   border: none;
   color: var(--pr-text-muted);
@@ -39,8 +37,8 @@
 }
 .docs-view-toggle button:hover { color: var(--pr-text-secondary); }
 .docs-view-toggle button.active {
-  background: rgba(168, 85, 247, 0.2);
-  color: #c084fc;
+  background: var(--pr-cyan-bg);
+  color: var(--pr-accent-cyan);
 }
 
 /* Grid de documentos — responsivo */
@@ -69,7 +67,7 @@
 .docs-card:hover {
   transform: translateY(-2px);
   border-color: var(--pr-border-strong);
-  box-shadow: var(--pr-shadow-md), var(--pr-glow-purple);
+  box-shadow: var(--pr-shadow-md), var(--pr-glow-cyan);
 }
 
 /* Preview superior — gradiente diagonal con glyph del tipo */
@@ -85,17 +83,16 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: repeating-linear-gradient(45deg, transparent 0 12px, rgba(255, 255, 255, 0.04) 12px 13px);
+  background-image: repeating-linear-gradient(45deg, transparent 0 12px, rgba(248, 249, 250, 0.05) 12px 13px);
   pointer-events: none;
 }
 .docs-preview-glyph {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(13, 14, 17, 0.72);
   padding: 6px 12px;
-  border-radius: 6px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 2px;
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-family: var(--pr-font-mono);
   z-index: 1;
   border: 1px solid;
 }
@@ -149,7 +146,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-family: var(--pr-font-mono);
 }
 .docs-card-actions {
   display: flex;
@@ -163,13 +160,13 @@
   gap: 6px;
 }
 .docs-btn-download {
-  background: rgba(168, 85, 247, 0.15);
-  border-color: rgba(168, 85, 247, 0.3);
-  color: #c084fc;
+  background: var(--pr-cyan-bg);
+  border-color: var(--pr-cyan-border);
+  color: var(--pr-accent-cyan);
 }
 .docs-btn-download:hover {
-  background: rgba(168, 85, 247, 0.22);
-  border-color: rgba(168, 85, 247, 0.45);
+  background: rgba(0, 229, 255, 0.18);
+  border-color: var(--pr-accent-cyan);
 }
 
 /* Lista (vista list) */
@@ -193,7 +190,7 @@
   letter-spacing: 0.8px;
   color: var(--pr-text-muted);
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.015);
+  background: rgba(248, 249, 250, 0.03);
 }
 .docs-list-row {
   display: grid;
@@ -205,16 +202,15 @@
   transition: background var(--pr-t-base) var(--pr-ease);
 }
 .docs-list-row:last-child { border-bottom: none; }
-.docs-list-row:hover { background: rgba(255, 255, 255, 0.02); }
+.docs-list-row:hover { background: rgba(248, 249, 250, 0.02); }
 .docs-list-thumb {
   width: 36px;
   height: 36px;
-  border-radius: 8px;
   display: grid;
   place-items: center;
   font-size: 9px;
-  font-weight: 700;
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-family: var(--pr-font-mono);
   letter-spacing: 0.5px;
   border: 1px solid;
 }
@@ -244,7 +240,7 @@
 .docs-list-size {
   font-size: 11px;
   color: var(--pr-text-muted);
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-family: var(--pr-font-mono);
   letter-spacing: 0.3px;
 }
 .docs-list-date {

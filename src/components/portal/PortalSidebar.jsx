@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 
-const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Joan Dev & Tech'
+const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Krom'
 const BRAND_SUBTITLE = import.meta.env.VITE_BRAND_SUBTITLE || 'Portal cliente'
 
 const NAV_MAIN = [
@@ -49,7 +49,7 @@ function SidebarBody({ location, onLinkClick, onLogout }) {
     <>
       <Link href="/portal/dashboard" className="pr-sidebar-brand" onClick={onLinkClick}>
         <div className="pr-sidebar-brand-logo">
-          <img src="/brand-logo.jpg" alt={BRAND_NAME} />
+          <img src="/brand-logo.svg" alt={BRAND_NAME} />
         </div>
         <div>
           <div className="pr-sidebar-brand-name">{BRAND_NAME}</div>

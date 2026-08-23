@@ -22,15 +22,17 @@ import {
 import { useApi } from '../../../hooks/useApi'
 import api from '../../../services/api'
 
+// Krom: acento único cian y ángulo recto. El tipo de servicio se distingue
+// por el icono, no por el color.
 const SERVICE_VARIANTS = {
-  wordpress: { bg: 'linear-gradient(135deg, #2563eb, #1e40af)', Icon: Layers },
-  cms: { bg: 'linear-gradient(135deg, #2563eb, #1e40af)', Icon: Layers },
-  hosting: { bg: 'linear-gradient(135deg, #059669, #047857)', Icon: Server },
-  ftp: { bg: 'linear-gradient(135deg, #0891b2, #0e7490)', Icon: Cloud },
-  db: { bg: 'linear-gradient(135deg, #9333ea, #7e22ce)', Icon: Database },
-  cdn: { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', Icon: Wifi },
-  payments: { bg: 'linear-gradient(135deg, #7c3aed, #5b21b6)', Icon: CreditCard },
-  other: { bg: 'linear-gradient(135deg, #475569, #334155)', Icon: Layers },
+  wordpress: { Icon: Layers },
+  cms: { Icon: Layers },
+  hosting: { Icon: Server },
+  ftp: { Icon: Cloud },
+  db: { Icon: Database },
+  cdn: { Icon: Wifi },
+  payments: { Icon: CreditCard },
+  other: { Icon: Layers },
 }
 
 function getServiceType(cred) {
@@ -85,12 +87,11 @@ function ServiceLogo({ cred, size = 56 }) {
       style={{
         width: size,
         height: size,
-        borderRadius: size * 0.25,
-        background: variant.bg,
+        background: 'var(--pr-bg-card-hover)',
+        border: '1px solid var(--pr-border-strong)',
         display: 'grid',
         placeItems: 'center',
-        boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
-        color: 'white',
+        color: 'var(--pr-accent-cyan)',
         flexShrink: 0,
       }}
     >
@@ -166,7 +167,7 @@ function CredentialCard({ cred, onOpen }) {
             <span>Última rotación {rotation}</span>
           </>
         )}
-        <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4, color: '#fbbf24' }}>
+        <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 4, color: '#FBBF24' }}>
           <Lock size={11} /> Cifrado
         </span>
       </div>
@@ -180,25 +181,33 @@ function LoginCMS({ cred, children }) {
   return (
     <div
       style={{
-        background: '#f4f6fa',
-        color: '#1f2937',
+        background: 'var(--pr-bg-primary)',
+        color: 'var(--pr-text-primary)',
         minHeight: 540,
         display: 'grid',
         placeItems: 'center',
         padding: '40px 24px',
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: 'var(--pr-font-body)',
       }}
     >
       <div style={{ width: '100%', maxWidth: 360 }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
           <ServiceLogo cred={cred} size={60} />
-          <div style={{ fontSize: 13, fontWeight: 500, color: '#6b7280', marginTop: 12, letterSpacing: 0.5 }}>
+          <div
+            style={{
+              fontFamily: 'var(--pr-font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.22em',
+              color: 'var(--pr-text-muted)',
+              marginTop: 12,
+            }}
+          >
             PANEL DE ADMINISTRACIÓN
           </div>
         </div>
-        <div style={{ background: 'white', padding: 24, borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+        <div style={{ background: 'var(--pr-bg-card)', border: '1px solid var(--pr-border)', padding: 24 }}>
           {children}
-          <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 18, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: 'var(--pr-text-faint)', marginTop: 18, textAlign: 'center' }}>
             {getServiceName(cred)}
           </div>
         </div>
@@ -214,37 +223,45 @@ function LoginHosting({ cred, children }) {
         display: 'grid',
         gridTemplateColumns: '1fr 1.2fr',
         minHeight: 540,
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: 'var(--pr-font-body)',
       }}
     >
       <div
         style={{
-          background: 'linear-gradient(155deg, #064e3b 0%, #022c22 100%)',
-          color: 'white',
+          background: 'var(--pr-bg-surface)',
+          borderRight: '1px solid var(--pr-border)',
+          backgroundImage:
+            'linear-gradient(rgba(0,229,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,.05) 1px, transparent 1px)',
+          backgroundSize: '72px 72px',
+          color: 'var(--pr-text-primary)',
           padding: '40px 36px',
           display: 'flex',
           flexDirection: 'column',
         }}
       >
         <ServiceLogo cred={cred} size={48} />
-        <div style={{ fontSize: 20, fontWeight: 600, marginTop: 24 }}>Panel de hosting</div>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 8, maxWidth: 240, lineHeight: 1.5 }}>
+        <div style={{ fontFamily: 'var(--pr-font-display)', fontSize: 20, fontWeight: 600, letterSpacing: '-0.03em', marginTop: 24 }}>
+          Panel de hosting
+        </div>
+        <div style={{ fontSize: 13, color: 'var(--pr-text-read)', marginTop: 8, maxWidth: 240, lineHeight: 1.5 }}>
           Gestiona dominios, correos, bases de datos y backups desde un único panel.
         </div>
-        <div style={{ marginTop: 'auto', fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>v6.2 · ES</div>
+        <div style={{ marginTop: 'auto', fontFamily: 'var(--pr-font-mono)', fontSize: 11, color: 'var(--pr-text-muted)' }}>v6.2 · ES</div>
       </div>
       <div
         style={{
-          background: '#f9fafb',
-          color: '#111827',
+          background: 'var(--pr-bg-primary)',
+          color: 'var(--pr-text-primary)',
           padding: '40px 36px',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
         }}
       >
-        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>Inicia sesión</div>
-        <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 24 }}>{getServiceName(cred)}</div>
+        <div style={{ fontFamily: 'var(--pr-font-display)', fontSize: 22, fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 6 }}>
+          Inicia sesión
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--pr-text-muted)', marginBottom: 24 }}>{getServiceName(cred)}</div>
         {children}
       </div>
     </div>
@@ -255,36 +272,36 @@ function LoginFTP({ cred, children }) {
   return (
     <div
       style={{
-        background: '#0c0d10',
-        color: '#d4d4d8',
-        fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+        background: 'var(--pr-bg-primary)',
+        color: 'var(--pr-text-read)',
+        fontFamily: 'var(--pr-font-mono)',
         minHeight: 540,
         padding: 32,
       }}
     >
-      <div style={{ background: '#000', border: '1px solid #2a2a2e', borderRadius: 8, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--pr-bg-card)', border: '1px solid var(--pr-border)', overflow: 'hidden' }}>
         <div
           style={{
-            background: '#18181b',
+            background: 'var(--pr-bg-card-hover)',
             padding: '8px 14px',
-            borderBottom: '1px solid #2a2a2e',
+            borderBottom: '1px solid var(--pr-border)',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
           }}
         >
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444' }} />
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#f59e0b' }} />
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#10b981' }} />
-          <div style={{ marginLeft: 12, fontSize: 11, color: '#71717a' }}>sftp — secure file transfer</div>
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--pr-accent-red)' }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--pr-accent-amber)' }} />
+          <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--pr-accent-green)' }} />
+          <div style={{ marginLeft: 12, fontSize: 11, color: 'var(--pr-text-muted)' }}>sftp — secure file transfer</div>
         </div>
         <div style={{ padding: '20px 18px', fontSize: 13, lineHeight: 1.7 }}>
-          <div style={{ color: '#10b981' }}>$ sftp connect</div>
-          <div style={{ color: '#71717a', marginTop: 4 }}>
-            Connecting to <span style={{ color: '#67e8f9' }}>{getAccessUrl(cred)}</span>
+          <div style={{ color: '#34D399' }}>$ sftp connect</div>
+          <div style={{ color: 'var(--pr-text-muted)', marginTop: 4 }}>
+            Connecting to <span style={{ color: 'var(--pr-accent-cyan)' }}>{getAccessUrl(cred)}</span>
           </div>
-          <div style={{ color: '#71717a', marginTop: 4 }}>
-            Server fingerprint: SHA256:xK9... <span style={{ color: '#10b981' }}>verified ✓</span>
+          <div style={{ color: 'var(--pr-text-muted)', marginTop: 4 }}>
+            Server fingerprint: SHA256:xK9... <span style={{ color: '#34D399' }}>verified ✓</span>
           </div>
           <div style={{ marginTop: 14 }}>{children}</div>
         </div>
@@ -297,9 +314,9 @@ function LoginDB({ cred, children }) {
   return (
     <div
       style={{
-        background: '#eef0f4',
-        color: '#1f2937',
-        fontFamily: "'Inter', system-ui, sans-serif",
+        background: 'var(--pr-bg-primary)',
+        color: 'var(--pr-text-primary)',
+        fontFamily: 'var(--pr-font-body)',
         minHeight: 540,
         padding: 36,
         display: 'grid',
@@ -309,10 +326,12 @@ function LoginDB({ cred, children }) {
       <div style={{ width: '100%', maxWidth: 420 }}>
         <div
           style={{
-            background: '#5e72e4',
-            color: 'white',
+            background: 'var(--pr-bg-surface)',
+            borderTop: '2px solid var(--pr-accent-cyan)',
+            borderLeft: '1px solid var(--pr-border)',
+            borderRight: '1px solid var(--pr-border)',
+            color: 'var(--pr-text-primary)',
             padding: '14px 20px',
-            borderRadius: '6px 6px 0 0',
             display: 'flex',
             alignItems: 'center',
             gap: 12,
@@ -325,10 +344,10 @@ function LoginDB({ cred, children }) {
         </div>
         <div
           style={{
-            background: 'white',
+            background: 'var(--pr-bg-card)',
+            border: '1px solid var(--pr-border)',
+            borderTop: 'none',
             padding: 24,
-            borderRadius: '0 0 6px 6px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
           }}
         >
           {children}
@@ -336,11 +355,10 @@ function LoginDB({ cred, children }) {
             style={{
               marginTop: 14,
               padding: 10,
-              background: '#fef3c7',
-              border: '1px solid #fde68a',
-              borderRadius: 4,
+              background: 'var(--pr-amber-bg)',
+              border: '1px solid var(--pr-amber-border)',
               fontSize: 11,
-              color: '#92400e',
+              color: '#FBBF24',
             }}
           >
             ⚠ Acceso restringido a IPs en lista blanca.
@@ -355,26 +373,32 @@ function LoginCDN({ cred, children }) {
   return (
     <div
       style={{
-        background:
-          'radial-gradient(ellipse 800px 500px at 30% 20%, rgba(245,158,11,0.12), transparent 60%), #0f1419',
-        color: 'white',
+        background: 'var(--pr-bg-primary)',
+        backgroundImage:
+          'linear-gradient(rgba(0,229,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,.05) 1px, transparent 1px)',
+        backgroundSize: '72px 72px',
+        color: 'var(--pr-text-primary)',
         minHeight: 540,
         display: 'grid',
         placeItems: 'center',
         padding: 40,
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: 'var(--pr-font-body)',
       }}
     >
       <div style={{ width: '100%', maxWidth: 380 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
           <ServiceLogo cred={cred} size={42} />
           <div>
-            <div style={{ fontSize: 16, fontWeight: 600 }}>CDN / DNS Console</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>Edge security &amp; routing</div>
+            <div style={{ fontFamily: 'var(--pr-font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '-0.03em' }}>
+              CDN / DNS Console
+            </div>
+            <div style={{ fontFamily: 'var(--pr-font-mono)', fontSize: 11, color: 'var(--pr-text-muted)' }}>
+              Edge security &amp; routing
+            </div>
           </div>
         </div>
         <div style={{ padding: 4 }}>{children}</div>
-        <div style={{ marginTop: 24, fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+        <div style={{ marginTop: 24, fontSize: 11, color: 'var(--pr-text-muted)', textAlign: 'center' }}>
           Cuenta verificada · Doble factor requerido
         </div>
       </div>
@@ -386,28 +410,30 @@ function LoginPayments({ cred, children }) {
   return (
     <div
       style={{
-        background: 'linear-gradient(170deg, #faf5ff 0%, #f0f4ff 100%)',
-        color: '#1f2937',
+        background: 'var(--pr-bg-primary)',
+        color: 'var(--pr-text-primary)',
         minHeight: 540,
         display: 'grid',
         placeItems: 'center',
         padding: 40,
-        fontFamily: "'Inter', system-ui, sans-serif",
+        fontFamily: 'var(--pr-font-body)',
       }}
     >
       <div style={{ width: '100%', maxWidth: 400 }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 24 }}>
           <ServiceLogo cred={cred} size={48} />
-          <div style={{ fontSize: 18, fontWeight: 600, marginTop: 14 }}>Pasarela de pagos</div>
-          <div style={{ fontSize: 12, color: '#6b7280' }}>Dashboard · Modo Live</div>
+          <div style={{ fontFamily: 'var(--pr-font-display)', fontSize: 18, fontWeight: 600, letterSpacing: '-0.03em', marginTop: 14 }}>
+            Pasarela de pagos
+          </div>
+          <div style={{ fontFamily: 'var(--pr-font-mono)', fontSize: 11, letterSpacing: '0.22em', color: 'var(--pr-text-muted)' }}>
+            DASHBOARD · MODO LIVE
+          </div>
         </div>
         <div
           style={{
-            background: 'white',
+            background: 'var(--pr-bg-card)',
             padding: 24,
-            borderRadius: 12,
-            boxShadow: '0 8px 24px rgba(124, 58, 237, 0.08)',
-            border: '1px solid #ede9fe',
+            border: '1px solid var(--pr-border)',
           }}
         >
           {children}
@@ -437,7 +463,6 @@ function LoginField({
   secret,
   showSecret,
   onToggleSecret,
-  dark = false,
   terminal = false,
   url = false,
   copyDisabled = false,
@@ -463,16 +488,16 @@ function LoginField({
   if (terminal) {
     return (
       <div style={{ marginBottom: 10 }}>
-        <div style={{ fontSize: 11, color: '#71717a', marginBottom: 4 }}>{label}</div>
+        <div style={{ fontSize: 11, color: 'var(--pr-text-muted)', marginBottom: 4 }}>{label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ flex: 1, color: '#67e8f9', fontFamily: 'inherit', fontSize: 13, wordBreak: 'break-all' }}>
+          <div style={{ flex: 1, color: 'var(--pr-accent-cyan)', fontFamily: 'inherit', fontSize: 13, wordBreak: 'break-all' }}>
             {secret && !showSecret ? '••••••••••••••••' : displayValue}
           </div>
           {secret && (
             <button
               type="button"
               onClick={onToggleSecret}
-              style={{ color: '#71717a', padding: 4, background: 'transparent', border: 'none', cursor: 'pointer' }}
+              style={{ color: 'var(--pr-text-muted)', padding: 4, background: 'transparent', border: 'none', cursor: 'pointer' }}
               aria-label={showSecret ? 'Ocultar' : 'Mostrar'}
             >
               {showSecret ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -484,7 +509,7 @@ function LoginField({
               onClick={handleCopy}
               disabled={copyDisabled || !hasValue}
               style={{
-                color: copied ? '#10b981' : '#71717a',
+                color: copied ? '#34D399' : 'var(--pr-text-muted)',
                 padding: 4,
                 background: 'transparent',
                 border: 'none',
@@ -501,11 +526,11 @@ function LoginField({
     )
   }
 
-  const bg = dark ? 'rgba(255,255,255,0.05)' : '#f9fafb'
-  const border = dark ? 'rgba(255,255,255,0.12)' : '#e5e7eb'
-  const textColor = dark ? 'white' : '#111827'
-  const labelColor = dark ? 'rgba(255,255,255,0.65)' : '#6b7280'
-  const iconBtnColor = dark ? 'rgba(255,255,255,0.55)' : '#6b7280'
+  const bg = 'var(--pr-bg-input)'
+  const border = 'var(--pr-border)'
+  const textColor = 'var(--pr-text-primary)'
+  const labelColor = 'var(--pr-text-secondary)'
+  const iconBtnColor = 'var(--pr-text-muted)'
 
   return (
     <div style={{ marginBottom: 14 }}>
@@ -518,16 +543,15 @@ function LoginField({
           alignItems: 'center',
           background: bg,
           border: `1px solid ${border}`,
-          borderRadius: 6,
           padding: '8px 12px',
           gap: 8,
-          fontFamily: secret ? 'ui-monospace, monospace' : 'inherit',
+          fontFamily: secret ? 'var(--pr-font-mono)' : 'inherit',
         }}
       >
         <div
           style={{
             flex: 1,
-            color: hasValue ? textColor : (dark ? 'rgba(255,255,255,0.35)' : '#9ca3af'),
+            color: hasValue ? textColor : 'var(--pr-text-faint)',
             fontSize: 13,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -564,7 +588,7 @@ function LoginField({
             onClick={handleCopy}
             disabled={copyDisabled || !hasValue}
             style={{
-              color: copied ? '#10b981' : iconBtnColor,
+              color: copied ? '#34D399' : iconBtnColor,
               padding: 2,
               background: 'transparent',
               border: 'none',
@@ -625,7 +649,6 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
   const serviceType = getServiceType(cred)
   const Chrome = LOGIN_CHROME[serviceType] || LoginCMS
   const isTerminal = serviceType === 'ftp'
-  const isDark = serviceType === 'cdn'
 
   const handleCopy = (field) => {
     onShowToast?.(`${field} copiado al portapapeles`)
@@ -690,7 +713,7 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
         position: 'fixed',
         inset: 0,
         zIndex: 90,
-        background: 'rgba(0,0,0,0.7)',
+        background: 'rgba(13,14,17,0.82)',
         backdropFilter: 'blur(8px)',
         display: 'grid',
         placeItems: 'center',
@@ -703,11 +726,10 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
         style={{
           width: '100%',
           maxWidth: 680,
-          background: '#0a0e1a',
-          borderRadius: 16,
+          background: 'var(--pr-bg-card)',
           overflow: 'hidden',
           border: '1px solid var(--pd-border)',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.7), 0 0 80px rgba(168,85,247,0.15)',
+          boxShadow: 'var(--pr-shadow-lg), var(--pr-glow-cyan)',
           maxHeight: '90vh',
           display: 'flex',
           flexDirection: 'column',
@@ -720,14 +742,14 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
             gap: 10,
             padding: '12px 16px',
             borderBottom: '1px solid var(--pd-border)',
-            background: 'rgba(255,255,255,0.02)',
+            background: 'rgba(248,249,250,0.02)',
             flexShrink: 0,
           }}
         >
           <div style={{ display: 'flex', gap: 6 }}>
-            <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#ef4444' }} />
-            <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#f59e0b' }} />
-            <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#10b981' }} />
+            <div style={{ width: 11, height: 11, borderRadius: '50%', background: 'var(--pr-accent-red)' }} />
+            <div style={{ width: 11, height: 11, borderRadius: '50%', background: 'var(--pr-accent-amber)' }} />
+            <div style={{ width: 11, height: 11, borderRadius: '50%', background: 'var(--pr-accent-green)' }} />
           </div>
           <div
             style={{
@@ -759,7 +781,6 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
               label="URL de acceso"
               value={accessUrl}
               url
-              dark={isDark}
               terminal={isTerminal}
               onOpenUrl={() => {
                 openExternal()
@@ -773,7 +794,6 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
             <LoginField
               label="Usuario"
               value={username}
-              dark={isDark}
               terminal={isTerminal}
               copyDisabled={!username}
               onCopy={(label) => {
@@ -788,7 +808,6 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
                 secret
                 showSecret={showPassword}
                 onToggleSecret={togglePassword}
-                dark={isDark}
                 terminal={isTerminal}
                 copyDisabled={!password}
                 onCopy={(label) => {
@@ -804,11 +823,11 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
                     top: -6,
                     fontSize: 10,
                     fontWeight: 700,
-                    color: countdown <= 10 ? '#ef4444' : '#10b981',
-                    background: isDark ? 'rgba(0,0,0,0.6)' : 'white',
+                    fontFamily: 'var(--pr-font-mono)',
+                    color: countdown <= 10 ? '#FF5C7A' : '#34D399',
+                    background: 'var(--pr-bg-card-hover)',
                     padding: '2px 6px',
-                    borderRadius: 4,
-                    border: `1px solid ${countdown <= 10 ? '#ef4444' : '#10b981'}40`,
+                    border: `1px solid ${countdown <= 10 ? 'var(--pr-red-border)' : 'var(--pr-green-border)'}`,
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
@@ -823,11 +842,11 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
                     top: -6,
                     fontSize: 10,
                     fontWeight: 700,
-                    color: '#a855f7',
-                    background: isDark ? 'rgba(0,0,0,0.6)' : 'white',
+                    fontFamily: 'var(--pr-font-mono)',
+                    color: 'var(--pr-accent-cyan)',
+                    background: 'var(--pr-bg-card-hover)',
                     padding: '2px 6px',
-                    borderRadius: 4,
-                    border: '1px solid rgba(168,85,247,0.4)',
+                    border: '1px solid var(--pr-cyan-border)',
                   }}
                 >
                   Revelando…
@@ -843,7 +862,6 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
                   secret
                   showSecret={showPassword}
                   onToggleSecret={togglePassword}
-                  dark={isDark}
                   terminal={isTerminal}
                   onCopy={(label) => {
                     logCopyAction(projectId, credentialId, 'copied_password')
@@ -855,7 +873,6 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
               <LoginField
                 label="Notas"
                 value={cred.notes}
-                dark={isDark}
                 terminal={isTerminal}
                 readOnly
               />
@@ -867,11 +884,13 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
                 width: '100%',
                 padding: '10px 16px',
                 marginTop: 6,
-                background: isTerminal ? '#10b981' : isDark ? '#a855f7' : '#5b21b6',
-                color: 'white',
-                borderRadius: 6,
-                fontSize: 13,
+                background: 'var(--pr-accent-cyan)',
+                color: 'var(--pr-bg-primary)',
+                fontFamily: 'var(--pr-font-mono)',
+                fontSize: 12,
                 fontWeight: 600,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
                 cursor: accessUrl ? 'pointer' : 'not-allowed',
                 opacity: accessUrl ? 1 : 0.5,
                 transition: 'filter 200ms',
@@ -882,8 +901,8 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
                 openExternal()
                 onShowToast?.('Abriendo panel en nueva pestaña…')
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.1)')}
-              onMouseLeave={(e) => (e.currentTarget.style.filter = '')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--pr-accent-cyan-hover)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--pr-accent-cyan)')}
             >
               Abrir panel
             </button>
@@ -893,7 +912,7 @@ function CredentialModal({ cred, projectId, onClose, onShowToast }) {
         <div
           style={{
             padding: '10px 18px',
-            background: 'rgba(245, 158, 11, 0.06)',
+            background: 'var(--pr-amber-bg)',
             borderTop: '1px solid var(--pd-border)',
             fontSize: 11,
             color: 'var(--pd-text-muted)',
@@ -920,7 +939,7 @@ function Spinner() {
         style={{
           width: 32,
           height: 32,
-          border: '2px solid #a855f7',
+          border: '2px solid var(--pr-accent-cyan)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
           animation: 'pd-spin 1s linear infinite',
@@ -956,11 +975,11 @@ export default function TabCredenciales({ projectId, onShowToast }) {
           style={{
             padding: 24,
             textAlign: 'center',
-            borderColor: 'rgba(239,68,68,0.35)',
-            background: 'rgba(239,68,68,0.08)',
+            borderColor: 'var(--pr-red-border)',
+            background: 'var(--pr-red-bg)',
           }}
         >
-          <p style={{ color: '#f87171', marginBottom: 16, fontSize: 13 }}>{error}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16, fontSize: 13 }}>{error}</p>
           <button type="button" className="pd-btn pd-btn-ghost pd-sm" onClick={refetch}>
             Reintentar
           </button>
@@ -1006,7 +1025,7 @@ export default function TabCredenciales({ projectId, onShowToast }) {
         <div className="pd-section-actions">
           <span
             className="pd-chip"
-            style={{ color: '#fbbf24', background: 'var(--pd-amber-bg)', borderColor: 'var(--pd-amber-border)' }}
+            style={{ color: '#FBBF24', background: 'var(--pd-amber-bg)', borderColor: 'var(--pd-amber-border)' }}
           >
             <Lock size={12} /> Cifrado AES-256
           </span>
@@ -1029,12 +1048,12 @@ export default function TabCredenciales({ projectId, onShowToast }) {
       <div
         className="pd-card"
         style={{
-          background: 'linear-gradient(135deg, rgba(168,85,247,0.06), rgba(6,182,212,0.04))',
-          borderColor: 'rgba(168,85,247,0.18)',
+          background: 'var(--pr-cyan-bg)',
+          borderColor: 'var(--pr-cyan-border)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <div className="pd-card-head-icon pd-accent-purple" style={{ width: 44, height: 44 }}>
+          <div className="pd-card-head-icon pd-accent-cyan" style={{ width: 44, height: 44 }}>
             <Key size={20} />
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>

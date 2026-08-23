@@ -33,8 +33,8 @@ import './projects-list.css'
 // completed | maintenance | paused | cancelled). Aquí soportamos ambos.
 const PHASE_META = {
   preliminary:    { label: 'Preliminar',    badge: 'blue' },
-  in_development: { label: 'En desarrollo', badge: 'purple' },
-  in_progress:    { label: 'En progreso',   badge: 'purple' },
+  in_development: { label: 'En desarrollo', badge: 'cyan' },
+  in_progress:    { label: 'En progreso',   badge: 'cyan' },
   review:         { label: 'Revisión',      badge: 'amber' },
   completed:      { label: 'Completado',    badge: 'green' },
   maintenance:    { label: 'Mantenimiento', badge: 'cyan' },
@@ -55,13 +55,8 @@ const COVER_PALETTE = [
   { hue: 195 }, { hue: 260 }, { hue: 0  }, { hue: 200 },
 ]
 
-const AVATAR_PALETTE = [
-  'linear-gradient(135deg,#a855f7,#06b6d4)',
-  'linear-gradient(135deg,#f59e0b,#ef4444)',
-  'linear-gradient(135deg,#06b6d4,#10b981)',
-  'linear-gradient(135deg,#ec4899,#a855f7)',
-  'linear-gradient(135deg,#3b82f6,#8b5cf6)',
-]
+// Krom: los avatares no se colorean por persona — superficie + borde + inicial en mono.
+const AVATAR_BG = 'var(--pr-bg-card-hover)'
 
 /* ====================== Helpers ====================== */
 
@@ -99,7 +94,7 @@ function deriveTeam(p) {
         .slice(0, 2)
         .map((w) => w[0]?.toUpperCase())
         .join(''),
-    color: m.color || AVATAR_PALETTE[idx % AVATAR_PALETTE.length],
+    color: m.color || AVATAR_BG,
   }))
 }
 
@@ -206,7 +201,7 @@ function FilterBar({ filter, onChange, query, onQuery, sort, onSort, groups, sor
         </div>
         <select className="pr-select" value={sort} onChange={(e) => onSort(e.target.value)}>
           {sortOptions.map((o) => (
-            <option key={o.value} value={o.value} style={{ background: '#0a0e1a' }}>
+            <option key={o.value} value={o.value} style={{ background: 'var(--pr-bg-primary)' }}>
               {o.label}
             </option>
           ))}
@@ -302,7 +297,8 @@ function ProjectCard({ project }) {
       <div
         className="pl-cover"
         style={{
-          background: `linear-gradient(135deg, hsl(${cover.hue}, 65%, 35%) 0%, hsl(${cover.hue + 30}, 55%, 22%) 100%)`,
+          background: 'var(--pr-bg-card-hover)',
+          backgroundImage: `linear-gradient(135deg, rgba(0, 229, 255, ${0.05 + (cover.hue % 5) * 0.02}) 0%, transparent 62%)`,
         }}
       >
         <div className="pl-cover-glyph">{cover.glyph}</div>
@@ -664,7 +660,7 @@ export default function ProjectsPage() {
       <div className="pl-kpi-grid">
         <KpiTile
           Icon={FolderKanban}
-          accent="purple"
+          accent="cyan"
           value={kpi.active}
           label="Proyectos activos"
           sub={`de ${projects.length} totales`}
@@ -728,7 +724,7 @@ export default function ProjectsPage() {
         <>
           {showPinnedHeader && (
             <div className="pl-pinned-label">
-              <Bookmark size={11} style={{ color: '#fbbf24' }} /> Destacados
+              <Bookmark size={11} style={{ color: '#FBBF24' }} /> Destacados
             </div>
           )}
           <motion.div

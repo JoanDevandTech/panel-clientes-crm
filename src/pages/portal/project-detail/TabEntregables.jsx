@@ -4,7 +4,7 @@ import { useApi } from '../../../hooks/useApi'
 import api, { getAccessToken, BASE_URL } from '../../../services/api'
 
 const CATEGORY_INFO = {
-  design:        { label: 'Diseño',        badge: 'purple' },
+  design:        { label: 'Diseño',        badge: 'gray' },
   documentation: { label: 'Documentación', badge: 'blue' },
   code:          { label: 'Código',        badge: 'green' },
   video:         { label: 'Video',         badge: 'amber' },
@@ -14,39 +14,39 @@ const CATEGORY_INFO = {
 
 const VISUAL_PRESETS = {
   pdf: {
-    bg: 'linear-gradient(135deg, rgba(59,130,246,0.18), rgba(168,85,247,0.12))',
+    bg: 'var(--pr-blue-bg)',
     glyph: 'PDF',
-    color: '#60a5fa',
+    color: '#60A5FA',
   },
   image: {
-    bg: 'linear-gradient(135deg, rgba(6,182,212,0.20), rgba(16,185,129,0.12))',
+    bg: 'var(--pr-cyan-bg)',
     glyph: 'IMG',
-    color: '#22d3ee',
+    color: 'var(--pr-accent-cyan)',
   },
   video: {
-    bg: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(239,68,68,0.12))',
+    bg: 'var(--pr-amber-bg)',
     glyph: 'MP4',
-    color: '#fbbf24',
+    color: '#FBBF24',
   },
   code: {
-    bg: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(6,182,212,0.12))',
+    bg: 'var(--pr-green-bg)',
     glyph: 'CODE',
-    color: '#34d399',
+    color: '#34D399',
   },
   zip: {
-    bg: 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(6,182,212,0.12))',
+    bg: 'var(--pr-green-bg)',
     glyph: 'ZIP',
-    color: '#34d399',
+    color: '#34D399',
   },
   design: {
-    bg: 'linear-gradient(135deg, rgba(168,85,247,0.20), rgba(236,72,153,0.14))',
+    bg: 'var(--pr-gray-bg)',
     glyph: 'FIG',
-    color: '#c084fc',
+    color: 'var(--pr-text-read)',
   },
   doc: {
-    bg: 'linear-gradient(135deg, rgba(59,130,246,0.18), rgba(168,85,247,0.12))',
+    bg: 'var(--pr-blue-bg)',
     glyph: 'DOC',
-    color: '#60a5fa',
+    color: '#60A5FA',
   },
 }
 
@@ -205,15 +205,14 @@ function DeliverableCard({ d, projectId, onShowToast }) {
         {!(v.useThumbnail && d.thumbnail_url) && (
           <div
             style={{
-              background: 'rgba(0,0,0,0.35)',
+              background: 'rgba(13, 14, 17,0.35)',
               border: `1px solid ${v.color}40`,
               color: v.color,
               padding: '8px 16px',
-              borderRadius: 8,
               fontSize: 12,
               fontWeight: 700,
               letterSpacing: 2,
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: 'var(--pr-font-mono)',
             }}
           >
             {v.glyph}
@@ -224,7 +223,7 @@ function DeliverableCard({ d, projectId, onShowToast }) {
             position: 'absolute',
             inset: 0,
             backgroundImage:
-              'repeating-linear-gradient(45deg, transparent 0 14px, rgba(255,255,255,0.025) 14px 15px)',
+              'repeating-linear-gradient(45deg, transparent 0 14px, rgba(248, 249, 250,0.025) 14px 15px)',
             pointerEvents: 'none',
           }}
         />
@@ -288,9 +287,9 @@ function DeliverableCard({ d, projectId, onShowToast }) {
             type="button"
             style={{
               flex: 1,
-              background: 'rgba(168,85,247,0.15)',
-              borderColor: 'rgba(168,85,247,0.3)',
-              color: '#c084fc',
+              background: 'rgba(0, 229, 255,0.15)',
+              borderColor: 'rgba(0, 229, 255,0.3)',
+              color: 'var(--pr-text-read)',
               opacity: d.is_downloadable ? 1 : 0.5,
               cursor: d.is_downloadable ? 'pointer' : 'not-allowed',
             }}
@@ -434,9 +433,9 @@ export default function TabEntregables({ projectId, onShowToast }) {
                 style={
                   filter === c
                     ? {
-                        background: 'rgba(168,85,247,0.15)',
-                        borderColor: 'rgba(168,85,247,0.35)',
-                        color: '#c084fc',
+                        background: 'rgba(0, 229, 255,0.15)',
+                        borderColor: 'rgba(0, 229, 255,0.35)',
+                        color: 'var(--pr-text-read)',
                       }
                     : undefined
                 }

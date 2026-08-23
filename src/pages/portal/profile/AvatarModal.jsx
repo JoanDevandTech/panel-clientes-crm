@@ -4,18 +4,18 @@ import { Modal } from './components'
 import api, { apiRequest, getAccessToken, BASE_URL } from '../../../services/api'
 
 const GRADIENTS = [
-  { slug: 'purple-cyan', label: 'Purple Cyan', css: 'linear-gradient(135deg, #4c1d95 0%, #1e40af 35%, #0c4a6e 70%, #134e4a 100%)' },
-  { slug: 'sunset', label: 'Sunset', css: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%)' },
-  { slug: 'ocean', label: 'Ocean', css: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #14b8a6 100%)' },
+  { slug: 'purple-cyan', label: 'Krom', css: 'linear-gradient(135deg, #0D0E11 0%, #111319 45%, #0E3A44 78%, #00E5FF 100%)' },
+  { slug: 'sunset', label: 'Sunset', css: 'linear-gradient(135deg, #F59E0B 0%, #FF1744 50%, #EC4899 100%)' },
+  { slug: 'ocean', label: 'Ocean', css: 'linear-gradient(135deg, #0EA5E9 0%, #00E5FF 50%, #14B8A6 100%)' },
   { slug: 'forest', label: 'Forest', css: 'linear-gradient(135deg, #166534 0%, #14b8a6 50%, #0c4a6e 100%)' },
-  { slug: 'aurora', label: 'Aurora', css: 'linear-gradient(135deg, #4c1d95 0%, #06b6d4 50%, #10b981 100%)' },
-  { slug: 'crimson', label: 'Crimson', css: 'linear-gradient(135deg, #7f1d1d 0%, #ef4444 50%, #f59e0b 100%)' },
-  { slug: 'gold', label: 'Gold', css: 'linear-gradient(135deg, #b45309 0%, #f59e0b 50%, #fde047 100%)' },
-  { slug: 'mint', label: 'Mint', css: 'linear-gradient(135deg, #047857 0%, #10b981 50%, #6ee7b7 100%)' },
-  { slug: 'lavender', label: 'Lavender', css: 'linear-gradient(135deg, #6d28d9 0%, #a855f7 50%, #f0abfc 100%)' },
-  { slug: 'midnight', label: 'Midnight', css: 'linear-gradient(135deg, #020617 0%, #1e293b 50%, #334155 100%)' },
+  { slug: 'aurora', label: 'Aurora', css: 'linear-gradient(135deg, #0D0E11 0%, #00E5FF 50%, #10B981 100%)' },
+  { slug: 'crimson', label: 'Crimson', css: 'linear-gradient(135deg, #7F1D1D 0%, #FF1744 50%, #F59E0B 100%)' },
+  { slug: 'gold', label: 'Gold', css: 'linear-gradient(135deg, #B45309 0%, #F59E0B 50%, #FDE047 100%)' },
+  { slug: 'mint', label: 'Mint', css: 'linear-gradient(135deg, #047857 0%, #10B981 50%, #6EE7B7 100%)' },
+  { slug: 'lavender', label: 'Ice', css: 'linear-gradient(135deg, #101218 0%, #0E3A44 50%, #7FF0FF 100%)' },
+  { slug: 'midnight', label: 'Midnight', css: 'linear-gradient(135deg, #0D0E11 0%, #15171D 50%, #262A33 100%)' },
   { slug: 'coral', label: 'Coral', css: 'linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%)' },
-  { slug: 'slate', label: 'Slate', css: 'linear-gradient(135deg, #1e293b 0%, #475569 50%, #94a3b8 100%)' },
+  { slug: 'slate', label: 'Slate', css: 'linear-gradient(135deg, #111319 0%, #2A2E38 50%, #5B6068 100%)' },
 ]
 
 async function uploadFile(endpoint, fieldName, file) {
@@ -177,16 +177,18 @@ export function BannerModal({ onClose, onSaved, onShowToast }) {
               style={{
                 background: g.css,
                 height: 80,
-                borderRadius: 10,
                 border: '1px solid var(--pf-border)',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'flex-end',
                 padding: 8,
-                color: 'white',
-                fontSize: 11,
+                color: 'var(--pr-text-primary)',
+                fontFamily: 'var(--pr-font-mono)',
+                fontSize: 10,
+                letterSpacing: '0.16em',
+                textTransform: 'uppercase',
                 fontWeight: 600,
-                textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+                textShadow: '0 1px 3px rgba(13,14,17,0.75)',
               }}
             >
               {g.label}

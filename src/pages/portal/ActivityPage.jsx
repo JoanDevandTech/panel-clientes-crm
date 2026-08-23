@@ -37,10 +37,10 @@ const typeMap = {
   ticket: { icon: Ticket, color: 'blue', label: 'Ticket' },
   invoice: { icon: Receipt, color: 'amber', label: 'Factura' },
   quote: { icon: Clipboard, color: 'blue', label: 'Presupuesto' },
-  contract: { icon: FileSignature, color: 'purple', label: 'Contrato' },
+  contract: { icon: FileSignature, color: 'gray', label: 'Contrato' },
   document: { icon: FileText, color: 'cyan', label: 'Documento' },
   deliverable: { icon: Download, color: 'cyan', label: 'Entregable' },
-  milestone: { icon: Flag, color: 'purple', label: 'Hito' },
+  milestone: { icon: Flag, color: 'gray', label: 'Hito' },
   session: { icon: Laptop, color: 'blue', label: 'Sesión' },
   credential: { icon: Key, color: 'amber', label: 'Acceso' },
   account: { icon: User, color: 'gray', label: 'Cuenta' },
@@ -173,7 +173,7 @@ function ActivityRow({ event, isLast, onMarkRead }) {
             {href && (
               <>
                 <span className="act-row-meta-sep">·</span>
-                <Link href={href} className="act-row-meta-item" style={{ color: 'var(--pr-accent-purple)' }} onClick={handleClick}>
+                <Link href={href} className="act-row-meta-item" style={{ color: 'var(--pr-accent-cyan)' }} onClick={handleClick}>
                   Abrir <ChevronRight size={10} />
                 </Link>
               </>
@@ -390,7 +390,7 @@ export default function ActivityPage() {
             <h1 className="pr-page-title">
               Actividad
               {meta?.unread_count > 0 && (
-                <span style={{ marginLeft: 8, color: 'var(--pr-text-muted, #94a3b8)', fontWeight: 500, fontSize: '0.7em' }}>
+                <span style={{ marginLeft: 8, color: 'var(--pr-text-muted, var(--pr-accent-gray))', fontWeight: 500, fontSize: '0.7em' }}>
                   · {meta.unread_count} sin leer
                 </span>
               )}
@@ -418,7 +418,7 @@ export default function ActivityPage() {
       <div className="act-kpi-grid">
         <div className="pr-kpi">
           <div className="pr-kpi-head">
-            <div className="pr-kpi-icon pr-accent-purple"><Activity size={14} /></div>
+            <div className="pr-kpi-icon pr-accent-cyan"><Activity size={14} /></div>
             <div className="pr-kpi-label">Eventos hoy</div>
           </div>
           <div className="pr-kpi-value">{kpis.today}</div>

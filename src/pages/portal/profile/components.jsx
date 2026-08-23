@@ -82,7 +82,7 @@ export function ToggleRow({ title, sub, value, onChange, icon: Icon, color, disa
   return (
     <div className="pf-toggle-row">
       {Icon && (
-        <div className={`pf-card-head-icon pf-accent-${color || 'purple'}`} style={{ width: 32, height: 32, flexShrink: 0 }}>
+        <div className={`pf-card-head-icon pf-accent-${color || 'cyan'}`} style={{ width: 32, height: 32, flexShrink: 0 }}>
           <Icon size={15} />
         </div>
       )}
@@ -127,7 +127,7 @@ export function SelectInput({ value, onChange, options }) {
         appearance: 'none',
         paddingRight: 32,
         backgroundImage:
-          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
+          "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23F8F9FA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\")",
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'right 10px center',
       }}
@@ -136,7 +136,7 @@ export function SelectInput({ value, onChange, options }) {
         const v = typeof o === 'object' ? o.value : o
         const l = typeof o === 'object' ? o.label : o
         return (
-          <option key={v} value={v} style={{ background: '#0a0e1a' }}>
+          <option key={v} value={v} style={{ background: 'var(--pr-bg-surface)' }}>
             {l}
           </option>
         )
@@ -164,7 +164,7 @@ export function SubHead({ children }) {
   return <div className="pf-subhead">{children}</div>
 }
 
-export function FormCard({ icon: Icon, iconAccent = 'purple', title, subtitle, action, children }) {
+export function FormCard({ icon: Icon, iconAccent = 'cyan', title, subtitle, action, children }) {
   return (
     <div className="pf-card">
       <div className="pf-card-head">
@@ -203,19 +203,20 @@ function fullName(user) {
 }
 
 function GRADIENT_PRESETS() {
+  // Espejo de GRADIENTS en AvatarModal.jsx — los slugs son contrato con la API.
   return {
-    'purple-cyan': 'linear-gradient(135deg, #4c1d95 0%, #1e40af 35%, #0c4a6e 70%, #134e4a 100%)',
-    sunset: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%)',
-    ocean: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 50%, #14b8a6 100%)',
+    'purple-cyan': 'linear-gradient(135deg, #0D0E11 0%, #111319 45%, #0E3A44 78%, #00E5FF 100%)',
+    sunset: 'linear-gradient(135deg, #F59E0B 0%, #FF1744 50%, #EC4899 100%)',
+    ocean: 'linear-gradient(135deg, #0EA5E9 0%, #00E5FF 50%, #14B8A6 100%)',
     forest: 'linear-gradient(135deg, #166534 0%, #14b8a6 50%, #0c4a6e 100%)',
-    aurora: 'linear-gradient(135deg, #4c1d95 0%, #06b6d4 50%, #10b981 100%)',
-    crimson: 'linear-gradient(135deg, #7f1d1d 0%, #ef4444 50%, #f59e0b 100%)',
-    gold: 'linear-gradient(135deg, #b45309 0%, #f59e0b 50%, #fde047 100%)',
-    mint: 'linear-gradient(135deg, #047857 0%, #10b981 50%, #6ee7b7 100%)',
-    lavender: 'linear-gradient(135deg, #6d28d9 0%, #a855f7 50%, #f0abfc 100%)',
-    midnight: 'linear-gradient(135deg, #020617 0%, #1e293b 50%, #334155 100%)',
+    aurora: 'linear-gradient(135deg, #0D0E11 0%, #00E5FF 50%, #10B981 100%)',
+    crimson: 'linear-gradient(135deg, #7F1D1D 0%, #FF1744 50%, #F59E0B 100%)',
+    gold: 'linear-gradient(135deg, #B45309 0%, #F59E0B 50%, #FDE047 100%)',
+    mint: 'linear-gradient(135deg, #047857 0%, #10B981 50%, #6EE7B7 100%)',
+    lavender: 'linear-gradient(135deg, #101218 0%, #0E3A44 50%, #7FF0FF 100%)',
+    midnight: 'linear-gradient(135deg, #0D0E11 0%, #15171D 50%, #262A33 100%)',
     coral: 'linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%)',
-    slate: 'linear-gradient(135deg, #1e293b 0%, #475569 50%, #94a3b8 100%)',
+    slate: 'linear-gradient(135deg, #111319 0%, #2A2E38 50%, #5B6068 100%)',
   }
 }
 
@@ -251,19 +252,13 @@ export function PerfilHeader({ profile, onOpenAvatarModal, onOpenBannerModal }) 
       <div className="pf-identity-row">
         <div className="pf-avatar-wrap">
           <svg className="pf-completion-ring" viewBox="0 0 148 148">
-            <defs>
-              <linearGradient id="pf-ring-grad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#a855f7" />
-                <stop offset="100%" stopColor="#06b6d4" />
-              </linearGradient>
-            </defs>
-            <circle cx="74" cy="74" r={ringR} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+            <circle cx="74" cy="74" r={ringR} fill="none" stroke="rgba(248,249,250,0.08)" strokeWidth="3" />
             <circle
               cx="74"
               cy="74"
               r={ringR}
               fill="none"
-              stroke="url(#pf-ring-grad)"
+              stroke="var(--pr-accent-cyan)"
               strokeWidth="3"
               strokeDasharray={ringC}
               strokeDashoffset={ringC * (1 - completion / 100)}
@@ -283,7 +278,7 @@ export function PerfilHeader({ profile, onOpenAvatarModal, onOpenBannerModal }) 
         <div className="pf-identity-text">
           <h1 className="pf-name">
             {fullName(user) || 'Sin nombre'}
-            {user.email_verified_at && <CheckCircle size={20} style={{ color: '#34d399' }} />}
+            {user.email_verified_at && <CheckCircle size={20} style={{ color: '#34D399' }} />}
           </h1>
           <p className="pf-role">
             {user.job_title || ''}
@@ -332,9 +327,9 @@ export function CompletionBar({ completion, onJumpTab }) {
   const suggestions = completion?.suggestions || []
 
   const colorByPct = (pct) => {
-    if (pct >= 90) return '#10b981'
-    if (pct >= 60) return '#f59e0b'
-    return '#ef4444'
+    if (pct >= 90) return 'var(--pr-accent-green)'
+    if (pct >= 60) return 'var(--pr-accent-amber)'
+    return 'var(--pr-accent-red)'
   }
 
   const breakdownLabels = {
@@ -405,8 +400,8 @@ export function CompletionBar({ completion, onJumpTab }) {
                     {p.pct}%
                   </span>
                 </div>
-                <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 999, overflow: 'hidden' }}>
-                  <div style={{ width: `${p.pct}%`, background: p.color, height: '100%', borderRadius: 999, transition: 'width 600ms var(--pf-ease)' }} />
+                <div style={{ height: 4, background: 'rgba(248,249,250,0.08)', overflow: 'hidden' }}>
+                  <div style={{ width: `${p.pct}%`, background: p.color, height: '100%', transition: 'width 600ms var(--pf-ease)' }} />
                 </div>
               </div>
             ))}
@@ -434,7 +429,7 @@ export function PerfilTabs({ tabs, active, onChange }) {
               <Icon size={15} />
               <span>{t.label}</span>
               {t.flag === 'incomplete' && (
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#f59e0b' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--pr-accent-amber)' }} />
               )}
               {t.flag === 'warn' && (
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--pf-red)' }} />

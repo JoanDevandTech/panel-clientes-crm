@@ -15,7 +15,7 @@ import { useApi } from '../../../hooks/useApi'
 
 const milestoneStatusVisual = {
   completed: {
-    color: '#10b981',
+    color: 'var(--pr-accent-green)',
     bg: 'rgba(16,185,129,0.12)',
     border: 'rgba(16,185,129,0.35)',
     Icon: Check,
@@ -23,7 +23,7 @@ const milestoneStatusVisual = {
     badge: 'green',
   },
   in_progress: {
-    color: '#f59e0b',
+    color: 'var(--pr-accent-amber)',
     bg: 'rgba(245,158,11,0.12)',
     border: 'rgba(245,158,11,0.35)',
     Icon: Clock,
@@ -31,17 +31,17 @@ const milestoneStatusVisual = {
     badge: 'amber',
   },
   pending: {
-    color: 'rgba(255,255,255,0.4)',
-    bg: 'rgba(255,255,255,0.05)',
-    border: 'rgba(255,255,255,0.12)',
+    color: 'rgba(248, 249, 250,0.4)',
+    bg: 'rgba(248, 249, 250,0.05)',
+    border: 'rgba(248, 249, 250,0.12)',
     Icon: Circle,
     label: 'Pendiente',
     badge: 'gray',
   },
   blocked: {
-    color: '#ef4444',
-    bg: 'rgba(239,68,68,0.12)',
-    border: 'rgba(239,68,68,0.35)',
+    color: 'var(--pr-accent-red)',
+    bg: 'rgba(255, 23, 68,0.12)',
+    border: 'rgba(255, 23, 68,0.35)',
     Icon: AlertCircle,
     label: 'Bloqueado',
     badge: 'red',
@@ -102,9 +102,8 @@ function MilestoneNode({ m, isLast, expanded, onToggle }) {
             width: 2,
             background:
               status === 'completed'
-                ? 'linear-gradient(180deg, #10b981 0%, rgba(168,85,247,0.4) 100%)'
-                : 'rgba(255,255,255,0.08)',
-            borderRadius: 1,
+                ? 'var(--pr-accent-green)'
+                : 'rgba(248, 249, 250,0.08)',
           }}
         />
       )}
@@ -149,7 +148,7 @@ function MilestoneNode({ m, isLast, expanded, onToggle }) {
             <span
               className="pd-chip"
               style={{
-                color: onTime ? '#34d399' : '#fbbf24',
+                color: onTime ? '#34D399' : '#FBBF24',
                 borderColor: onTime ? 'var(--pd-green-border)' : 'var(--pd-amber-border)',
                 background: onTime ? 'var(--pd-green-bg)' : 'var(--pd-amber-bg)',
               }}
@@ -230,7 +229,7 @@ function Spinner() {
         style={{
           width: 32,
           height: 32,
-          border: '2px solid #a855f7',
+          border: '2px solid var(--pr-accent-cyan)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
           animation: 'pd-spin 1s linear infinite',
@@ -264,11 +263,11 @@ export default function TabHitos({ projectId }) {
           style={{
             padding: 24,
             textAlign: 'center',
-            borderColor: 'rgba(239,68,68,0.35)',
-            background: 'rgba(239,68,68,0.08)',
+            borderColor: 'rgba(255, 23, 68,0.35)',
+            background: 'rgba(255, 23, 68,0.08)',
           }}
         >
-          <p style={{ color: '#f87171', marginBottom: 16, fontSize: 13 }}>{error}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16, fontSize: 13 }}>{error}</p>
           <button type="button" className="pd-btn pd-btn-ghost pd-sm" onClick={refetch}>
             Reintentar
           </button>
@@ -317,7 +316,7 @@ export default function TabHitos({ projectId }) {
           <div className="pd-section-actions">
             <span
               className="pd-chip"
-              style={{ color: '#34d399', borderColor: 'var(--pd-green-border)', background: 'var(--pd-green-bg)' }}
+              style={{ color: '#34D399', borderColor: 'var(--pd-green-border)', background: 'var(--pd-green-bg)' }}
             >
               <TrendingUp size={12} /> 100% on time
             </span>

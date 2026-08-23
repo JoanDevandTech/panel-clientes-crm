@@ -39,19 +39,19 @@ const STATUS = {
 }
 
 const TYPE_HEURISTICS = [
-  { match: /mantenim|maintenance|soporte|support/i, type: 'Mantenimiento', accent: 'purple', icon: Sparkles },
+  { match: /mantenim|maintenance|soporte|support/i, type: 'Mantenimiento', accent: 'cyan', icon: Sparkles },
   { match: /hosting|servidor|cloud|server/i, type: 'Hosting', accent: 'cyan', icon: Cloud },
   { match: /licenc|license|suscrip|subscription|saas|figma|adobe/i, type: 'Licencias', accent: 'blue', icon: CreditCard },
   { match: /desarrollo|development|web|app|build/i, type: 'Desarrollo', accent: 'green', icon: Code },
 ]
 
 const CATEGORY_MAP = {
-  maintenance: { type: 'Mantenimiento', accent: 'purple', Icon: Sparkles },
+  maintenance: { type: 'Mantenimiento', accent: 'cyan', Icon: Sparkles },
   hosting: { type: 'Hosting', accent: 'cyan', Icon: Cloud },
   licenses: { type: 'Licencias', accent: 'blue', Icon: CreditCard },
   license: { type: 'Licencias', accent: 'blue', Icon: CreditCard },
   development: { type: 'Desarrollo', accent: 'green', Icon: Code },
-  service: { type: 'Servicio', accent: 'purple', Icon: Server },
+  service: { type: 'Servicio', accent: 'cyan', Icon: Server },
 }
 
 function deriveType(contract) {
@@ -60,7 +60,7 @@ function deriveType(contract) {
   const haystack = [contract.title, contract.items_summary].filter(Boolean).join(' ')
   const hit = TYPE_HEURISTICS.find((h) => h.match.test(haystack))
   if (hit) return { type: hit.type, accent: hit.accent, Icon: hit.icon }
-  return { type: 'Servicio', accent: 'purple', Icon: Server }
+  return { type: 'Servicio', accent: 'cyan', Icon: Server }
 }
 
 function formatAmount(amount, currency = 'EUR') {
@@ -374,14 +374,14 @@ export default function ContractDetailPage() {
           className="pr-banner"
           style={{
             background:
-              'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(168,85,247,0.06))',
+              'var(--pr-amber-bg)',
             borderColor: 'rgba(245,158,11,0.25)',
-            color: '#fbbf24',
+            color: '#FBBF24',
           }}
         >
           <AlertTriangle size={16} />
           <span>
-            <strong style={{ color: '#fbbf24' }}>Pendiente de firma.</strong> El servicio
+            <strong style={{ color: '#FBBF24' }}>Pendiente de firma.</strong> El servicio
             no comenzará hasta que el contrato esté firmado.
           </span>
         </div>
@@ -397,7 +397,7 @@ export default function ContractDetailPage() {
       >
         <Kpi
           icon={CreditCard}
-          accent="purple"
+          accent="cyan"
           value={formatAmount(monthlyFee ?? totalPerCycle, contract.currency)}
           label={monthlyFee ? 'Cuota mensual' : contract.billing_cycle_label || 'Importe'}
           sub={
@@ -455,7 +455,7 @@ export default function ContractDetailPage() {
           className="pr-card"
         >
           <div className="pr-card-head">
-            <div className="pr-card-head-icon pr-accent-purple">
+            <div className="pr-card-head-icon pr-accent-cyan">
               <Receipt size={14} />
             </div>
             <div className="pr-card-head-title">Servicios incluidos</div>
@@ -627,7 +627,7 @@ export default function ContractDetailPage() {
         </div>
 
         {notesError && (
-          <p style={{ fontSize: 13, color: '#f87171', marginBottom: 12 }}>{notesError}</p>
+          <p style={{ fontSize: 13, color: '#FF5C7A', marginBottom: 12 }}>{notesError}</p>
         )}
 
         {notes.length === 0 && !notesLoading && !notesError && (
@@ -703,7 +703,7 @@ export default function ContractDetailPage() {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.55)',
+            background: 'rgba(13, 14, 17,0.55)',
             backdropFilter: 'blur(4px)',
             display: 'flex',
             alignItems: 'center',
@@ -726,7 +726,7 @@ export default function ContractDetailPage() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div className="pr-card-head-icon pr-accent-purple">
+                <div className="pr-card-head-icon pr-accent-cyan">
                   <FileSignature size={14} />
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--pr-text-primary)' }}>
@@ -776,10 +776,9 @@ export default function ContractDetailPage() {
                 width: '100%',
                 padding: '10px 12px',
                 fontSize: 14,
-                background: 'var(--pr-bg-elev, rgba(255,255,255,0.04))',
+                background: 'var(--pr-bg-input)',
                 color: 'var(--pr-text-primary)',
-                border: '1px solid var(--pr-border, rgba(255,255,255,0.1))',
-                borderRadius: 8,
+                border: '1px solid var(--pr-border)',
                 outline: 'none',
                 marginBottom: 14,
               }}
@@ -807,7 +806,7 @@ export default function ContractDetailPage() {
             </label>
 
             {signError && (
-              <p style={{ fontSize: 12, color: '#f87171', marginBottom: 12 }}>{signError}</p>
+              <p style={{ fontSize: 12, color: '#FF5C7A', marginBottom: 12 }}>{signError}</p>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
@@ -844,18 +843,17 @@ export default function ContractDetailPage() {
             background:
               toast.type === 'success'
                 ? 'rgba(16,185,129,0.15)'
-                : 'rgba(239,68,68,0.15)',
+                : 'rgba(255, 23, 68,0.15)',
             border: `1px solid ${
-              toast.type === 'success' ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'
+              toast.type === 'success' ? 'rgba(16,185,129,0.4)' : 'rgba(255, 23, 68,0.4)'
             }`,
-            color: toast.type === 'success' ? '#34d399' : '#f87171',
+            color: toast.type === 'success' ? '#34D399' : '#FF5C7A',
             padding: '10px 14px',
-            borderRadius: 8,
             fontSize: 13,
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            boxShadow: '0 10px 30px rgba(13, 14, 17,0.3)',
           }}
         >
           {toast.type === 'success' ? <Check size={14} /> : <AlertCircle size={14} />}

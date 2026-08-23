@@ -30,7 +30,7 @@ function LazyFallback() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--pr-bg-primary, #0a0e1a)',
+        background: 'var(--pr-bg-primary, #0D0E11)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

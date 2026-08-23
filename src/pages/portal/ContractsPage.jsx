@@ -33,19 +33,19 @@ const STATUS = {
 }
 
 const TYPE_HEURISTICS = [
-  { match: /mantenim|maintenance|soporte|support/i, type: 'Mantenimiento', accent: 'purple', icon: Sparkles },
+  { match: /mantenim|maintenance|soporte|support/i, type: 'Mantenimiento', accent: 'cyan', icon: Sparkles },
   { match: /hosting|servidor|cloud|server/i, type: 'Hosting', accent: 'cyan', icon: Cloud },
   { match: /licenc|license|suscrip|subscription|saas|figma|adobe/i, type: 'Licencias', accent: 'blue', icon: CreditCard },
   { match: /desarrollo|development|web|app|build/i, type: 'Desarrollo', accent: 'green', icon: Code },
 ]
 
 const CATEGORY_MAP = {
-  maintenance: { type: 'Mantenimiento', accent: 'purple', Icon: Sparkles },
+  maintenance: { type: 'Mantenimiento', accent: 'cyan', Icon: Sparkles },
   hosting: { type: 'Hosting', accent: 'cyan', Icon: Cloud },
   licenses: { type: 'Licencias', accent: 'blue', Icon: CreditCard },
   license: { type: 'Licencias', accent: 'blue', Icon: CreditCard },
   development: { type: 'Desarrollo', accent: 'green', Icon: Code },
-  service: { type: 'Servicio', accent: 'purple', Icon: Server },
+  service: { type: 'Servicio', accent: 'cyan', Icon: Server },
 }
 
 function deriveType(contract) {
@@ -54,7 +54,7 @@ function deriveType(contract) {
   const haystack = [contract.title, contract.items_summary].filter(Boolean).join(' ')
   const hit = TYPE_HEURISTICS.find((h) => h.match.test(haystack))
   if (hit) return { type: hit.type, accent: hit.accent, Icon: hit.icon }
-  return { type: 'Servicio', accent: 'purple', Icon: Server }
+  return { type: 'Servicio', accent: 'cyan', Icon: Server }
 }
 
 async function downloadBlob(endpoint, filename) {
@@ -435,7 +435,7 @@ export default function ContractsPage() {
                 {exporting ? 'Exportando…' : 'Exportar todos'}
               </button>
               {exportError && (
-                <span style={{ fontSize: 11, color: '#f87171' }}>{exportError}</span>
+                <span style={{ fontSize: 11, color: '#FF5C7A' }}>{exportError}</span>
               )}
             </div>
           )}
@@ -453,7 +453,7 @@ export default function ContractsPage() {
         />
         <Kpi
           icon={RotateCcw}
-          accent="purple"
+          accent="cyan"
           value={`${kpi.monthlyRecurring.toLocaleString('es-ES', {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,

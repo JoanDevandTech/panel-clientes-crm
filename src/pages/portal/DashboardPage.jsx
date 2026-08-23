@@ -92,14 +92,14 @@ function greetingFor(date = new Date()) {
   return 'Buenas noches'
 }
 
+// Sparkline: acento único cian; los semánticos armonizados con el fondo Krom.
 const ACCENT_HEX = {
-  cyan: '#06b6d4',
-  purple: '#a855f7',
-  amber: '#f59e0b',
-  green: '#10b981',
-  red: '#ef4444',
-  blue: '#3b82f6',
-  gray: '#94a3b8',
+  cyan: '#00E5FF',
+  amber: 'var(--pr-accent-amber)',
+  green: 'var(--pr-accent-green)',
+  red: '#FF1744',
+  blue: 'var(--pr-accent-blue)',
+  gray: 'rgba(248,249,250,0.55)',
 }
 
 /* ============================== sparkline ============================== */
@@ -134,7 +134,7 @@ function Sparkline({ data, color, width = 120, height = 40 }) {
 
 function TrendChip({ trend }) {
   if (!trend) return null
-  const colorMap = { up: '#34d399', down: '#34d399', neutral: 'var(--pr-text-muted)' }
+  const colorMap = { up: '#34D399', down: '#34D399', neutral: 'var(--pr-text-muted)' }
   return (
     <span className="dash-trend-chip" style={{ color: colorMap[trend.dir] }}>
       {trend.dir === 'up' && <TrendingUp size={11} />}
@@ -147,7 +147,7 @@ function TrendChip({ trend }) {
 
 /* ============================== KPI ============================== */
 
-function KPICard({ icon: Icon, accent = 'purple', value, label, sub, trend, spark }) {
+function KPICard({ icon: Icon, accent = 'cyan', value, label, sub, trend, spark }) {
   return (
     <div className="dash-kpi">
       <div className="dash-kpi-head">
@@ -161,7 +161,7 @@ function KPICard({ icon: Icon, accent = 'purple', value, label, sub, trend, spar
       {sub && <div className="dash-kpi-sub">{sub}</div>}
       {spark && spark.length > 1 && (
         <div className="dash-kpi-spark">
-          <Sparkline data={spark} color={ACCENT_HEX[accent] || ACCENT_HEX.purple} />
+          <Sparkline data={spark} color={ACCENT_HEX[accent] || ACCENT_HEX.cyan} />
         </div>
       )}
     </div>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
     {
       key: 'projects',
       icon: FolderKanban,
-      accent: 'purple',
+      accent: 'cyan',
       value: projects.active ?? 0,
       label: 'Proyectos activos',
       sub: recentProjects.length
@@ -313,7 +313,7 @@ export default function DashboardPage() {
       id: `q-${q.id}`,
       priority: days != null && days <= 5 ? 'high' : 'medium',
       icon: FileSignature,
-      accent: 'purple',
+      accent: 'cyan',
       title: `Presupuesto ${q.quote_number} por revisar`,
       desc: q.title || (q.valid_until ? `Válido hasta ${formatDateLong(q.valid_until)}` : 'Pendiente de tu aprobación'),
       due: days != null ? (days <= 0 ? 'Caduca hoy' : `${days} días`) : 'Sin caducidad',
@@ -343,7 +343,7 @@ export default function DashboardPage() {
   const quickLinks = [
     { label: 'Abrir ticket', icon: LifeBuoy, accent: 'amber', desc: 'Cuéntanos un problema o duda', href: '/portal/tickets/new' },
     { label: 'Ver presupuestos', icon: ClipboardList, accent: 'cyan', desc: 'Revisa y aprueba propuestas', href: '/portal/quotes' },
-    { label: 'Subir documento', icon: Upload, accent: 'purple', desc: 'Compártenos un brief o archivo', href: '/portal/documents' },
+    { label: 'Subir documento', icon: Upload, accent: 'cyan', desc: 'Compártenos un brief o archivo', href: '/portal/documents' },
     { label: 'Buscar', icon: Search, accent: 'blue', desc: 'Recibos, contratos, briefs…', href: '/portal/documents' },
   ]
 
@@ -457,7 +457,7 @@ export default function DashboardPage() {
       <div style={{ marginBottom: 16 }}>
         <div className="dash-card-flush">
           <div className="dash-card-flush-head">
-            <div className="pr-card-head-icon pr-accent-purple">
+            <div className="pr-card-head-icon pr-accent-cyan">
               <FolderKanban size={16} />
             </div>
             <div className="head-meta">
@@ -556,7 +556,7 @@ export default function DashboardPage() {
 
         <div className="pr-card" style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <div className="pr-card-head-icon pr-accent-purple">
+            <div className="pr-card-head-icon pr-accent-cyan">
               <Sparkles size={16} />
             </div>
             <div>
@@ -660,8 +660,8 @@ function ProjectTile({ project }) {
 
 function projectStatusBadge(status) {
   const map = {
-    in_progress: { label: 'En progreso', color: 'purple' },
-    in_development: { label: 'En desarrollo', color: 'purple' },
+    in_progress: { label: 'En progreso', color: 'cyan' },
+    in_development: { label: 'En desarrollo', color: 'cyan' },
     review: { label: 'Revisión', color: 'amber' },
     completed: { label: 'Completado', color: 'green' },
     paused: { label: 'Pausado', color: 'gray' },
@@ -678,8 +678,8 @@ function activityMeta(type) {
     ticket_resolved: { icon: CheckCircle2, accent: 'green' },
     invoice_created: { icon: Receipt, accent: 'amber' },
     invoice_paid: { icon: CheckCircle2, accent: 'green' },
-    project_update: { icon: FolderKanban, accent: 'purple' },
-    milestone: { icon: Flag, accent: 'purple' },
+    project_update: { icon: FolderKanban, accent: 'cyan' },
+    milestone: { icon: Flag, accent: 'cyan' },
     quote_created: { icon: ClipboardList, accent: 'amber' },
     contract_signed: { icon: FileSignature, accent: 'cyan' },
     document_uploaded: { icon: Download, accent: 'cyan' },
@@ -741,9 +741,8 @@ function UpcomingMilestonesCard({ milestones }) {
                 style={{
                   width: 48,
                   height: 48,
-                  borderRadius: 10,
-                  background: isCurrent ? 'rgba(6,182,212,0.12)' : 'rgba(255,255,255,0.04)',
-                  border: isCurrent ? '1px solid rgba(6,182,212,0.3)' : '1px solid var(--pr-border)',
+                  background: isCurrent ? 'var(--pr-cyan-bg)' : 'rgba(248,249,250,0.04)',
+                  border: isCurrent ? '1px solid var(--pr-cyan-border)' : '1px solid var(--pr-border)',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -766,7 +765,7 @@ function UpcomingMilestonesCard({ milestones }) {
                   style={{
                     fontSize: 18,
                     fontWeight: 700,
-                    color: isCurrent ? '#22d3ee' : 'var(--pr-text-primary)',
+                    color: isCurrent ? 'var(--pr-accent-cyan)' : 'var(--pr-text-primary)',
                     lineHeight: 1,
                     fontVariantNumeric: 'tabular-nums',
                   }}
@@ -844,7 +843,6 @@ function RecentMessagesCard({ messages }) {
                     width: 4,
                     height: 28,
                     background: 'var(--pr-accent-cyan)',
-                    borderRadius: 4,
                   }}
                 />
               )}
@@ -852,13 +850,14 @@ function RecentMessagesCard({ messages }) {
                 style={{
                   width: 36,
                   height: 36,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg,#a855f7,#06b6d4)',
+                  background: 'var(--pr-bg-card-hover)',
+                  border: '1px solid var(--pr-border-strong)',
                   display: 'grid',
                   placeItems: 'center',
+                  fontFamily: 'var(--pr-font-mono)',
                   fontSize: 11,
                   fontWeight: 600,
-                  color: 'white',
+                  color: 'var(--pr-accent-cyan)',
                   flexShrink: 0,
                 }}
               >
@@ -970,7 +969,7 @@ function FinancialSummary({ invoices }) {
                   className="pr-progress-bar-fill"
                   style={{
                     width: `${totalInvoiced ? Math.min(100, Math.round((totalPaid / totalInvoiced) * 100)) : 0}%`,
-                    background: 'linear-gradient(90deg, #10b981, #06b6d4)',
+                    background: 'var(--pr-accent-green)',
                   }}
                 />
               </div>
@@ -983,8 +982,8 @@ function FinancialSummary({ invoices }) {
           )}
 
           <div className="dash-fin-legend">
-            <span><i style={{ background: '#10b981' }} /> Cobrado</span>
-            <span><i style={{ background: '#f59e0b' }} /> Pendiente</span>
+            <span><i style={{ background: 'var(--pr-accent-green)' }} /> Cobrado</span>
+            <span><i style={{ background: 'var(--pr-accent-amber)' }} /> Pendiente</span>
           </div>
         </>
       ) : (
@@ -1124,8 +1123,7 @@ function QuotesOverviewCard({ quotes }) {
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '12px 14px',
-              borderRadius: 10,
-              background: 'rgba(255,255,255,0.04)',
+              background: 'rgba(248,249,250,0.04)',
               border: '1px solid var(--pr-border)',
               textDecoration: 'none',
               color: 'inherit',

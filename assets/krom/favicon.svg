@@ -1,5 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 232" width="240" height="232" role="img" aria-label="Isotipo KROM">
-  <rect x="0" y="0" width="64" height="232" fill="#FFFFFF"></rect>
-  <polygon points="64,121 138,121 240,0 166,0" fill="#EE3B4D"></polygon>
-  <rect x="130" y="163" width="110" height="69" fill="#4BC3E6"></rect>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Isotipo KROM">
+  <defs>
+    <linearGradient id="steel" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E4E8EC"></stop>
+      <stop offset="1" stop-color="#FFFFFF"></stop>
+    </linearGradient>
+    <radialGradient id="auraRed" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(288 196) scale(160)">
+      <stop offset="0" stop-color="#EE3B4D" stop-opacity=".30"></stop>
+      <stop offset=".5" stop-color="#EE3B4D" stop-opacity=".08"></stop>
+      <stop offset="1" stop-color="#EE3B4D" stop-opacity="0"></stop>
+    </radialGradient>
+    <radialGradient id="auraCyan" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(296 352) scale(150)">
+      <stop offset="0" stop-color="#4BC3E6" stop-opacity=".34"></stop>
+      <stop offset=".5" stop-color="#4BC3E6" stop-opacity=".10"></stop>
+      <stop offset="1" stop-color="#4BC3E6" stop-opacity="0"></stop>
+    </radialGradient>
+    <clipPath id="card">
+      <rect width="512" height="512" rx="36"></rect>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="512" height="512" fill="#060608"></rect>
+    <rect width="512" height="512" fill="url(#auraRed)"></rect>
+    <rect width="512" height="512" fill="url(#auraCyan)"></rect>
+    <g transform="translate(160 163) scale(0.8)">
+      <rect x="0" y="0" width="64" height="232" fill="url(#steel)"></rect>
+      <polygon points="64,121 138,121 240,0 166,0" fill="#EE3B4D"></polygon>
+      <rect x="130" y="163" width="110" height="69" fill="#4BC3E6"></rect>
+    </g>
+  </g>
 </svg>

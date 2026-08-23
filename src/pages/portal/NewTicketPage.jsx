@@ -28,10 +28,10 @@ const priorityOptions = [
 ]
 
 const priorityBadgeConfig = {
-  low: { bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  low: { bg: 'bg-ink/[0.06]', text: 'text-ink/60' },
   medium: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
   high: { bg: 'bg-amber-500/20', text: 'text-amber-400' },
-  urgent: { bg: 'bg-red-500/20', text: 'text-red-400' },
+  urgent: { bg: 'bg-danger/15', text: 'text-[#FF5C7A]' },
 }
 
 function Toast({ type, message, onClose }) {
@@ -40,15 +40,15 @@ function Toast({ type, message, onClose }) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className={`flex items-center gap-3 p-4 rounded-xl border shadow-lg ${
+      className={`flex items-center gap-3 p-4 border shadow-lg ${
         type === 'success'
           ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-          : 'bg-red-500/10 border-red-500/30 text-red-400'
+          : 'bg-danger/10 border-danger/30 text-[#FF5C7A]'
       }`}
     >
       {type === 'success' ? <CheckCircle size={20} /> : <XCircle size={20} />}
       <p className="text-sm flex-1">{message}</p>
-      <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors text-lg leading-none">&times;</button>
+      <button onClick={onClose} className="text-ink/60 hover:text-ink transition-colors text-lg leading-none">&times;</button>
     </motion.div>
   )
 }
@@ -58,40 +58,40 @@ function StepIndicator({ currentStep }) {
     <div className="flex items-center justify-center mb-8">
       <div className="flex flex-col items-center">
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+          className={`w-10 h-10 flex items-center justify-center font-mono text-sm font-semibold transition-colors ${
             currentStep >= 1
-              ? 'bg-primary text-white'
-              : 'bg-white/10 text-slate-500'
+              ? 'bg-primary text-background-dark'
+              : 'bg-ink/[0.06] text-ink/45'
           }`}
         >
           1
         </div>
-        <span className={`mt-2 text-xs font-medium ${currentStep >= 1 ? 'text-primary' : 'text-slate-500'}`}>
+        <span className={`mt-2 text-xs font-medium ${currentStep >= 1 ? 'text-primary' : 'text-ink/45'}`}>
           Datos del Ticket
         </span>
       </div>
 
       <div className="w-24 sm:w-32 h-0.5 mx-4 mt-[-1rem]">
         <div
-          className={`h-full rounded-full transition-colors ${
+          className={`h-full transition-colors ${
             currentStep >= 2
-              ? 'bg-gradient-to-r from-primary to-secondary'
-              : 'bg-white/10'
+              ? 'bg-primary'
+              : 'bg-ink/[0.06]'
           }`}
         />
       </div>
 
       <div className="flex flex-col items-center">
         <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
+          className={`w-10 h-10 flex items-center justify-center font-mono text-sm font-semibold transition-colors ${
             currentStep >= 2
-              ? 'bg-primary text-white'
-              : 'bg-white/10 text-slate-500'
+              ? 'bg-primary text-background-dark'
+              : 'bg-ink/[0.06] text-ink/45'
           }`}
         >
           2
         </div>
-        <span className={`mt-2 text-xs font-medium ${currentStep >= 2 ? 'text-primary' : 'text-slate-500'}`}>
+        <span className={`mt-2 text-xs font-medium ${currentStep >= 2 ? 'text-primary' : 'text-ink/45'}`}>
           Descripción
         </span>
       </div>
@@ -247,11 +247,11 @@ export default function NewTicketPage() {
   }
 
   const inputClass = (field) =>
-    `w-full px-4 py-3 rounded-lg bg-background-dark border ${
+    `w-full px-4 py-3 bg-background-dark border ${
       errors[field] && touched[field]
-        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-        : 'border-white/10 focus:border-primary focus:ring-primary'
-    } focus:ring-1 outline-none text-white transition-colors`
+        ? 'border-danger focus:border-danger focus:ring-danger'
+        : 'border-ink/[0.09] focus:border-primary focus:ring-primary'
+    } focus:ring-1 outline-none text-ink transition-colors`
 
   const slideVariants = {
     enter: (dir) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
@@ -264,7 +264,7 @@ export default function NewTicketPage() {
       <div>
         <Link
           href="/portal/tickets"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm mb-6"
+          className="inline-flex items-center gap-2 text-ink/60 hover:text-ink transition-colors text-sm mb-6"
         >
           <ArrowLeft size={16} />
           Volver a tickets
@@ -274,34 +274,34 @@ export default function NewTicketPage() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="bg-surface-dark rounded-2xl p-8 border border-white/5 text-center max-w-lg mx-auto"
+          className="bg-surface-dark p-8 border border-ink/[0.09] text-center max-w-lg mx-auto"
         >
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/10 mb-6"
+            className="inline-flex items-center justify-center w-20 h-20 border border-emerald-500/25 bg-emerald-500/10 mb-6"
           >
             <CheckCircle size={40} className="text-emerald-400" />
           </motion.div>
 
-          <h2 className="text-2xl font-display font-bold text-white mb-3">
+          <h2 className="text-2xl font-display font-bold text-ink mb-3">
             ¡Ticket enviado correctamente!
           </h2>
-          <p className="text-slate-400 mb-8">
+          <p className="text-ink/60 mb-8">
             Tu ticket #{successData.id} ha sido creado. Te notificaremos cuando tengamos una respuesta.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/portal/tickets"
-              className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-xl transition-all hover:shadow-lg hover:shadow-primary/30 text-sm"
+              className="inline-flex items-center justify-center px-6 py-3 bg-primary text-background-dark font-medium transition-all hover:bg-secondary hover:shadow-portal-glow text-sm"
             >
               Ver mis tickets
             </Link>
             <button
               onClick={resetForm}
-              className="inline-flex items-center justify-center px-6 py-3 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 font-medium rounded-xl transition-all text-sm"
+              className="inline-flex items-center justify-center px-6 py-3 bg-ink/[0.03] text-ink/72 hover:text-ink hover:bg-ink/[0.06] font-medium transition-all text-sm"
             >
               Crear otro ticket
             </button>
@@ -318,13 +318,13 @@ export default function NewTicketPage() {
     <div>
       <Link
         href="/portal/tickets"
-        className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm mb-6"
+        className="inline-flex items-center gap-2 text-ink/60 hover:text-ink transition-colors text-sm mb-6"
       >
         <ArrowLeft size={16} />
         Volver a tickets
       </Link>
 
-      <h1 className="text-2xl font-display font-bold text-white mb-6">Nuevo Ticket</h1>
+      <h1 className="text-2xl font-display font-bold text-ink mb-6">Nuevo Ticket</h1>
 
       <StepIndicator currentStep={step} />
 
@@ -348,11 +348,11 @@ export default function NewTicketPage() {
               exit="exit"
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
-              <div className="bg-surface-dark rounded-2xl p-8 border border-white/5">
-                <h2 className="text-lg font-display font-bold text-white mb-6">Datos del Ticket</h2>
+              <div className="bg-surface-dark p-8 border border-ink/[0.09]">
+                <h2 className="text-lg font-display font-bold text-ink mb-6">Datos del Ticket</h2>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Asunto *</label>
+                  <label className="block text-sm font-medium text-ink/72 mb-2">Asunto *</label>
                   <input
                     type="text"
                     value={subject}
@@ -365,19 +365,19 @@ export default function NewTicketPage() {
                   <div className="flex items-center justify-between mt-1">
                     <div>
                       {errors.subject && touched.subject && (
-                        <p className="text-xs text-red-400">{errors.subject}</p>
+                        <p className="text-xs text-[#FF5C7A]">{errors.subject}</p>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500">{subject.length}/255</p>
+                    <p className="text-xs text-ink/45">{subject.length}/255</p>
                   </div>
                 </div>
 
                 <div className="mb-8">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Prioridad</label>
+                  <label className="block text-sm font-medium text-ink/72 mb-2">Prioridad</label>
                   <select
                     value={priority}
                     onChange={(e) => setPriority(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-background-dark border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-white transition-colors"
+                    className="w-full px-4 py-3 bg-background-dark border border-ink/[0.09] focus:border-primary focus:ring-1 focus:ring-primary outline-none text-ink transition-colors"
                   >
                     {priorityOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -390,7 +390,7 @@ export default function NewTicketPage() {
                   whileTap={{ scale: 0.98 }}
                   onClick={goToStep2}
                   disabled={!isStep1Valid}
-                  className="w-full py-3.5 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold text-base hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-primary text-background-dark font-bold text-base hover:bg-secondary hover:shadow-portal-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   Siguiente
                   <ArrowRight size={18} />
@@ -409,18 +409,18 @@ export default function NewTicketPage() {
               exit="exit"
               transition={{ duration: 0.3, ease: 'easeInOut' }}
             >
-              <div className="bg-surface-dark rounded-2xl p-8 border border-white/5">
-                <h2 className="text-lg font-display font-bold text-white mb-6">Descripción</h2>
+              <div className="bg-surface-dark p-8 border border-ink/[0.09]">
+                <h2 className="text-lg font-display font-bold text-ink mb-6">Descripción</h2>
 
-                <div className="bg-white/5 rounded-lg p-4 mb-6">
+                <div className="bg-ink/[0.03] p-4 mb-6">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm text-slate-400 mb-1">
-                        <span className="text-slate-500">Asunto:</span>{' '}
-                        <span className="text-white">{subject}</span>
+                      <p className="text-sm text-ink/60 mb-1">
+                        <span className="text-ink/45">Asunto:</span>{' '}
+                        <span className="text-ink">{subject}</span>
                       </p>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm text-slate-500">Prioridad:</span>
+                        <span className="text-sm text-ink/45">Prioridad:</span>
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${currentPriorityBadge.bg} ${currentPriorityBadge.text}`}>
                           {currentPriorityLabel}
                         </span>
@@ -436,7 +436,7 @@ export default function NewTicketPage() {
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Descripción del problema *</label>
+                  <label className="block text-sm font-medium text-ink/72 mb-2">Descripción del problema *</label>
                   <textarea
                     rows={6}
                     value={description}
@@ -449,16 +449,16 @@ export default function NewTicketPage() {
                   <div className="flex items-center justify-between mt-1">
                     <div>
                       {errors.description && touched.description && (
-                        <p className="text-xs text-red-400">{errors.description}</p>
+                        <p className="text-xs text-[#FF5C7A]">{errors.description}</p>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500">{description.length}/10000</p>
+                    <p className="text-xs text-ink/45">{description.length}/10000</p>
                   </div>
                 </div>
 
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Archivos adjuntos (opcional)</label>
-                  <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-background-dark border border-white/10 border-dashed text-slate-400 hover:border-primary hover:text-white transition-colors cursor-pointer">
+                  <label className="block text-sm font-medium text-ink/72 mb-2">Archivos adjuntos (opcional)</label>
+                  <label className="flex items-center justify-center gap-2 px-4 py-3 bg-background-dark border border-ink/[0.09] border-dashed text-ink/60 hover:border-primary hover:text-ink transition-colors cursor-pointer">
                     <Paperclip size={18} />
                     <span className="text-sm">Añadir archivos (máx. 5 · 10 MB c/u)</span>
                     <input
@@ -472,14 +472,14 @@ export default function NewTicketPage() {
                   {files.length > 0 && (
                     <ul className="mt-3 space-y-2">
                       {files.map((file, idx) => (
-                        <li key={idx} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5">
-                          <Paperclip size={14} className="text-slate-500 shrink-0" />
-                          <span className="text-sm text-slate-300 truncate flex-1">{file.name}</span>
-                          <span className="text-xs text-slate-500 shrink-0">{formatSize(file.size)}</span>
+                        <li key={idx} className="flex items-center gap-3 px-3 py-2 bg-ink/[0.03]">
+                          <Paperclip size={14} className="text-ink/45 shrink-0" />
+                          <span className="text-sm text-ink/72 truncate flex-1">{file.name}</span>
+                          <span className="text-xs text-ink/45 shrink-0">{formatSize(file.size)}</span>
                           <button
                             type="button"
                             onClick={() => removeFile(idx)}
-                            className="text-slate-400 hover:text-red-400 transition-colors shrink-0"
+                            className="text-ink/60 hover:text-[#FF5C7A] transition-colors shrink-0"
                             aria-label={`Quitar ${file.name}`}
                           >
                             <XIcon size={16} />
@@ -493,7 +493,7 @@ export default function NewTicketPage() {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={goToStep1}
-                    className="flex-1 py-3.5 rounded-lg bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 font-medium text-base transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3.5 bg-ink/[0.03] text-ink/72 hover:text-ink hover:bg-ink/[0.06] font-medium text-base transition-all flex items-center justify-center gap-2"
                   >
                     <ArrowLeft size={18} />
                     Atrás
@@ -503,7 +503,7 @@ export default function NewTicketPage() {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleSubmit}
                     disabled={sending || !isStep2Valid}
-                    className="flex-1 py-3.5 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold text-base hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="flex-1 py-3.5 bg-primary text-background-dark font-bold text-base hover:bg-secondary hover:shadow-portal-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {sending ? (
                       <>

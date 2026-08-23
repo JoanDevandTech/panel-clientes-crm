@@ -31,7 +31,8 @@ function PlaceholderArt({ id, label }) {
         position: 'relative',
         width: '100%',
         aspectRatio: '16/10',
-        background: `linear-gradient(135deg, hsl(${hue}, 60%, 28%) 0%, hsl(${(hue + 30) % 360}, 50%, 18%) 100%)`,
+        background: 'var(--pr-bg-card-hover)',
+        backgroundImage: `linear-gradient(135deg, rgba(0, 229, 255, ${0.05 + (hue % 5) * 0.02}) 0%, transparent 62%)`,
       }}
     >
       <div
@@ -39,7 +40,7 @@ function PlaceholderArt({ id, label }) {
           position: 'absolute',
           inset: 0,
           backgroundImage:
-            'repeating-linear-gradient(45deg, transparent 0 12px, rgba(255,255,255,0.05) 12px 13px)',
+            'repeating-linear-gradient(45deg, transparent 0 12px, rgba(248, 249, 250,0.05) 12px 13px)',
         }}
       />
       <div
@@ -48,10 +49,10 @@ function PlaceholderArt({ id, label }) {
           inset: 0,
           display: 'grid',
           placeItems: 'center',
-          fontFamily: 'ui-monospace, monospace',
+          fontFamily: 'var(--pr-font-mono)',
           fontSize: 14,
           letterSpacing: 2,
-          color: 'rgba(255,255,255,0.7)',
+          color: 'rgba(248, 249, 250,0.7)',
           textTransform: 'uppercase',
         }}
       >
@@ -106,7 +107,6 @@ function LightboxImage({ c }) {
         height: 'auto',
         objectFit: 'contain',
         display: 'block',
-        borderRadius: 12,
         border: '1px solid var(--pd-border)',
       }}
     />
@@ -121,7 +121,7 @@ function Lightbox({ item, onClose, onPrev, onNext, idx, total }) {
         position: 'fixed',
         inset: 0,
         zIndex: 80,
-        background: 'rgba(0,0,0,0.85)',
+        background: 'rgba(13, 14, 17,0.85)',
         backdropFilter: 'blur(20px)',
         display: 'grid',
         placeItems: 'center',
@@ -138,11 +138,10 @@ function Lightbox({ item, onClose, onPrev, onNext, idx, total }) {
           position: 'absolute',
           top: 20,
           right: 20,
-          background: 'rgba(255,255,255,0.08)',
+          background: 'rgba(248, 249, 250,0.08)',
           border: '1px solid var(--pd-border)',
-          borderRadius: 8,
           padding: 10,
-          color: 'white',
+          color: 'var(--pr-text-primary)',
           cursor: 'pointer',
         }}
         aria-label="Cerrar"
@@ -160,11 +159,10 @@ function Lightbox({ item, onClose, onPrev, onNext, idx, total }) {
           left: 20,
           top: '50%',
           transform: 'translateY(-50%)',
-          background: 'rgba(255,255,255,0.08)',
+          background: 'rgba(248, 249, 250,0.08)',
           border: '1px solid var(--pd-border)',
-          borderRadius: 8,
           padding: 12,
-          color: 'white',
+          color: 'var(--pr-text-primary)',
           cursor: 'pointer',
         }}
         aria-label="Anterior"
@@ -182,11 +180,10 @@ function Lightbox({ item, onClose, onPrev, onNext, idx, total }) {
           right: 20,
           top: '50%',
           transform: 'translateY(-50%)',
-          background: 'rgba(255,255,255,0.08)',
+          background: 'rgba(248, 249, 250,0.08)',
           border: '1px solid var(--pd-border)',
-          borderRadius: 8,
           padding: 12,
-          color: 'white',
+          color: 'var(--pr-text-primary)',
           cursor: 'pointer',
         }}
         aria-label="Siguiente"
@@ -199,23 +196,23 @@ function Lightbox({ item, onClose, onPrev, onNext, idx, total }) {
         style={{ maxWidth: '80vw', maxHeight: '90vh', textAlign: 'center' }}
       >
         <LightboxImage c={item} />
-        <div style={{ marginTop: 16, color: 'white' }}>
+        <div style={{ marginTop: 16, color: 'var(--pr-text-primary)' }}>
           <div style={{ fontSize: 16, fontWeight: 600 }}>{item?.title}</div>
           {item?.milestone_id && item?.milestone_title && (
             <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center' }}>
               <span
                 className="pd-chip"
                 style={{
-                  color: 'rgba(255,255,255,0.8)',
-                  background: 'rgba(168,85,247,0.18)',
-                  borderColor: 'rgba(168,85,247,0.4)',
+                  color: 'rgba(248, 249, 250,0.8)',
+                  background: 'rgba(0, 229, 255,0.18)',
+                  borderColor: 'rgba(0, 229, 255,0.4)',
                 }}
               >
                 <Flag size={12} /> Vinculado al hito: {item.milestone_title} →
               </span>
             </div>
           )}
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 8 }}>
+          <div style={{ fontSize: 12, color: 'rgba(248, 249, 250,0.6)', marginTop: 8 }}>
             {formatDate(item?.captured_at)} · {idx + 1} / {total}
           </div>
         </div>
@@ -231,7 +228,7 @@ function Spinner() {
         style={{
           width: 32,
           height: 32,
-          border: '2px solid #a855f7',
+          border: '2px solid var(--pr-accent-cyan)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
           animation: 'pd-spin 1s linear infinite',
@@ -304,11 +301,11 @@ export default function TabCapturas({ projectId }) {
           style={{
             padding: 24,
             textAlign: 'center',
-            borderColor: 'rgba(239,68,68,0.35)',
-            background: 'rgba(239,68,68,0.08)',
+            borderColor: 'rgba(255, 23, 68,0.35)',
+            background: 'rgba(255, 23, 68,0.08)',
           }}
         >
-          <p style={{ color: '#f87171', marginBottom: 16, fontSize: 13 }}>{error}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16, fontSize: 13 }}>{error}</p>
           <button type="button" className="pd-btn pd-btn-ghost pd-sm" onClick={refetch}>
             Reintentar
           </button>
@@ -353,7 +350,6 @@ export default function TabCapturas({ projectId }) {
                 padding: '8px 12px',
                 background: 'var(--pd-bg-input)',
                 border: '1px solid var(--pd-border)',
-                borderRadius: 8,
                 color: 'var(--pd-text-primary)',
                 fontSize: 13,
                 outline: 'none',
@@ -381,7 +377,6 @@ export default function TabCapturas({ projectId }) {
               breakInside: 'avoid',
               marginBottom: 14,
               padding: 0,
-              borderRadius: 10,
               overflow: 'hidden',
               border: '1px solid var(--pd-border)',
               background: 'var(--pd-bg-card)',

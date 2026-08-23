@@ -26,46 +26,57 @@
 }
 
 body {
-  font-family: 'Lato', sans-serif;
-  background-color: #0B061F;
-  color: #F8F7FC;
+  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+  background-color: #0D0E11;
+  color: #F8F9FA;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 select option {
-  background-color: #0B061F;
-  color: white;
+  background-color: #111319;
+  color: #F8F9FA;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(248, 249, 250, 0.34);
 }
 
 /* ─────────── Portal theme (scoped under .portal-shell) ─────────── */
 
 .portal-shell {
-  --portal-bg-0: #020617;
-  --portal-bg-1: #0b1226;
-  --portal-glass: rgba(15, 23, 42, 0.55);
-  --portal-glass-2: rgba(15, 23, 42, 0.38);
-  --portal-border: rgba(255, 255, 255, 0.07);
-  --portal-border-strong: rgba(255, 255, 255, 0.14);
-  --portal-indigo: #6366f1;
-  --portal-indigo-light: #818cf8;
-  --portal-cyan: #22d3ee;
-  --portal-purple: #a855f7;
-  --portal-text: #f1f5f9;
-  --portal-text-2: #cbd5e1;
-  --portal-muted: #94a3b8;
-  --portal-dim: #64748b;
+  --portal-bg-0: #0D0E11;
+  --portal-bg-1: #111319;
+  --portal-surface: #101218;
+  --portal-surface-alt: #15171D;
+  --portal-border: rgba(248, 249, 250, 0.09);
+  --portal-border-strong: rgba(248, 249, 250, 0.16);
+  --portal-cyan: #00E5FF;
+  --portal-cyan-hover: #7FF0FF;
+  --portal-red: #FF1744;
+  --portal-text: #F8F9FA;
+  --portal-text-2: rgba(248, 249, 250, 0.72);
+  --portal-muted: rgba(248, 249, 250, 0.55);
+  --portal-dim: rgba(248, 249, 250, 0.45);
+  --portal-faint: rgba(248, 249, 250, 0.34);
   --portal-shadow-1: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .6);
   --portal-shadow-2: 0 24px 48px -24px rgba(0, 0, 0, .8), 0 4px 12px rgba(0, 0, 0, .35);
-  --portal-accent-glow: 0 8px 28px -8px rgba(99, 102, 241, 0.55);
-  --portal-accent-grad: linear-gradient(90deg, #6366f1 0%, #22d3ee 100%);
+  --portal-accent-glow: 0 0 40px rgba(0, 229, 255, 0.28);
 
-  font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
   background-color: var(--portal-bg-0);
   color: var(--portal-text);
   position: relative;
   isolation: isolate;
 }
 
-/* Ambient radial halos */
+/* Aura ambiente — cian, único acento */
 .portal-shell::before {
   content: '';
   position: fixed;
@@ -73,9 +84,8 @@ select option {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(900px 600px at 15% -5%, rgba(99, 102, 241, 0.18), transparent 60%),
-    radial-gradient(800px 600px at 100% 0%, rgba(34, 211, 238, 0.12), transparent 60%),
-    radial-gradient(600px 500px at 50% 110%, rgba(168, 85, 247, 0.10), transparent 60%);
+    radial-gradient(900px 600px at 15% -5%, rgba(0, 229, 255, 0.06), transparent 60%),
+    radial-gradient(800px 600px at 100% 0%, rgba(0, 229, 255, 0.035), transparent 62%);
 }
 
 /* Re-map existing Tailwind utility classes inside portal scope */
@@ -84,9 +94,7 @@ select option {
 }
 
 .portal-shell .bg-surface-dark {
-  background-color: var(--portal-glass) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: var(--portal-surface) !important;
 }
 
 .portal-shell .bg-\[\#050314\] {
@@ -94,38 +102,39 @@ select option {
 }
 
 .portal-shell .text-primary {
-  color: var(--portal-indigo) !important;
+  color: var(--portal-cyan) !important;
 }
 
 .portal-shell .bg-primary {
-  background-color: var(--portal-indigo) !important;
+  background-color: var(--portal-cyan) !important;
+  color: #0D0E11 !important;
 }
 
 .portal-shell .border-primary,
 .portal-shell .border-l-primary {
-  border-color: var(--portal-indigo) !important;
+  border-color: var(--portal-cyan) !important;
 }
 
 .portal-shell .bg-primary\/10,
 .portal-shell .bg-primary\/15,
 .portal-shell .bg-primary\/20 {
-  background-color: rgba(99, 102, 241, 0.12) !important;
+  background-color: rgba(0, 229, 255, 0.10) !important;
 }
 
 .portal-shell .border-primary\/20,
 .portal-shell .border-primary\/25,
 .portal-shell .border-primary\/30 {
-  border-color: rgba(99, 102, 241, 0.35) !important;
+  border-color: rgba(0, 229, 255, 0.28) !important;
 }
 
 .portal-shell .text-secondary,
 .portal-shell .hover\:text-secondary:hover {
-  color: var(--portal-purple) !important;
+  color: var(--portal-cyan-hover) !important;
 }
 
 .portal-shell .bg-secondary\/10,
 .portal-shell .bg-secondary\/20 {
-  background-color: rgba(168, 85, 247, 0.14) !important;
+  background-color: rgba(0, 229, 255, 0.10) !important;
 }
 
 .portal-shell .text-accent {
@@ -134,43 +143,44 @@ select option {
 
 .portal-shell .bg-accent {
   background-color: var(--portal-cyan) !important;
+  color: #0D0E11 !important;
 }
 
 .portal-shell .bg-accent\/10,
 .portal-shell .bg-accent\/20 {
-  background-color: rgba(34, 211, 238, 0.14) !important;
+  background-color: rgba(0, 229, 255, 0.12) !important;
 }
 
 .portal-shell .border-l-accent {
   border-left-color: var(--portal-cyan) !important;
 }
 
-/* Gradient buttons/backgrounds */
+/* Gradient buttons/backgrounds → cian plano (Krom no usa degradados de marca) */
 .portal-shell .from-primary {
-  --tw-gradient-from: #6366f1 var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgba(99, 102, 241, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-from: #00E5FF var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(0, 229, 255, 0) var(--tw-gradient-to-position) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
 }
 
 .portal-shell .to-secondary {
-  --tw-gradient-to: #a855f7 var(--tw-gradient-to-position) !important;
+  --tw-gradient-to: #00E5FF var(--tw-gradient-to-position) !important;
 }
 
 .portal-shell .hover\:shadow-primary\/30:hover {
-  --tw-shadow-color: rgba(99, 102, 241, 0.35) !important;
+  --tw-shadow-color: rgba(0, 229, 255, 0.28) !important;
   --tw-shadow: var(--tw-shadow-colored) !important;
 }
 
-/* Cards → 24px radius + enhanced shadow */
+/* Tarjetas → ángulo recto Krom */
 .portal-shell .bg-surface-dark.rounded-2xl {
-  border-radius: 1.5rem;
+  border-radius: 0;
   box-shadow: var(--portal-shadow-1);
   border-color: var(--portal-border) !important;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s, box-shadow 0.3s;
 }
 
 .portal-shell .bg-surface-dark.rounded-2xl:hover {
-  border-color: rgba(99, 102, 241, 0.2) !important;
+  border-color: rgba(0, 229, 255, 0.4) !important;
 }
 
 /* Border colors */
@@ -193,26 +203,26 @@ select option {
 .portal-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 .portal-shell textarea,
 .portal-shell select {
-  background-color: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.10);
-  border-radius: 10px;
+  background-color: var(--portal-bg-1);
+  border-color: var(--portal-border);
+  border-radius: 0;
   color: var(--portal-text);
 }
 
 .portal-shell input:focus,
 .portal-shell textarea:focus,
 .portal-shell select:focus {
-  border-color: var(--portal-indigo) !important;
-  box-shadow: 0 0 15px rgba(99, 102, 241, 0.2) !important;
+  border-color: var(--portal-cyan) !important;
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.25) !important;
 }
 
 /* Tables */
 .portal-shell table thead tr {
-  background-color: rgba(255, 255, 255, 0.02);
+  background-color: rgba(248, 249, 250, 0.03);
 }
 
 .portal-shell table tbody tr:hover {
-  background-color: rgba(99, 102, 241, 0.05);
+  background-color: rgba(0, 229, 255, 0.05);
 }
 
 .portal-shell td.text-right,
@@ -223,13 +233,15 @@ select option {
 .portal-shell h1,
 .portal-shell h2,
 .portal-shell h3 {
-  letter-spacing: -0.01em;
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 .portal-shell .portal-active-nav {
-  background: linear-gradient(90deg, rgba(99, 102, 241, .18), rgba(34, 211, 238, .06)) !important;
-  border: 1px solid rgba(99, 102, 241, .25) !important;
-  color: var(--portal-indigo-light) !important;
+  background: rgba(0, 229, 255, 0.10) !important;
+  border: 1px solid rgba(0, 229, 255, 0.28) !important;
+  color: var(--portal-cyan) !important;
 }
 
 .portal-shell ::-webkit-scrollbar {
@@ -242,12 +254,12 @@ select option {
 }
 
 .portal-shell ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  background: rgba(248, 249, 250, 0.09);
+  border-radius: 0;
 }
 
 .portal-shell ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(0, 229, 255, 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {

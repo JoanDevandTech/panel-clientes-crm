@@ -411,7 +411,7 @@ export default function TabPersonal({ profile, onShowToast, updateProfilePartial
       {/* ===== Card 1: Información personal ===== */}
       <FormCard
         icon={User}
-        iconAccent="purple"
+        iconAccent="cyan"
         title="Información personal"
         subtitle="Nombre, cargo y biografía"
       >
@@ -632,7 +632,7 @@ export default function TabPersonal({ profile, onShowToast, updateProfilePartial
       {/* ===== Card 4: Dirección personal ===== */}
       <FormCard
         icon={MapPin}
-        iconAccent="purple"
+        iconAccent="cyan"
         title="Dirección personal"
         subtitle="Tu dirección física"
       >

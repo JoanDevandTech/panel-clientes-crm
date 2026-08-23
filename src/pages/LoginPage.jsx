@@ -4,9 +4,16 @@ import { Mail, Lock, Eye, EyeOff, XCircle, ArrowLeft, ShieldCheck, Smartphone, K
 import { Link, useLocation } from 'wouter'
 import { useAuth } from '../hooks/useAuth'
 
-const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Joan Dev & Tech'
+const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Krom'
+const BRAND_SUBTITLE = import.meta.env.VITE_BRAND_SUBTITLE || 'Portal cliente'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+// Botón primario Krom: cian plano, texto sobre el ground, mono en versales.
+const KROM_CTA =
+  'w-full py-4 px-6 bg-primary text-background-dark font-mono font-semibold text-xs uppercase tracking-[0.16em] ' +
+  'hover:bg-secondary hover:shadow-[0_0_40px_rgba(0,229,255,.28)] transition-all ' +
+  'disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
 
 function validateField(name, value) {
   switch (name) {
@@ -31,14 +38,32 @@ function validateField(name, value) {
 
 function BrandLogo() {
   return (
-    <div className="flex flex-col items-center gap-3">
-      <img
-        src="/brand-logo.jpg"
-        alt={BRAND_NAME}
-        className="w-16 h-16 rounded-2xl object-cover"
-        style={{ boxShadow: '0 8px 28px -8px rgba(99, 102, 241, 0.55)' }}
-      />
-      <p className="text-sm font-semibold text-white">{BRAND_NAME}</p>
+    <div className="flex items-center gap-[13px]">
+      <img src="/brand-logo.svg" alt="" aria-hidden="true" className="w-8 h-8 object-contain" />
+      <div className="text-left">
+        <div className="font-display font-semibold text-[18px] uppercase leading-none text-ink" style={{ letterSpacing: '0.2em' }}>
+          {BRAND_NAME}
+        </div>
+        <div
+          className="font-mono uppercase mt-1.5"
+          style={{ fontSize: '8.5px', letterSpacing: '0.24em', color: 'rgba(248,249,250,.34)' }}
+        >
+          {BRAND_SUBTITLE}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Kicker({ n, children }) {
+  return (
+    <div
+      className="flex items-center gap-[9px] font-mono uppercase mb-[18px]"
+      style={{ fontSize: '11px', letterSpacing: '0.22em', color: 'rgba(248,249,250,.45)' }}
+    >
+      <span style={{ color: '#FF1744' }}>{n}</span>
+      <span style={{ color: 'rgba(248,249,250,.2)' }}>//</span>
+      <span>{children}</span>
     </div>
   )
 }
@@ -49,11 +74,19 @@ function Toast({ message, onClose }) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="flex items-center gap-3 p-4 rounded-xl border shadow-lg bg-red-500/10 border-red-500/30 text-red-400"
+      className="flex items-center gap-3 p-4 border"
+      style={{ background: 'rgba(255,23,68,.10)', borderColor: 'rgba(255,23,68,.28)', color: '#FF5C7A' }}
     >
       <XCircle size={20} className="flex-shrink-0" />
       <p className="text-sm flex-1">{message}</p>
-      <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors text-lg leading-none">&times;</button>
+      <button
+        onClick={onClose}
+        className="text-lg leading-none transition-colors hover:text-ink"
+        style={{ color: 'rgba(248,249,250,.45)' }}
+        aria-label="Cerrar aviso"
+      >
+        &times;
+      </button>
     </motion.div>
   )
 }
@@ -232,7 +265,7 @@ export default function LoginPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-dark">
-        <div className="w-12 h-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+        <div className="w-10 h-10 rounded-full border-2 border-primary/25 border-t-primary animate-spin" />
       </div>
     )
   }
@@ -242,24 +275,31 @@ export default function LoginPage() {
   }
 
   const inputBaseClass = (field) =>
-    `w-full py-3 rounded-lg bg-background-dark border ${
+    `w-full py-3 bg-bg-1 border outline-none text-ink transition-colors ${
       errors[field] && touched[field]
-        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-        : 'border-white/10 focus:border-primary focus:ring-primary'
-    } focus:ring-1 outline-none text-white transition-colors`
+        ? 'border-danger focus:border-danger'
+        : 'border-white/10 focus:border-primary'
+    }`
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-dark relative overflow-hidden px-4 py-8">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
-
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/20 blur-[150px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[400px] h-[300px] bg-secondary/10 blur-[120px] rounded-full pointer-events-none" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            'linear-gradient(rgba(0,229,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,.05) 1px, transparent 1px)',
+          backgroundSize: '72px 72px',
+          maskImage: 'radial-gradient(ellipse 60% 60% at 50% 45%, #000 0%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 60% at 50% 45%, #000 0%, transparent 100%)',
+        }}
+      />
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
-        className="w-full max-w-md bg-surface-dark rounded-2xl border border-white/5 p-8 lg:p-10 shadow-2xl relative z-10"
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="w-full max-w-md bg-surface-dark border p-8 lg:p-10 relative z-10"
+        style={{ borderColor: 'rgba(248,249,250,.09)' }}
       >
         <AnimatePresence mode="wait">
           {step === 'login' ? (
@@ -270,13 +310,18 @@ export default function LoginPage() {
               exit={{ opacity: 0, x: -40 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex justify-center mb-8">
+              <div className="mb-9">
                 <BrandLogo />
               </div>
 
-              <div className="text-center mb-8">
-                <h1 className="text-2xl font-display font-bold text-white">Acceso Clientes</h1>
-                <p className="text-slate-400 mt-2">Accede a tu portal de cliente</p>
+              <div className="mb-8">
+                <Kicker n="01">Acceso</Kicker>
+                <h1 className="font-display font-semibold text-ink text-[30px] leading-none" style={{ letterSpacing: '-0.035em' }}>
+                  Acceso clientes
+                </h1>
+                <p className="mt-3 text-[15px] font-light" style={{ color: 'rgba(248,249,250,.6)' }}>
+                  Entra con las credenciales de tu cuenta.
+                </p>
               </div>
 
               <AnimatePresence>
@@ -289,9 +334,9 @@ export default function LoginPage() {
 
               <form onSubmit={handleLogin} noValidate className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
+                  <label className="block font-mono uppercase mb-2" style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(248,249,250,.45)' }}>Email</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-3">
                       <Mail size={18} />
                     </div>
                     <input
@@ -305,14 +350,14 @@ export default function LoginPage() {
                     />
                   </div>
                   {errors.email && touched.email && (
-                    <p className="mt-1 text-xs text-red-400">{errors.email}</p>
+                    <p className="mt-1 text-xs text-danger">{errors.email}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Contraseña</label>
+                  <label className="block font-mono uppercase mb-2" style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(248,249,250,.45)' }}>Contraseña</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-3">
                       <Lock size={18} />
                     </div>
                     <input
@@ -327,7 +372,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-ink-3 hover:text-primary transition-colors"
                       tabIndex={-1}
                       aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     >
@@ -335,7 +380,7 @@ export default function LoginPage() {
                     </button>
                   </div>
                   {errors.password && touched.password && (
-                    <p className="mt-1 text-xs text-red-400">{errors.password}</p>
+                    <p className="mt-1 text-xs text-danger">{errors.password}</p>
                   )}
                 </div>
 
@@ -348,22 +393,20 @@ export default function LoginPage() {
                   </Link>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <button
                   type="submit"
                   disabled={loginLoading}
-                  className="w-full py-3.5 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold text-base hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className={KROM_CTA}
                 >
                   {loginLoading ? (
                     <>
                       <Spinner />
-                      <span>Iniciando sesión...</span>
+                      <span>Iniciando sesión</span>
                     </>
                   ) : (
-                    'Iniciar Sesión'
+                    'Iniciar sesión'
                   )}
-                </motion.button>
+                </button>
               </form>
             </motion.div>
           ) : (
@@ -374,20 +417,23 @@ export default function LoginPage() {
               exit={{ opacity: 0, x: 40 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-white/10 flex items-center justify-center">
-                  <ShieldCheck size={32} className="text-primary" />
+              <div className="mb-7">
+                <div className="w-12 h-12 border flex items-center justify-center" style={{ background: 'rgba(0,229,255,.10)', borderColor: 'rgba(0,229,255,.28)' }}>
+                  <ShieldCheck size={24} className="text-primary" />
                 </div>
               </div>
 
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-display font-bold text-white">Verificación en dos pasos</h2>
-                <p className="text-slate-400 mt-2 text-sm">
+              <div className="mb-8">
+                <Kicker n="02">Verificación</Kicker>
+                <h2 className="font-display font-semibold text-ink text-[28px] leading-none" style={{ letterSpacing: '-0.035em' }}>
+                  Verificación en dos pasos
+                </h2>
+                <p className="mt-3 text-[15px] font-light" style={{ color: 'rgba(248,249,250,.6)' }}>
                   {useRecovery
-                    ? 'Introduce uno de tus códigos de recuperación'
+                    ? 'Introduce uno de tus códigos de recuperación.'
                     : twoFAMethod === 'totp'
-                      ? 'Introduce el código de tu app autenticadora'
-                      : 'Hemos enviado un código a tu email'
+                      ? 'Introduce el código de tu app autenticadora.'
+                      : 'Hemos enviado un código a tu email.'
                   }
                 </p>
               </div>
@@ -403,9 +449,9 @@ export default function LoginPage() {
               <form onSubmit={handleVerify} noValidate className="space-y-6">
                 {useRecovery ? (
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-2">Código de recuperación</label>
+                    <label className="block font-mono uppercase mb-2" style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(248,249,250,.45)' }}>Código de recuperación</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-3">
                         <KeyRound size={18} />
                       </div>
                       <input
@@ -414,14 +460,14 @@ export default function LoginPage() {
                         onChange={(e) => setRecoveryCode(e.target.value)}
                         placeholder="XXXX-XXXX-XXXX"
                         autoFocus
-                        className="w-full py-3 pl-11 pr-4 rounded-lg bg-background-dark border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-white transition-colors font-mono tracking-wider"
+                        className="w-full py-3 pl-11 pr-4 bg-bg-1 border border-white/10 focus:border-primary outline-none text-ink transition-colors font-mono tracking-wider"
                       />
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-3 text-center">Código de verificación</label>
-                    <div className="flex justify-center gap-2.5" onPaste={handleDigitPaste}>
+                    <label className="block font-mono uppercase mb-3" style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(248,249,250,.45)' }}>Código de verificación</label>
+                    <div className="flex gap-2.5" onPaste={handleDigitPaste}>
                       {codeDigits.map((digit, i) => (
                         <input
                           key={i}
@@ -433,33 +479,27 @@ export default function LoginPage() {
                           onChange={(e) => handleDigitChange(i, e.target.value)}
                           onKeyDown={(e) => handleDigitKeyDown(i, e)}
                           autoFocus={i === 0}
-                          className={`w-12 h-14 text-center text-xl font-bold rounded-lg bg-background-dark border ${
+                          className={`w-full h-14 text-center text-xl font-mono font-medium bg-bg-1 border ${
                             twoFAError && twoFATouched
-                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                              : 'border-white/10 focus:border-primary focus:ring-primary'
-                          } focus:ring-1 outline-none text-white transition-colors`}
+                              ? 'border-danger focus:border-danger'
+                              : 'border-white/10 focus:border-primary'
+                          } outline-none text-ink transition-colors`}
                         />
                       ))}
                     </div>
                   </div>
                 )}
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={verifyLoading}
-                  className="w-full py-3.5 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold text-base hover:shadow-lg hover:shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
+                <button type="submit" disabled={verifyLoading} className={KROM_CTA}>
                   {verifyLoading ? (
                     <>
                       <Spinner />
-                      <span>Verificando...</span>
+                      <span>Verificando</span>
                     </>
                   ) : (
                     'Verificar'
                   )}
-                </motion.button>
+                </button>
               </form>
 
               <div className="mt-6 space-y-3">
@@ -467,7 +507,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={toggleMethod}
-                    className="w-full text-sm text-slate-400 hover:text-primary transition-colors flex items-center justify-center gap-2"
+                    className="w-full text-sm text-ink-2 hover:text-primary transition-colors flex items-center justify-center gap-2"
                   >
                     {twoFAMethod === 'totp' ? (
                       <>
@@ -491,7 +531,7 @@ export default function LoginPage() {
                     setCodeDigits(['', '', '', '', '', ''])
                     setRecoveryCode('')
                   }}
-                  className="w-full text-sm text-slate-500 hover:text-slate-300 transition-colors flex items-center justify-center gap-2"
+                  className="w-full text-sm text-ink-3 hover:text-primary transition-colors flex items-center justify-center gap-2"
                 >
                   <KeyRound size={14} />
                   <span>{useRecovery ? 'Usar código de verificación' : 'Usar código de recuperación'}</span>
@@ -500,7 +540,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={handleBackToLogin}
-                  className="w-full text-sm text-slate-500 hover:text-white transition-colors flex items-center justify-center gap-2 mt-2"
+                  className="w-full text-sm text-ink-3 hover:text-ink transition-colors flex items-center justify-center gap-2 mt-2"
                 >
                   <ArrowLeft size={14} />
                   <span>Volver</span>

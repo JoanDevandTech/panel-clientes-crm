@@ -40,20 +40,20 @@ export default function ImpersonatePage() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--pr-bg-primary, #0a0e1a)',
+        background: 'var(--pr-bg-primary, #0D0E11)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 16,
-        color: 'var(--pr-text-secondary, rgba(255,255,255,0.62))',
-        fontFamily: 'Inter, system-ui, sans-serif',
+        color: 'var(--pr-text-secondary, rgba(248,249,250,0.6))',
+        fontFamily: "'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif",
       }}
     >
       {error ? (
         <>
-          <div style={{ color: '#f87171', fontSize: 14, fontWeight: 500 }}>{error}</div>
-          <div style={{ fontSize: 12, color: 'var(--pr-text-muted, rgba(255,255,255,0.4))' }}>
+          <div style={{ color: '#FF5C7A', fontSize: 14, fontWeight: 500 }}>{error}</div>
+          <div style={{ fontSize: 12, color: 'var(--pr-text-muted, rgba(248,249,250,0.45))' }}>
             Redirigiendo al login…
           </div>
         </>

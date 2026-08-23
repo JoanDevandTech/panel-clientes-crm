@@ -33,8 +33,8 @@ import TabActividad from './project-detail/TabActividad'
 
 const PHASES = {
   preliminary: { label: 'Preliminar', badge: 'blue' },
-  in_development: { label: 'En desarrollo', badge: 'purple' },
-  in_progress: { label: 'En progreso', badge: 'purple' },
+  in_development: { label: 'En desarrollo', badge: 'cyan' },
+  in_progress: { label: 'En progreso', badge: 'cyan' },
   review: { label: 'Revisión', badge: 'amber' },
   completed: { label: 'Completado', badge: 'green' },
   maintenance: { label: 'Mantenimiento', badge: 'cyan' },
@@ -216,19 +216,19 @@ function ProjectHeader({ project, stats, descExpanded, onToggleDesc }) {
         {project?.delivered_at && (
           <span
             className="pd-chip"
-            style={{ color: '#34d399', borderColor: 'var(--pd-green-border)', background: 'var(--pd-green-bg)' }}
+            style={{ color: '#34D399', borderColor: 'var(--pd-green-border)', background: 'var(--pd-green-bg)' }}
           >
             <CheckCircle size={13} /> Entregado:{' '}
-            <strong style={{ color: '#34d399', marginLeft: 4 }}>{project.delivered_at}</strong>
+            <strong style={{ color: '#34D399', marginLeft: 4 }}>{project.delivered_at}</strong>
           </span>
         )}
         {project?.warranty_until && (
           <span
             className="pd-chip"
-            style={{ color: '#fbbf24', borderColor: 'var(--pd-amber-border)', background: 'var(--pd-amber-bg)' }}
+            style={{ color: '#FBBF24', borderColor: 'var(--pd-amber-border)', background: 'var(--pd-amber-bg)' }}
           >
             <Shield size={13} /> Garantía hasta:{' '}
-            <strong style={{ color: '#fbbf24', marginLeft: 4 }}>{project.warranty_until}</strong>
+            <strong style={{ color: '#FBBF24', marginLeft: 4 }}>{project.warranty_until}</strong>
           </span>
         )}
       </div>
@@ -287,7 +287,7 @@ function Spinner() {
         style={{
           width: 32,
           height: 32,
-          border: '2px solid #a855f7',
+          border: '2px solid var(--pr-accent-cyan)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
           animation: 'pd-spin 1s linear infinite',
@@ -353,7 +353,7 @@ export default function ProjectDetailPage() {
           <ArrowLeft size={14} /> Volver a proyectos
         </Link>
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <p style={{ color: '#f87171', marginBottom: 16 }}>{error}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16 }}>{error}</p>
           <button type="button" className="pd-btn pd-btn-primary" onClick={refetch}>
             Reintentar
           </button>

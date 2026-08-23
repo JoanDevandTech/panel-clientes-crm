@@ -20,11 +20,11 @@ import { Toggle, FormCard } from './components'
 
 const ROWS = [
   { id: 'new_message', label: 'Nuevos mensajes en proyectos', icon: MessageSquare, color: 'green' },
-  { id: 'milestone_completed', label: 'Hitos completados', icon: Flag, color: 'purple' },
+  { id: 'milestone_completed', label: 'Hitos completados', icon: Flag, color: 'gray' },
   { id: 'new_deliverable', label: 'Nuevos entregables', icon: Download, color: 'cyan' },
   { id: 'invoice_pending', label: 'Facturas pendientes', icon: Receipt, color: 'amber' },
   { id: 'new_budget', label: 'Presupuestos nuevos', icon: ClipboardList, color: 'blue' },
-  { id: 'contract_changed', label: 'Cambios en contratos', icon: Repeat, color: 'purple' },
+  { id: 'contract_changed', label: 'Cambios en contratos', icon: Repeat, color: 'gray' },
   { id: 'marketing', label: 'Newsletter y novedades', icon: Sparkles, color: 'cyan' },
   { id: 'maintenance', label: 'Mantenimiento programado', icon: Settings, color: 'amber' },
 ]
@@ -176,10 +176,9 @@ export default function TabNotif({ profile, onShowToast, updateProfilePartial })
             padding: '14px 18px',
             background: 'rgba(245,158,11,0.06)',
             border: '1px solid rgba(245,158,11,0.3)',
-            borderRadius: 12,
           }}
         >
-          <BellOff size={20} style={{ color: '#f59e0b', flexShrink: 0 }} />
+          <BellOff size={20} style={{ color: 'var(--pr-accent-amber)', flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--pf-text-primary)' }}>
               Notificaciones pausadas
@@ -221,7 +220,7 @@ export default function TabNotif({ profile, onShowToast, updateProfilePartial })
         </div>
       </FormCard>
 
-      <FormCard icon={Bell} iconAccent="purple" title="Notificaciones por evento">
+      <FormCard icon={Bell} iconAccent="cyan" title="Notificaciones por evento">
         <div style={{ overflowX: 'auto' }}>
           <table className="pf-notif-matrix">
             <thead>

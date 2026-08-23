@@ -59,7 +59,7 @@ function Spinner() {
         style={{
           width: 32,
           height: 32,
-          border: '2px solid #a855f7',
+          border: '2px solid var(--pr-accent-cyan)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
           animation: 'pf-spin 1s linear infinite',
@@ -125,7 +125,7 @@ export default function ProfilePage() {
     return (
       <div className="profile-page-v2">
         <div style={{ textAlign: 'center', padding: 64 }}>
-          <p style={{ color: '#f87171', marginBottom: 16 }}>{error}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16 }}>{error}</p>
           <button type="button" className="pf-btn pf-primary" onClick={refetch}>
             Reintentar
           </button>

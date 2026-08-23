@@ -16,13 +16,14 @@ import { useApi } from '../../../hooks/useApi'
 const ACCENT_BY_BADGE = {
   green: 'pd-accent-green',
   cyan: 'pd-accent-cyan',
-  purple: 'pd-accent-purple',
+  gray: 'pd-accent-gray',
   amber: 'pd-accent-amber',
   blue: 'pd-accent-blue',
   red: 'pd-accent-red',
 }
 
-const QUICK_LINK_PALETTE = ['#10b981', '#f59e0b', '#3b82f6', '#a855f7', '#ffffff', '#06b6d4']
+// Krom: acento único. Los favicons de enlace van todos en cian sobre el fondo.
+const QUICK_LINK_BG = 'var(--pr-accent-cyan)'
 
 const FINANCIAL_STATUS_LABEL = {
   approved: 'Aprobado',
@@ -174,7 +175,7 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
     >
       {showBanner && (
         <div className="pd-banner" style={{ gridColumn: '1 / -1' }}>
-          <Gift size={18} style={{ color: '#34d399' }} />
+          <Gift size={18} style={{ color: '#34D399' }} />
           <span>
             <strong>Proyecto entregado</strong>
             {project?.delivered_at && <> el {project.delivered_at}</>}
@@ -194,7 +195,7 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
       {showNextMilestoneSection && nextMilestone && (
         <div className="pd-card pd-hoverable" style={{ gridColumn: '1 / -1' }}>
           <div className="pd-card-head">
-            <div className="pd-card-head-icon pd-accent-purple">
+            <div className="pd-card-head-icon pd-accent-cyan">
               <Flag size={16} />
             </div>
             <div className="pd-card-head-title">Próximo hito</div>
@@ -270,7 +271,6 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {quickLinks.map((qa, i) => {
-              const color = QUICK_LINK_PALETTE[i % QUICK_LINK_PALETTE.length]
               const initial = (qa.icon || qa.label || 'L').toString().charAt(0).toUpperCase()
               return (
                 <a
@@ -282,7 +282,7 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
                 >
                   <span
                     className="pd-chip-favicon"
-                    style={{ background: color, color: '#0a0e1a' }}
+                    style={{ background: QUICK_LINK_BG, color: 'var(--pr-bg-primary)' }}
                   >
                     {initial}
                   </span>
@@ -298,7 +298,7 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
       {/* Equipo asignado */}
       <div className="pd-card pd-hoverable">
         <div className="pd-card-head">
-          <div className="pd-card-head-icon pd-accent-purple">
+          <div className="pd-card-head-icon pd-accent-cyan">
             <Users size={16} />
           </div>
           <div className="pd-card-head-title">Equipo asignado</div>
@@ -325,7 +325,6 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
                     style={{
                       width: 36,
                       height: 36,
-                      borderRadius: '50%',
                       objectFit: 'cover',
                     }}
                   />
@@ -334,13 +333,14 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
                     style={{
                       width: 36,
                       height: 36,
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg,#a855f7,#06b6d4)',
+                      background: 'var(--pr-bg-card-hover)',
+                      border: '1px solid var(--pr-border-strong)',
                       display: 'grid',
                       placeItems: 'center',
+                      fontFamily: 'var(--pr-font-mono)',
                       fontSize: 12,
                       fontWeight: 600,
-                      color: 'white',
+                      color: 'var(--pr-accent-cyan)',
                     }}
                   >
                     {getInitials(m.name)}
@@ -508,7 +508,7 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
                 >
                   Garantía hasta
                 </div>
-                <div style={{ fontSize: 18, fontWeight: 600, color: '#fbbf24' }}>
+                <div style={{ fontSize: 18, fontWeight: 600, color: '#FBBF24' }}>
                   {project.warranty_until}
                 </div>
                 {warrantyDaysRemaining != null && (

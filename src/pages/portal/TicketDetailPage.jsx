@@ -30,14 +30,14 @@ const statusConfig = {
   in_progress: { label: 'En Progreso', bg: 'bg-accent/20', text: 'text-accent' },
   waiting_client: { label: 'Esperando Respuesta', bg: 'bg-amber-500/20', text: 'text-amber-400' },
   resolved: { label: 'Resuelto', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
-  closed: { label: 'Cerrado', bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  closed: { label: 'Cerrado', bg: 'bg-ink/[0.06]', text: 'text-ink/60' },
 }
 
 const priorityConfig = {
-  low: { label: 'Baja', bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  low: { label: 'Baja', bg: 'bg-ink/[0.06]', text: 'text-ink/60' },
   medium: { label: 'Media', bg: 'bg-blue-500/20', text: 'text-blue-400' },
   high: { label: 'Alta', bg: 'bg-amber-500/20', text: 'text-amber-400' },
-  urgent: { label: 'Urgente', bg: 'bg-red-500/20', text: 'text-red-400' },
+  urgent: { label: 'Urgente', bg: 'bg-danger/15', text: 'text-[#FF5C7A]' },
 }
 
 function getRelativeDate(dateString) {
@@ -142,7 +142,7 @@ export default function TicketDetailPage() {
       <div>
         <Link
           href="/portal/tickets"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm mb-6"
+          className="inline-flex items-center gap-2 text-ink/60 hover:text-ink transition-colors text-sm mb-6"
         >
           <ArrowLeft size={16} />
           Volver a tickets
@@ -159,16 +159,16 @@ export default function TicketDetailPage() {
       <div>
         <Link
           href="/portal/tickets"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm mb-6"
+          className="inline-flex items-center gap-2 text-ink/60 hover:text-ink transition-colors text-sm mb-6"
         >
           <ArrowLeft size={16} />
           Volver a tickets
         </Link>
         <div className="text-center py-24">
-          <p className="text-red-400 mb-4">{error}</p>
+          <p className="text-[#FF5C7A] mb-4">{error}</p>
           <button
             onClick={refetch}
-            className="px-5 py-2.5 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-sm font-medium transition-all"
+            className="px-5 py-2.5 bg-ink/[0.03] text-ink/72 hover:text-ink hover:bg-ink/[0.06] text-sm font-medium transition-all"
           >
             Reintentar
           </button>
@@ -182,12 +182,12 @@ export default function TicketDetailPage() {
       <div>
         <Link
           href="/portal/tickets"
-          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm mb-6"
+          className="inline-flex items-center gap-2 text-ink/60 hover:text-ink transition-colors text-sm mb-6"
         >
           <ArrowLeft size={16} />
           Volver a tickets
         </Link>
-        <div className="text-center py-24 text-slate-500">
+        <div className="text-center py-24 text-ink/45">
           Ticket no encontrado.
         </div>
       </div>
@@ -223,7 +223,7 @@ export default function TicketDetailPage() {
     <div>
       <Link
         href="/portal/tickets"
-        className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm mb-6"
+        className="inline-flex items-center gap-2 text-ink/60 hover:text-ink transition-colors text-sm mb-6"
       >
         <ArrowLeft size={16} />
         Volver a tickets
@@ -235,7 +235,7 @@ export default function TicketDetailPage() {
         transition={{ duration: 0.5 }}
         className="mb-6"
       >
-        <h1 className="text-2xl font-display font-bold text-white mb-3">{ticket.subject}</h1>
+        <h1 className="text-2xl font-display font-bold text-ink mb-3">{ticket.subject}</h1>
         <div className="flex items-center gap-3 flex-wrap">
           <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
             {status.label}
@@ -243,7 +243,7 @@ export default function TicketDetailPage() {
           <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${priority.bg} ${priority.text}`}>
             {priority.label}
           </span>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-ink/45">
             Creado el {formatDate(ticket.created_at)}
           </span>
         </div>
@@ -264,38 +264,38 @@ export default function TicketDetailPage() {
               className={`flex gap-3 ${isClient ? 'flex-row-reverse' : 'flex-row'}`}
             >
               <div
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                className={`w-9 h-9 flex items-center justify-center border font-mono text-xs font-semibold flex-shrink-0 ${
                   isClient
-                    ? 'bg-primary/20 text-primary'
-                    : 'bg-white/10 text-slate-300'
+                    ? 'border-primary/28 bg-primary/10 text-primary'
+                    : 'border-ink/[0.09] bg-ink/[0.06] text-ink/72'
                 }`}
               >
                 {getInitials(msg.sender_name || '??')}
               </div>
 
               <div
-                className={`max-w-[75%] rounded-xl p-4 ${
+                className={`max-w-[75%] p-4 ${
                   isClient
                     ? 'bg-primary/10 border border-primary/20'
-                    : 'bg-surface-dark border border-white/5'
+                    : 'bg-surface-dark border border-ink/[0.09]'
                 }`}
               >
-                <p className={`text-sm font-bold mb-1 ${isClient ? 'text-primary' : 'text-white'}`}>
+                <p className={`text-sm font-bold mb-1 ${isClient ? 'text-primary' : 'text-ink'}`}>
                   {msg.sender_name}
                 </p>
-                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                <p className="text-sm text-ink/72 leading-relaxed whitespace-pre-wrap">{msg.message}</p>
                 {(msg.attachments || []).length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+                  <div className="mt-3 pt-3 border-t border-ink/[0.09] space-y-1.5">
                     {msg.attachments.map((att) => (
                       <button
                         key={att.id}
                         onClick={() => handleDownload(att)}
                         disabled={downloadingId === att.id}
-                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm text-slate-300 hover:text-white disabled:opacity-60"
+                        className="flex items-center gap-2 w-full text-left px-3 py-2 bg-ink/[0.03] hover:bg-ink/[0.06] transition-colors text-sm text-ink/72 hover:text-ink disabled:opacity-60"
                       >
-                        <FileText size={14} className="text-slate-500 shrink-0" />
+                        <FileText size={14} className="text-ink/45 shrink-0" />
                         <span className="flex-1 truncate">{att.name || att.file_name}</span>
-                        <span className="text-xs text-slate-500 shrink-0">{formatFileSize(att.size)}</span>
+                        <span className="text-xs text-ink/45 shrink-0">{formatFileSize(att.size)}</span>
                         {downloadingId === att.id
                           ? <Loader2 size={14} className="animate-spin shrink-0" />
                           : <Download size={14} className="shrink-0" />
@@ -304,7 +304,7 @@ export default function TicketDetailPage() {
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-slate-500 mt-2">{getRelativeDate(msg.created_at)}</p>
+                <p className="text-xs text-ink/45 mt-2">{getRelativeDate(msg.created_at)}</p>
               </div>
             </motion.div>
           )
@@ -316,10 +316,10 @@ export default function TicketDetailPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.3 }}
-          className="border-t border-white/5 pt-6"
+          className="border-t border-ink/[0.09] pt-6"
         >
           {replyError && (
-            <p className="text-sm text-red-400 mb-3">{replyError}</p>
+            <p className="text-sm text-[#FF5C7A] mb-3">{replyError}</p>
           )}
           <div className="flex gap-3">
             <textarea
@@ -327,21 +327,21 @@ export default function TicketDetailPage() {
               value={reply}
               onChange={(e) => setReply(e.target.value)}
               placeholder="Escribe tu respuesta..."
-              className="flex-1 px-4 py-3 rounded-xl bg-background-dark border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-white text-sm transition-colors resize-none"
+              className="flex-1 px-4 py-3 bg-background-dark border border-ink/[0.09] focus:border-primary focus:ring-1 focus:ring-primary outline-none text-ink text-sm transition-colors resize-none"
             />
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleSendReply}
               disabled={!reply.trim() || sendingReply}
-              className="self-end px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-medium transition-all hover:shadow-lg hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              className="self-end px-4 py-3 bg-primary text-background-dark font-medium transition-all hover:bg-secondary hover:shadow-portal-glow disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             >
               {sendingReply ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
             </motion.button>
           </div>
 
           <div className="mt-3 flex flex-col gap-2">
-            <label className="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white transition-colors cursor-pointer self-start">
+            <label className="inline-flex items-center gap-2 text-xs text-ink/60 hover:text-ink transition-colors cursor-pointer self-start">
               <Paperclip size={14} />
               <span>Adjuntar archivos (máx. 5 · 10 MB c/u)</span>
               <input
@@ -355,14 +355,14 @@ export default function TicketDetailPage() {
             {replyFiles.length > 0 && (
               <ul className="space-y-1">
                 {replyFiles.map((file, idx) => (
-                  <li key={idx} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 text-xs">
-                    <Paperclip size={12} className="text-slate-500 shrink-0" />
-                    <span className="text-slate-300 truncate flex-1">{file.name}</span>
-                    <span className="text-slate-500 shrink-0">{formatFileSize(file.size)}</span>
+                  <li key={idx} className="flex items-center gap-2 px-3 py-1.5 bg-ink/[0.03] text-xs">
+                    <Paperclip size={12} className="text-ink/45 shrink-0" />
+                    <span className="text-ink/72 truncate flex-1">{file.name}</span>
+                    <span className="text-ink/45 shrink-0">{formatFileSize(file.size)}</span>
                     <button
                       type="button"
                       onClick={() => removeReplyFile(idx)}
-                      className="text-slate-400 hover:text-red-400 transition-colors shrink-0"
+                      className="text-ink/60 hover:text-[#FF5C7A] transition-colors shrink-0"
                     >
                       <XIcon size={12} />
                     </button>
@@ -375,8 +375,8 @@ export default function TicketDetailPage() {
       )}
 
       {!canReply && (
-        <div className="border-t border-white/5 pt-6">
-          <p className="text-center text-sm text-slate-500">
+        <div className="border-t border-ink/[0.09] pt-6">
+          <p className="text-center text-sm text-ink/45">
             Este ticket está {ticket.status === 'closed' ? 'cerrado' : 'resuelto'} y no admite nuevas respuestas.
           </p>
         </div>

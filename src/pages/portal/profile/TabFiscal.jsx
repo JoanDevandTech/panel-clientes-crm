@@ -576,7 +576,7 @@ export default function TabFiscal({ profile, onShowToast, updateProfilePartial }
   return (
     <div className="pf-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* ===================== Card 1: Tipo de cliente ===================== */}
-      <FormCard icon={Briefcase} iconAccent="purple" title="Tipo de cliente">
+      <FormCard icon={Briefcase} iconAccent="cyan" title="Tipo de cliente">
         <RadioGroup
           value={clientType}
           onChange={onClientTypeChange}
@@ -842,7 +842,7 @@ export default function TabFiscal({ profile, onShowToast, updateProfilePartial }
       </FormCard>
 
       {/* ===================== Card 5: Preferencias de facturación ===================== */}
-      <FormCard icon={CreditCard} iconAccent="purple" title="Preferencias de facturación">
+      <FormCard icon={CreditCard} iconAccent="cyan" title="Preferencias de facturación">
         <SubHead>Email de facturación</SubHead>
         <div className="pf-field-row">
           <Field

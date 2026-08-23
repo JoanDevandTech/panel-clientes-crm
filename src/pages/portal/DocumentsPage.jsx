@@ -32,66 +32,66 @@ import './documents.css'
 const CATEGORY_META = {
   proposal: {
     label: 'Propuestas',
-    badge: 'purple',
-    accent: 'purple',
+    badge: 'gray',
+    accent: 'gray',
     glyph: 'PDF',
-    color: '#c084fc',
+    color: 'var(--pr-text-read)',
   },
   contract: {
     label: 'Contratos',
     badge: 'blue',
     accent: 'blue',
     glyph: 'DOC',
-    color: '#60a5fa',
+    color: '#60A5FA',
   },
   report: {
     label: 'Informes',
     badge: 'cyan',
     accent: 'cyan',
     glyph: 'PDF',
-    color: '#22d3ee',
+    color: 'var(--pr-accent-cyan)',
   },
   deliverable: {
     label: 'Entregables',
     badge: 'green',
     accent: 'green',
     glyph: 'FILE',
-    color: '#34d399',
+    color: '#34D399',
   },
   design: {
     label: 'Diseño',
-    badge: 'purple',
-    accent: 'purple',
+    badge: 'gray',
+    accent: 'gray',
     glyph: 'FIG',
-    color: '#f0abfc',
+    color: 'var(--pr-text-read)',
   },
   code: {
     label: 'Código',
     badge: 'cyan',
     accent: 'cyan',
     glyph: 'CODE',
-    color: '#22d3ee',
+    color: 'var(--pr-accent-cyan)',
   },
   video: {
     label: 'Vídeo',
     badge: 'red',
     accent: 'red',
     glyph: 'MP4',
-    color: '#f87171',
+    color: '#FF5C7A',
   },
   image: {
     label: 'Imagen',
     badge: 'amber',
     accent: 'amber',
     glyph: 'IMG',
-    color: '#fbbf24',
+    color: '#FBBF24',
   },
   other: {
     label: 'Otro',
     badge: 'gray',
     accent: 'gray',
     glyph: 'FILE',
-    color: '#cbd5e1',
+    color: 'var(--pr-text-read)',
   },
 }
 
@@ -100,7 +100,7 @@ const FALLBACK_CATEGORY = {
   badge: 'gray',
   accent: 'gray',
   glyph: 'DOC',
-  color: '#cbd5e1',
+  color: 'var(--pr-text-read)',
 }
 
 const TYPE_OPTIONS = [
@@ -168,7 +168,8 @@ function hueFor(seed) {
 function previewStyle(doc) {
   const h = doc.cover_hue != null ? Number(doc.cover_hue) : hueFor(doc.id ?? doc.file_name ?? doc.name)
   return {
-    background: `linear-gradient(135deg, hsl(${h}, 55%, 28%) 0%, hsl(${(h + 30) % 360}, 45%, 18%) 100%)`,
+    background: 'var(--pr-bg-card-hover)',
+    backgroundImage: `linear-gradient(135deg, rgba(0, 229, 255, ${0.05 + (h % 5) * 0.02}) 0%, transparent 62%)`,
   }
 }
 
@@ -446,7 +447,7 @@ export default function DocumentsPage() {
       <div className="docs-kpi-row">
         <Kpi
           icon={FileText}
-          accent="purple"
+          accent="cyan"
           value={kpis.total}
           label="Documentos"
           sub={`${kpis.projectCount} proyecto${kpis.projectCount === 1 ? '' : 's'} cubierto${kpis.projectCount === 1 ? '' : 's'}`}
@@ -540,9 +541,8 @@ export default function DocumentsPage() {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '10px 14px',
-            background: 'var(--pr-purple-bg)',
-            border: '1px solid var(--pr-purple-border)',
-            borderRadius: 10,
+            background: 'var(--pr-cyan-bg)',
+            border: '1px solid var(--pr-cyan-border)',
             marginBottom: 14,
           }}
         >
@@ -741,7 +741,7 @@ function DocCard({ doc, selected, onToggleSelect, onDownload, onPreview, onShare
   const glyph = rawExt.toUpperCase().slice(0, 4)
   const canDelete = doc.is_client_upload === true
   return (
-    <div className="docs-card" style={selected ? { borderColor: 'var(--pr-accent-purple)', boxShadow: 'var(--pr-glow-purple)' } : undefined}>
+    <div className="docs-card" style={selected ? { borderColor: 'var(--pr-accent-cyan)', boxShadow: 'var(--pr-glow-cyan)' } : undefined}>
       <div className="docs-preview" style={previewStyle(doc)}>
         <button
           type="button"
@@ -749,10 +749,10 @@ function DocCard({ doc, selected, onToggleSelect, onDownload, onPreview, onShare
           aria-label={selected ? 'Quitar selección' : 'Seleccionar'}
           style={{
             position: 'absolute', top: 8, left: 8, zIndex: 2,
-            width: 22, height: 22, borderRadius: 6,
-            background: selected ? 'var(--pr-accent-purple)' : 'rgba(0,0,0,0.55)',
-            border: '1px solid ' + (selected ? 'var(--pr-accent-purple)' : 'rgba(255,255,255,0.3)'),
-            color: 'white', cursor: 'pointer',
+            width: 22, height: 22,
+            background: selected ? 'var(--pr-accent-cyan)' : 'rgba(13, 14, 17, 0.62)',
+            border: '1px solid ' + (selected ? 'var(--pr-accent-cyan)' : 'var(--pr-border-strong)'),
+            color: selected ? 'var(--pr-bg-primary)' : 'var(--pr-text-primary)', cursor: 'pointer',
             display: 'grid', placeItems: 'center',
           }}
         >
@@ -805,7 +805,7 @@ function DocCard({ doc, selected, onToggleSelect, onDownload, onPreview, onShare
             <Edit3 size={12} />
           </button>
           {canDelete && (
-            <button className="pr-btn ghost sm icon-only" onClick={onDelete} type="button" title="Eliminar" style={{ color: '#f87171' }}>
+            <button className="pr-btn ghost sm icon-only" onClick={onDelete} type="button" title="Eliminar" style={{ color: '#FF5C7A' }}>
               <Trash2 size={12} />
             </button>
           )}
@@ -828,11 +828,11 @@ function DocRow({ doc, selected, onToggleSelect, onDownload, onPreview, onShare,
           aria-label={selected ? 'Quitar selección' : 'Seleccionar'}
           style={{
             position: 'absolute', inset: 0,
-            background: selected ? 'rgba(168, 85, 247, 0.6)' : 'transparent',
-            border: 'none', borderRadius: 'inherit',
-            color: 'white', cursor: 'pointer',
+            background: selected ? 'rgba(0, 229, 255, 0.6)' : 'transparent',
+            border: 'none',
+            color: selected ? 'var(--pr-bg-primary)' : 'inherit', cursor: 'pointer',
             display: 'grid', placeItems: 'center',
-            fontSize: 11, fontWeight: 700,
+            fontFamily: 'var(--pr-font-mono)', fontSize: 11, fontWeight: 600,
           }}
         >
           {selected ? <Check size={14} /> : ext}
@@ -876,7 +876,7 @@ function DocRow({ doc, selected, onToggleSelect, onDownload, onPreview, onShare,
           <Edit3 size={13} />
         </button>
         {canDelete && (
-          <button className="pr-btn ghost sm icon-only" onClick={onDelete} title="Eliminar" type="button" style={{ color: '#f87171' }}>
+          <button className="pr-btn ghost sm icon-only" onClick={onDelete} title="Eliminar" type="button" style={{ color: '#FF5C7A' }}>
             <Trash2 size={13} />
           </button>
         )}
@@ -937,7 +937,7 @@ const overlayStyle = {
   position: 'fixed',
   inset: 0,
   zIndex: 90,
-  background: 'rgba(0,0,0,0.7)',
+  background: 'rgba(13, 14, 17,0.7)',
   backdropFilter: 'blur(8px)',
   display: 'grid',
   placeItems: 'center',
@@ -947,7 +947,6 @@ const overlayStyle = {
 const modalCardStyle = {
   background: 'var(--pr-bg-card)',
   border: '1px solid var(--pr-border)',
-  borderRadius: 14,
   width: '100%',
   maxWidth: 480,
   maxHeight: '90vh',
@@ -1058,7 +1057,7 @@ function UploadModal({ projects, defaultProjectId, onClose, onUploaded, onError 
     >
       <form id="upload-doc-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div>
-          <label style={labelStyle}>Archivo <span style={{ color: '#f87171' }}>*</span></label>
+          <label style={labelStyle}>Archivo <span style={{ color: '#FF5C7A' }}>*</span></label>
           <input
             ref={fileInputRef}
             type="file"
@@ -1353,20 +1352,20 @@ function PreviewModal({ entry, onClose }) {
         </>
       }
     >
-      <div style={{ minHeight: 320, display: 'grid', placeItems: 'center', background: 'var(--pr-bg-input)', borderRadius: 10, padding: 8 }}>
+      <div style={{ minHeight: 320, display: 'grid', placeItems: 'center', background: 'var(--pr-bg-input)', padding: 8 }}>
         {loading && <span className="pr-spinner" />}
         {!loading && url && isImage && (
           <img
             src={url}
             alt={doc.file_name || doc.name || ''}
-            style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: 8 }}
+            style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain' }}
           />
         )}
         {!loading && url && isPdf && (
           <iframe
             title="preview"
             src={url}
-            style={{ width: '100%', height: '70vh', border: 'none', borderRadius: 8, background: '#fff' }}
+            style={{ width: '100%', height: '70vh', border: 'none', background: 'var(--pr-bg-card-hover)' }}
           />
         )}
         {!loading && url && !isImage && !isPdf && (

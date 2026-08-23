@@ -22,7 +22,7 @@ const FILTERS = [
 const PER_PAGE = 30
 
 const accentMap = {
-  purple: 'pd-accent-purple',
+  gray: 'pd-accent-gray',
   cyan: 'pd-accent-cyan',
   amber: 'pd-accent-amber',
   green: 'pd-accent-green',
@@ -42,12 +42,12 @@ function categoryFromType(type) {
 
 function colorForCategory(category) {
   switch (category) {
-    case 'milestone':   return 'purple'
+    case 'milestone':   return 'gray'
     case 'deliverable': return 'cyan'
     case 'message':     return 'green'
     case 'credential':  return 'amber'
     case 'screenshot':  return 'blue'
-    default:            return 'purple'
+    default:            return 'cyan'
   }
 }
 
@@ -116,7 +116,7 @@ function Spinner() {
         style={{
           width: 32,
           height: 32,
-          border: '2px solid #a855f7',
+          border: '2px solid var(--pr-accent-cyan)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
           animation: 'pd-spin 1s linear infinite',
@@ -205,9 +205,9 @@ export default function TabActividad({ projectId }) {
             style={
               filter === f.key
                 ? {
-                    background: 'rgba(168,85,247,0.15)',
-                    borderColor: 'rgba(168,85,247,0.35)',
-                    color: '#c084fc',
+                    background: 'rgba(0, 229, 255,0.15)',
+                    borderColor: 'rgba(0, 229, 255,0.35)',
+                    color: 'var(--pr-text-read)',
                   }
                 : undefined
             }
@@ -225,11 +225,11 @@ export default function TabActividad({ projectId }) {
           style={{
             padding: 24,
             textAlign: 'center',
-            borderColor: 'rgba(239,68,68,0.35)',
-            background: 'rgba(239,68,68,0.08)',
+            borderColor: 'rgba(255, 23, 68,0.35)',
+            background: 'rgba(255, 23, 68,0.08)',
           }}
         >
-          <p style={{ color: '#f87171', marginBottom: 16, fontSize: 13 }}>{error}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16, fontSize: 13 }}>{error}</p>
           <button type="button" className="pd-btn pd-btn-ghost pd-sm" onClick={handleRetry}>
             Reintentar
           </button>
@@ -272,15 +272,14 @@ export default function TabActividad({ projectId }) {
                     alignItems: 'center',
                     gap: 14,
                     padding: '12px 16px',
-                    borderRadius: 8,
                     transition: 'background 200ms',
                     cursor: 'pointer',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(248, 249, 250,0.03)')}
                   onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                 >
                   <div
-                    className={`pd-card-head-icon ${accentMap[color] || 'pd-accent-purple'}`}
+                    className={`pd-card-head-icon ${accentMap[color] || 'pd-accent-cyan'}`}
                     style={{ width: 32, height: 32, flexShrink: 0 }}
                   >
                     <Icon size={15} />

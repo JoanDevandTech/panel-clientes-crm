@@ -74,7 +74,7 @@ const METHOD_META = {
   },
   totp: {
     icon: ShieldCheck,
-    color: 'purple',
+    color: 'cyan',
     title: 'App autenticadora',
     sub: 'Google Authenticator, Authy, 1Password, etc.',
   },
@@ -391,7 +391,7 @@ export default function TabSeguridad({ profile, onShowToast, updateProfilePartia
           {(m.is_enabled || m.is_primary) && (
             <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
               {m.is_enabled && <span className="pf-badge green">Activo</span>}
-              {m.is_primary && <span className="pf-badge purple">Principal</span>}
+              {m.is_primary && <span className="pf-badge cyan">Principal</span>}
               {m.is_enabled && !m.is_primary && (
                 <button
                   type="button"
@@ -428,7 +428,7 @@ export default function TabSeguridad({ profile, onShowToast, updateProfilePartia
       {/* ===== Card 1: Cambiar contraseña ===== */}
       <FormCard
         icon={Lock}
-        iconAccent="purple"
+        iconAccent="cyan"
         title="Cambiar contraseña"
         subtitle="Mínimo 8 caracteres con mayúscula, número y carácter especial"
       >
@@ -509,7 +509,7 @@ export default function TabSeguridad({ profile, onShowToast, updateProfilePartia
           <div
             style={{
               fontSize: 12,
-              color: '#f87171',
+              color: '#FF5C7A',
               display: 'flex',
               alignItems: 'center',
               gap: 6,
@@ -600,7 +600,7 @@ export default function TabSeguridad({ profile, onShowToast, updateProfilePartia
         />
         <ToggleRow
           icon={Lock}
-          color="purple"
+          color="cyan"
           title="Cambio de contraseña"
           sub="Notificación cada vez que cambies tu contraseña"
           value={!!securityAlerts.alert_password_changed}
@@ -734,7 +734,7 @@ function TotpModal({ onClose, onShowToast, onEnabled }) {
         <div
           style={{
             fontSize: 13,
-            color: '#f87171',
+            color: '#FF5C7A',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
@@ -754,22 +754,21 @@ function TotpModal({ onClose, onShowToast, onEnabled }) {
               display: 'flex',
               justifyContent: 'center',
               padding: 16,
-              background: 'rgba(255,255,255,0.04)',
-              borderRadius: 8,
+              background: 'rgba(248, 249, 250,0.04)',
               border: '1px solid var(--pf-border)',
               marginBottom: 12,
             }}
           >
             {setupData?.qr_code_svg ? (
               <div
-                style={{ background: '#fff', padding: 8, borderRadius: 4 }}
+                style={{ background: 'var(--pr-text-primary)', padding: 10 }}
                 dangerouslySetInnerHTML={{ __html: setupData.qr_code_svg }}
               />
             ) : setupData?.qr_code_url ? (
               <img
                 src={setupData.qr_code_url}
                 alt="QR código"
-                style={{ background: '#fff', padding: 8, borderRadius: 4, maxWidth: 200 }}
+                style={{ background: 'var(--pr-text-primary)', padding: 10, maxWidth: 200 }}
               />
             ) : (
               <div style={{ fontSize: 12, color: 'var(--pf-text-muted)' }}>QR no disponible</div>
@@ -783,11 +782,10 @@ function TotpModal({ onClose, onShowToast, onEnabled }) {
               </div>
               <div
                 style={{
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+                  fontFamily: 'var(--pr-font-mono)',
                   fontSize: 13,
-                  background: 'rgba(255,255,255,0.06)',
+                  background: 'rgba(248, 249, 250,0.06)',
                   padding: '8px 12px',
-                  borderRadius: 6,
                   border: '1px solid var(--pf-border)',
                   textAlign: 'center',
                   letterSpacing: 2,
@@ -807,7 +805,7 @@ function TotpModal({ onClose, onShowToast, onEnabled }) {
             <div
               style={{
                 fontSize: 12,
-                color: '#f87171',
+                color: '#FF5C7A',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
@@ -901,7 +899,7 @@ function TotpDisableModal({ onClose, onShowToast, onDisabled }) {
         <div
           style={{
             fontSize: 12,
-            color: '#f87171',
+            color: '#FF5C7A',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
@@ -958,8 +956,7 @@ function BackupCodesModal({ codes, onClose }) {
           fontSize: 12,
           background: 'rgba(245, 158, 11, 0.08)',
           border: '1px solid rgba(245, 158, 11, 0.3)',
-          color: '#fbbf24',
-          borderRadius: 8,
+          color: '#FBBF24',
           padding: '10px 12px',
           marginBottom: 16,
           display: 'flex',
@@ -985,11 +982,10 @@ function BackupCodesModal({ codes, onClose }) {
           <div
             key={i}
             style={{
-              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+              fontFamily: 'var(--pr-font-mono)',
               fontSize: 13,
-              background: 'rgba(255,255,255,0.06)',
+              background: 'rgba(248, 249, 250,0.06)',
               padding: '10px 12px',
-              borderRadius: 6,
               border: '1px solid var(--pf-border)',
               textAlign: 'center',
               letterSpacing: 1,

@@ -45,10 +45,10 @@
   gap: 1px;
 }
 .inv-chart-bar-pending {
-  background: linear-gradient(180deg, rgba(245, 158, 11, 0.7), rgba(245, 158, 11, 0.4));
+  background: rgba(245, 158, 11, 0.6);
 }
 .inv-chart-bar-paid {
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.85), rgba(16, 185, 129, 0.5));
+  background: rgba(16, 185, 129, 0.75);
 }
 .inv-chart-label {
   font-size: 10px;
@@ -80,7 +80,7 @@
   text-align: left;
   border-bottom: 1px solid var(--pr-border);
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.015);
+  background: rgba(248, 249, 250, 0.03);
 }
 .inv-table th.right { text-align: right; }
 .inv-table th.center { text-align: center; }
@@ -88,7 +88,7 @@
   transition: background 200ms var(--pr-ease);
 }
 .inv-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(248, 249, 250, 0.02);
 }
 .inv-table td {
   padding: 14px 16px;
@@ -99,7 +99,7 @@
 }
 .inv-table tbody tr:last-child td { border-bottom: none; }
 .inv-table td.num {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--pr-font-mono);
   font-size: 12px;
   color: var(--pr-text-primary);
   font-weight: 500;
@@ -125,8 +125,8 @@
   white-space: nowrap;
 }
 .inv-table td.due-date { white-space: nowrap; }
-.inv-table td.due-date.overdue { color: #f87171; font-weight: 600; }
-.inv-table td.due-date.due-soon { color: #fbbf24; font-weight: 600; }
+.inv-table td.due-date.overdue { color: #FF5C7A; font-weight: 600; }
+.inv-table td.due-date.due-soon { color: #FBBF24; font-weight: 600; }
 .inv-table td.actions { white-space: nowrap; padding: 10px 16px; }
 .inv-table td.actions-inner {
   display: flex;
@@ -191,7 +191,7 @@
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--pr-font-mono);
 }
 .inv-detail-meta {
   margin-left: auto;
@@ -222,7 +222,7 @@
 .inv-pdf-frame {
   display: block;
   width: 100%;
-  background: #ffffff;
+  background: var(--pr-bg-card-hover);
   border: 0;
   flex: 1;
   min-height: 540px;
@@ -260,7 +260,7 @@
   font-weight: 700;
 }
 .inv-side-row.paid .label,
-.inv-side-row.paid .value { color: #34d399; }
+.inv-side-row.paid .value { color: #34D399; }
 .inv-side-row.balance {
   border-top: 1px solid var(--pr-border);
   margin-top: 6px;
@@ -268,7 +268,7 @@
   font-weight: 600;
 }
 .inv-side-row.balance .label,
-.inv-side-row.balance .value { color: #fbbf24; }
+.inv-side-row.balance .value { color: #FBBF24; }
 
 .inv-side-items {
   display: flex;
@@ -304,12 +304,11 @@
   align-items: center;
   font-size: 12px;
   padding: 8px 10px;
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.18);
-  border-radius: 8px;
+  background: var(--pr-green-bg);
+  border: 1px solid var(--pr-green-border);
 }
 .inv-pay-row .ref { color: var(--pr-text-secondary); }
-.inv-pay-row .amount { color: #34d399; font-weight: 600; font-variant-numeric: tabular-nums; }
+.inv-pay-row .amount { color: #34D399; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .inv-detail-actions {
   display: flex;

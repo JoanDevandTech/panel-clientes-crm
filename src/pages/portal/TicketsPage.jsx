@@ -9,14 +9,14 @@ const statusConfig = {
   in_progress: { label: 'En Progreso', bg: 'bg-accent/20', text: 'text-accent' },
   waiting_client: { label: 'Esperando Respuesta', bg: 'bg-amber-500/20', text: 'text-amber-400' },
   resolved: { label: 'Resuelto', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
-  closed: { label: 'Cerrado', bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  closed: { label: 'Cerrado', bg: 'bg-ink/[0.06]', text: 'text-ink/60' },
 }
 
 const priorityConfig = {
-  low: { label: 'Baja', bg: 'bg-slate-500/20', text: 'text-slate-400' },
+  low: { label: 'Baja', bg: 'bg-ink/[0.06]', text: 'text-ink/60' },
   medium: { label: 'Media', bg: 'bg-blue-500/20', text: 'text-blue-400' },
   high: { label: 'Alta', bg: 'bg-amber-500/20', text: 'text-amber-400' },
-  urgent: { label: 'Urgente', bg: 'bg-red-500/20', text: 'text-red-400' },
+  urgent: { label: 'Urgente', bg: 'bg-danger/15', text: 'text-[#FF5C7A]' },
 }
 
 const statusTabs = [
@@ -90,10 +90,10 @@ export default function TicketsPage() {
   if (error) {
     return (
       <div className="text-center py-24">
-        <p className="text-red-400 mb-4">{error}</p>
+        <p className="text-[#FF5C7A] mb-4">{error}</p>
         <button
           onClick={refetch}
-          className="px-5 py-2.5 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-sm font-medium transition-all"
+          className="px-5 py-2.5 bg-ink/[0.03] text-ink/72 hover:text-ink hover:bg-ink/[0.06] text-sm font-medium transition-all"
         >
           Reintentar
         </button>
@@ -107,12 +107,12 @@ export default function TicketsPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-display font-bold text-white">Soporte</h1>
-          <p className="text-slate-400 mt-1">{ticketList.length} tickets en total</p>
+          <h1 className="text-2xl font-display font-bold text-ink">Soporte</h1>
+          <p className="text-ink/60 mt-1">{ticketList.length} tickets en total</p>
         </div>
         <Link
           href="/portal/tickets/new"
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-xl transition-all hover:shadow-lg hover:shadow-primary/30 text-sm"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-background-dark font-medium transition-all hover:bg-secondary hover:shadow-portal-glow text-sm"
         >
           <Plus size={18} />
           Nuevo Ticket
@@ -124,10 +124,10 @@ export default function TicketsPage() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+            className={`px-4 py-2 text-sm font-medium transition-all cursor-pointer ${
               activeTab === tab.key
-                ? 'bg-primary text-white'
-                : 'bg-white/5 text-slate-400 hover:text-white'
+                ? 'bg-primary text-background-dark'
+                : 'bg-ink/[0.03] text-ink/60 hover:text-ink'
             }`}
           >
             {tab.label}
@@ -139,7 +139,7 @@ export default function TicketsPage() {
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="px-4 py-2 rounded-lg bg-background-dark border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-white text-sm transition-colors"
+          className="px-4 py-2 bg-background-dark border border-ink/[0.09] focus:border-primary focus:ring-1 focus:ring-primary outline-none text-ink text-sm transition-colors"
         >
           {priorityOptions.map((opt) => (
             <option key={opt.key} value={opt.key}>
@@ -163,13 +163,13 @@ export default function TicketsPage() {
             <motion.div key={ticket.id} variants={fadeUp}>
               <Link
                 href={`/portal/tickets/${ticket.id}`}
-                className="block bg-surface-dark rounded-xl p-5 border border-white/5 hover:border-white/10 transition-all cursor-pointer"
+                className="block bg-surface-dark p-5 border border-ink/[0.09] hover:border-ink/[0.09] transition-all cursor-pointer"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-slate-500 text-sm">#{ticket.id}</span>
-                      <h3 className="text-white font-medium truncate">{ticket.subject}</h3>
+                      <span className="text-ink/45 text-sm">#{ticket.id}</span>
+                      <h3 className="text-ink font-medium truncate">{ticket.subject}</h3>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap mt-2">
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${priority.bg} ${priority.text}`}>
@@ -180,7 +180,7 @@ export default function TicketsPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="text-xs text-slate-500 sm:text-right flex-shrink-0">
+                  <div className="text-xs text-ink/45 sm:text-right flex-shrink-0">
                     {getRelativeDate(ticket.updated_at)}
                   </div>
                 </div>
@@ -191,7 +191,7 @@ export default function TicketsPage() {
       </motion.div>
 
       {ticketList.length === 0 && (
-        <div className="text-center py-16 text-slate-500">
+        <div className="text-center py-16 text-ink/45">
           No hay tickets en esta categoría.
         </div>
       )}

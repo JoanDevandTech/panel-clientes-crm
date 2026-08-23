@@ -177,7 +177,7 @@ export default function InvoiceDetailPage() {
           <span>Volver a facturas</span>
         </Link>
         <div className="pr-card" style={{ textAlign: 'center', padding: 40 }}>
-          <p style={{ color: '#f87171', marginBottom: 16 }}>{error || 'Factura no encontrada.'}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16 }}>{error || 'Factura no encontrada.'}</p>
           <button onClick={refetch} className="pr-btn primary">
             Reintentar
           </button>
@@ -235,11 +235,11 @@ export default function InvoiceDetailPage() {
         <div
           className="pr-banner"
           style={{
-            background: 'linear-gradient(135deg, rgba(16,185,129,0.10), rgba(6,182,212,0.06))',
+            background: 'var(--pr-green-bg)',
             borderColor: 'rgba(16,185,129,0.28)',
           }}
         >
-          <CheckCircle2 size={18} color="#34d399" />
+          <CheckCircle2 size={18} color="#34D399" />
           <span>
             Esta factura está <strong>pagada</strong>{invoice.paid_at ? ` desde el ${formatLongDate(invoice.paid_at)}` : ''}.
             Gracias por tu confianza.
@@ -249,11 +249,11 @@ export default function InvoiceDetailPage() {
         <div
           className="pr-banner"
           style={{
-            background: 'linear-gradient(135deg, rgba(239,68,68,0.10), rgba(245,158,11,0.06))',
-            borderColor: 'rgba(239,68,68,0.30)',
+            background: 'var(--pr-red-bg)',
+            borderColor: 'rgba(255, 23, 68,0.30)',
           }}
         >
-          <AlertTriangle size={18} color="#f87171" />
+          <AlertTriangle size={18} color="#FF5C7A" />
           <span>
             Esta factura está <strong>vencida hace {Math.abs(dueDays)} {Math.abs(dueDays) === 1 ? 'día' : 'días'}</strong>.
             Por favor, regulariza el pago lo antes posible.
@@ -263,11 +263,11 @@ export default function InvoiceDetailPage() {
         <div
           className="pr-banner"
           style={{
-            background: 'linear-gradient(135deg, rgba(245,158,11,0.10), rgba(168,85,247,0.05))',
+            background: 'var(--pr-amber-bg)',
             borderColor: 'rgba(245,158,11,0.28)',
           }}
         >
-          <Clock size={18} color="#fbbf24" />
+          <Clock size={18} color="#FBBF24" />
           <span>
             <strong>{dueDays === 0 ? 'Vence hoy' : `Quedan ${dueDays} ${dueDays === 1 ? 'día' : 'días'} para vencer`}</strong>
             {invoice.due_date ? ` (${formatLongDate(invoice.due_date)})` : ''}.
@@ -291,8 +291,8 @@ export default function InvoiceDetailPage() {
           )}
           {pdfError && !pdfLoading && (
             <div className="inv-pdf-state">
-              <FileText size={32} color="#94a3b8" />
-              <p style={{ color: '#f87171', margin: 0 }}>{pdfError}</p>
+              <FileText size={32} color="var(--pr-accent-gray)" />
+              <p style={{ color: '#FF5C7A', margin: 0 }}>{pdfError}</p>
               <button
                 type="button"
                 onClick={handleDownloadPdf}
@@ -323,7 +323,7 @@ export default function InvoiceDetailPage() {
           {/* Resumen económico */}
           <div className="pr-card">
             <div className="pr-card-head">
-              <div className="pr-card-head-icon pr-accent-purple">
+              <div className="pr-card-head-icon pr-accent-cyan">
                 <Wallet size={14} />
               </div>
               <div className="pr-card-head-title">Resumen</div>
@@ -376,13 +376,13 @@ export default function InvoiceDetailPage() {
               <span className="label">Vencimiento</span>
               <span
                 className="value"
-                style={isOverdue ? { color: '#f87171', fontWeight: 600 } : undefined}
+                style={isOverdue ? { color: '#FF5C7A', fontWeight: 600 } : undefined}
               >
                 {formatLongDate(invoice.due_date)}
               </span>
             </div>
             {dueLabel && (
-              <div style={{ fontSize: 12, color: isOverdue ? '#f87171' : 'var(--pr-text-muted)', marginTop: 4 }}>
+              <div style={{ fontSize: 12, color: isOverdue ? '#FF5C7A' : 'var(--pr-text-muted)', marginTop: 4 }}>
                 {dueLabel}
               </div>
             )}

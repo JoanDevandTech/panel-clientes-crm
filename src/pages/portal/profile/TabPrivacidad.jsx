@@ -235,9 +235,8 @@ export default function TabPrivacidad({ profile, onShowToast, updateProfileParti
             style={{
               width: 36,
               height: 36,
-              borderRadius: 10,
-              background: 'rgba(239, 68, 68, 0.15)',
-              color: '#f87171',
+              background: 'rgba(255, 23, 68, 0.15)',
+              color: '#FF5C7A',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -272,7 +271,7 @@ export default function TabPrivacidad({ profile, onShowToast, updateProfileParti
 
       <FormCard
         icon={Shield}
-        iconAccent="purple"
+        iconAccent="cyan"
         title="Consentimientos"
         subtitle="Decide cómo podemos usar tus datos"
       >
@@ -294,7 +293,7 @@ export default function TabPrivacidad({ profile, onShowToast, updateProfileParti
                       gap: 4,
                     }}
                   >
-                    <Check size={11} style={{ color: '#34d399' }} />
+                    <Check size={11} style={{ color: '#34D399' }} />
                     Activo desde {formatShortDate(c.granted_at)}
                   </div>
                 )}
@@ -474,10 +473,9 @@ function DeletionModal({ onClose, onShowToast, onScheduled }) {
             display: 'flex',
             gap: 10,
             padding: 12,
-            borderRadius: 10,
-            background: 'rgba(239, 68, 68, 0.08)',
-            border: '1px solid rgba(239, 68, 68, 0.25)',
-            color: '#f87171',
+            background: 'rgba(255, 23, 68, 0.08)',
+            border: '1px solid rgba(255, 23, 68, 0.25)',
+            color: '#FF5C7A',
             fontSize: 13,
             lineHeight: 1.5,
           }}
@@ -522,7 +520,7 @@ function DeletionModal({ onClose, onShowToast, onScheduled }) {
         </div>
 
         {generalError && (
-          <div style={{ fontSize: 12, color: '#f87171' }}>{generalError}</div>
+          <div style={{ fontSize: 12, color: '#FF5C7A' }}>{generalError}</div>
         )}
       </div>
     </Modal>
@@ -573,7 +571,7 @@ function DataStoredModal({ onClose }) {
             padding: '24px 0',
           }}
         >
-          <div style={{ color: '#f87171', fontSize: 13 }}>{error}</div>
+          <div style={{ color: '#FF5C7A', fontSize: 13 }}>{error}</div>
           <button
             type="button"
             className="pf-btn pf-ghost pf-sm"
@@ -606,8 +604,7 @@ function DataStoredModal({ onClose }) {
                 key={cat?.category || idx}
                 style={{
                   padding: 14,
-                  borderRadius: 10,
-                  background: 'rgba(255,255,255,0.02)',
+                  background: 'rgba(248, 249, 250,0.02)',
                   border: '1px solid var(--pf-border)',
                 }}
               >

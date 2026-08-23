@@ -139,8 +139,11 @@ function SearchPalette({ onClose }) {
         position: 'fixed',
         inset: 0,
         zIndex: 70,
-        background: 'rgba(0,0,0,0.7)',
-        backdropFilter: 'blur(8px)',
+        // Sin backdrop-filter a propósito: la barra superior y el sidebar ya
+        // llevan el suyo y, al superponerse dos capas que difuminan el fondo,
+        // el navegador no puede muestrearlo y pinta una franja negra arriba.
+        // Un velo opaco da el mismo resultado visual sin ese artefacto.
+        background: 'rgba(13,14,17,0.92)',
         display: 'flex',
         justifyContent: 'center',
         padding: '10vh 16px 16px',
@@ -155,9 +158,8 @@ function SearchPalette({ onClose }) {
           maxHeight: '75vh',
           background: 'var(--pr-bg-primary)',
           border: '1px solid var(--pr-border)',
-          borderRadius: 14,
           overflow: 'hidden',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.7), 0 0 60px rgba(168,85,247,0.15)',
+          boxShadow: 'var(--pr-shadow-lg), var(--pr-glow-cyan)',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -171,7 +173,7 @@ function SearchPalette({ onClose }) {
             borderBottom: '1px solid var(--pr-border)',
           }}
         >
-          <Search size={18} style={{ color: 'var(--pr-accent-purple)' }} />
+          <Search size={18} style={{ color: 'var(--pr-accent-cyan)' }} />
           <input
             autoFocus
             value={query}
@@ -191,11 +193,10 @@ function SearchPalette({ onClose }) {
           <kbd
             style={{
               fontSize: 10,
-              fontFamily: 'ui-monospace, monospace',
+              fontFamily: 'var(--pr-font-mono)',
               padding: '3px 8px',
               background: 'var(--pr-bg-card-strong)',
               border: '1px solid var(--pr-border)',
-              borderRadius: 5,
               color: 'var(--pr-text-muted)',
             }}
           >
@@ -230,7 +231,6 @@ function SearchPalette({ onClose }) {
                 alignItems: 'center',
                 gap: 12,
                 padding: '10px 12px',
-                borderRadius: 8,
                 textDecoration: 'none',
                 color: 'inherit',
               }}
@@ -239,7 +239,6 @@ function SearchPalette({ onClose }) {
                 style={{
                   width: 30,
                   height: 30,
-                  borderRadius: 7,
                   background: 'var(--pr-bg-card-strong)',
                   border: '1px solid var(--pr-border)',
                   display: 'grid',

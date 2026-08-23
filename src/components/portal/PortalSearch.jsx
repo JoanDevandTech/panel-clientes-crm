@@ -85,7 +85,7 @@ export default function PortalSearch() {
   return (
     <div ref={containerRef} className="relative hidden md:block w-72">
       <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/45 pointer-events-none" />
         <input
           type="search"
           value={q}
@@ -93,23 +93,23 @@ export default function PortalSearch() {
           onFocus={() => setOpen(true)}
           onKeyDown={handleKey}
           placeholder="Buscar..."
-          className="w-full pl-9 pr-3 py-2 rounded-lg bg-background-dark border border-white/10 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm text-white placeholder:text-slate-500 transition-colors"
+          className="w-full pl-9 pr-3 py-2 bg-background-dark border border-ink/[0.09] focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm text-ink placeholder:text-ink/34 transition-colors"
         />
         {loading && (
-          <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 animate-spin" />
+          <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/45 animate-spin" />
         )}
       </div>
 
       {open && q.trim().length >= 2 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-surface-dark border border-white/10 rounded-xl shadow-xl z-40 max-h-96 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-surface-dark border border-ink/[0.09] shadow-portal-pop z-40 max-h-96 overflow-y-auto">
           {loading && results.length === 0 && (
-            <div className="p-4 text-sm text-slate-400 flex items-center gap-2">
+            <div className="p-4 text-sm text-ink/60 flex items-center gap-2">
               <Loader2 size={14} className="animate-spin" />
               Buscando...
             </div>
           )}
           {!loading && results.length === 0 && (
-            <div className="p-4 text-sm text-slate-500">Sin resultados.</div>
+            <div className="p-4 text-sm text-ink/45">Sin resultados.</div>
           )}
           {results.length > 0 && (
             <ul>
@@ -121,14 +121,14 @@ export default function PortalSearch() {
                       onClick={() => go(r)}
                       onMouseEnter={() => setActiveIndex(idx)}
                       className={`flex items-center gap-3 w-full text-left px-4 py-2.5 transition-colors ${
-                        idx === activeIndex ? 'bg-primary/15' : 'hover:bg-white/5'
+                        idx === activeIndex ? 'bg-primary/10' : 'hover:bg-ink/[0.06]'
                       }`}
                     >
-                      <Icon size={16} className="text-slate-500 shrink-0" />
+                      <Icon size={16} className="text-ink/45 shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm text-white truncate">{r.title}</p>
+                        <p className="text-sm text-ink truncate">{r.title}</p>
                         {r.subtitle && (
-                          <p className="text-xs text-slate-500 truncate">{r.subtitle}</p>
+                          <p className="text-xs text-ink/45 truncate">{r.subtitle}</p>
                         )}
                       </div>
                     </button>

@@ -88,7 +88,7 @@ export default function TabCuentas({ profile, onShowToast, updateProfilePartial 
     <div className="pf-tab-content" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <FormCard
         icon={Layers}
-        iconAccent="purple"
+        iconAccent="cyan"
         title="Cuentas vinculadas"
         subtitle="Inicia sesión más rápido conectando tus cuentas externas"
       >

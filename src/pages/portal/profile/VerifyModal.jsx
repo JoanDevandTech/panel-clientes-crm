@@ -111,7 +111,7 @@ export function VerifyEmailModal({ kind = 'primary', onClose, onShowToast, onVer
             onChange={(e) => setNewEmail(e.target.value)}
             className="pf-field-input"
           />
-          {error && <div style={{ fontSize: 12, color: '#f87171', marginTop: 8 }}>{error}</div>}
+          {error && <div style={{ fontSize: 12, color: '#FF5C7A', marginTop: 8 }}>{error}</div>}
         </div>
       )}
 
@@ -127,7 +127,7 @@ export function VerifyEmailModal({ kind = 'primary', onClose, onShowToast, onVer
           <p style={{ fontSize: 11, color: 'var(--pf-text-muted)', textAlign: 'center' }}>
             El código expira en 10 minutos
           </p>
-          {error && <div style={{ fontSize: 12, color: '#f87171', marginTop: 8, textAlign: 'center' }}>{error}</div>}
+          {error && <div style={{ fontSize: 12, color: '#FF5C7A', marginTop: 8, textAlign: 'center' }}>{error}</div>}
         </div>
       )}
     </Modal>

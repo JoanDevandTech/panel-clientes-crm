@@ -13,7 +13,14 @@ import {
 } from 'lucide-react'
 import { api } from '../services/api'
 
-const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Joan Dev & Tech'
+const BRAND_NAME = import.meta.env.VITE_BRAND_NAME || 'Krom'
+const BRAND_SUBTITLE = import.meta.env.VITE_BRAND_SUBTITLE || 'Portal cliente'
+
+// Botón primario Krom: cian plano, texto sobre el ground, mono en versales.
+const KROM_CTA =
+  'w-full py-4 px-6 bg-primary text-background-dark font-mono font-semibold text-xs uppercase tracking-[0.16em] ' +
+  'hover:bg-secondary hover:shadow-[0_0_40px_rgba(0,229,255,.28)] transition-all ' +
+  'disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'
 
 const criteria = [
   { key: 'length', label: 'Mínimo 8 caracteres', test: (p) => p.length >= 8 },
@@ -23,7 +30,7 @@ const criteria = [
 ]
 
 const strengthColors = [
-  'bg-red-500',
+  'bg-danger',
   'bg-amber-500',
   'bg-yellow-400',
   'bg-emerald-500',
@@ -33,14 +40,32 @@ const strengthLabels = ['Débil', 'Regular', 'Buena', 'Fuerte']
 
 function BrandLogo() {
   return (
-    <div className="flex flex-col items-center gap-3">
-      <img
-        src="/brand-logo.jpg"
-        alt={BRAND_NAME}
-        className="w-16 h-16 rounded-2xl object-cover"
-        style={{ boxShadow: '0 8px 28px -8px rgba(99, 102, 241, 0.55)' }}
-      />
-      <p className="text-sm font-semibold text-white">{BRAND_NAME}</p>
+    <div className="flex items-center gap-[13px]">
+      <img src="/brand-logo.svg" alt="" aria-hidden="true" className="w-8 h-8 object-contain" />
+      <div className="text-left">
+        <div className="font-display font-semibold text-[18px] uppercase leading-none text-ink" style={{ letterSpacing: '0.2em' }}>
+          {BRAND_NAME}
+        </div>
+        <div
+          className="font-mono uppercase mt-1.5"
+          style={{ fontSize: '8.5px', letterSpacing: '0.24em', color: 'rgba(248,249,250,.34)' }}
+        >
+          {BRAND_SUBTITLE}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Kicker({ n, children }) {
+  return (
+    <div
+      className="flex items-center gap-[9px] font-mono uppercase mb-[18px]"
+      style={{ fontSize: '11px', letterSpacing: '0.22em', color: 'rgba(248,249,250,.45)' }}
+    >
+      <span style={{ color: '#FF1744' }}>{n}</span>
+      <span style={{ color: 'rgba(248,249,250,.2)' }}>//</span>
+      <span>{children}</span>
     </div>
   )
 }
@@ -124,24 +149,24 @@ export default function SetPasswordPage() {
   return (
     <div className="min-h-screen bg-background-dark flex items-center justify-center px-4 py-12 relative overflow-hidden">
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(124, 58, 237, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(124, 58, 237, 0.5) 1px, transparent 1px)',
-          backgroundSize: '60px 60px',
+            'linear-gradient(rgba(0,229,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,.05) 1px, transparent 1px)',
+          backgroundSize: '72px 72px',
+          maskImage: 'radial-gradient(ellipse 60% 60% at 50% 45%, #000 0%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 60% 60% at 50% 45%, #000 0%, transparent 100%)',
         }}
       />
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px] pointer-events-none" />
-
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="relative w-full max-w-md"
       >
-        <div className="bg-surface-dark rounded-2xl border border-white/5 p-8 shadow-2xl">
-          <div className="flex justify-center mb-8">
+        <div className="bg-surface-dark border p-8 lg:p-10" style={{ borderColor: 'rgba(248,249,250,.09)' }}>
+          <div className="mb-9">
             <BrandLogo />
           </div>
 
@@ -153,8 +178,9 @@ export default function SetPasswordPage() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                <h1 className="text-2xl font-display font-bold text-white text-center mb-8">
-                  Establecer Contraseña
+                <Kicker n="01">Cuenta</Kicker>
+                <h1 className="font-display font-semibold text-ink text-[30px] leading-none mb-8" style={{ letterSpacing: '-0.035em' }}>
+                  Establecer contraseña
                 </h1>
 
                 <AnimatePresence>
@@ -163,22 +189,23 @@ export default function SetPasswordPage() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="mb-6 flex items-start gap-3 rounded-xl bg-red-500/10 border border-red-500/20 p-4"
+                      className="mb-6 flex items-start gap-3 border p-4"
+                      style={{ background: 'rgba(255,23,68,.10)', borderColor: 'rgba(255,23,68,.28)' }}
                     >
-                      <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                      <p className="text-sm text-red-300">{networkError}</p>
+                      <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" style={{ color: '#FF5C7A' }} />
+                      <p className="text-sm" style={{ color: '#FF5C7A' }}>{networkError}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
 
                 <form onSubmit={handleSubmit} noValidate>
                   <div className="mb-5">
-                    <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+                    <label htmlFor="password" className="block font-mono uppercase mb-2" style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(248,249,250,.45)' }}>
                       Nueva contraseña
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock className="w-5 h-5 text-slate-500" />
+                        <Lock className="w-5 h-5 text-ink-3" />
                       </div>
                       <input
                         id="password"
@@ -190,17 +217,17 @@ export default function SetPasswordPage() {
                         }}
                         onBlur={() => setPasswordTouched(true)}
                         placeholder="••••••••"
-                        className={`w-full pl-12 pr-12 py-3 bg-white/5 border rounded-xl text-white placeholder-slate-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/40 ${
+                        className={`w-full pl-12 pr-12 py-3 bg-bg-1 border text-ink outline-none transition-colors duration-200 ${
                           passwordError && passwordTouched
-                            ? 'border-red-500/50 focus:border-red-500'
-                            : 'border-white/10 focus:border-primary/50'
+                            ? 'border-danger focus:border-danger'
+                            : 'border-white/10 focus:border-primary'
                         }`}
                         autoComplete="new-password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-300 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-ink-3 hover:text-primary transition-colors"
                       >
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
@@ -211,7 +238,7 @@ export default function SetPasswordPage() {
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
-                          className="text-red-400 text-xs mt-2"
+                          className="text-danger text-xs mt-2"
                         >
                           {passwordError}
                         </motion.p>
@@ -230,18 +257,18 @@ export default function SetPasswordPage() {
                           {[0, 1, 2, 3].map((i) => (
                             <div
                               key={i}
-                              className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                              className={`h-1 flex-1 transition-all duration-300 ${
                                 i < strength ? strengthColors[strength - 1] : 'bg-white/10'
                               }`}
                             />
                           ))}
                         </div>
                         <span
-                          className={`text-xs font-medium transition-colors duration-300 ${
+                          className={`text-[10px] font-mono uppercase tracking-[0.18em] transition-colors duration-300 ${
                             strength === 0
-                              ? 'text-slate-500'
+                              ? 'text-ink-3'
                               : strength === 1
-                              ? 'text-red-400'
+                              ? 'text-danger'
                               : strength === 2
                               ? 'text-amber-400'
                               : strength === 3
@@ -259,9 +286,9 @@ export default function SetPasswordPage() {
                             {c.passed ? (
                               <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
                             ) : (
-                              <XCircle className="w-3.5 h-3.5 text-slate-500" />
+                              <XCircle className="w-3.5 h-3.5 text-ink-3" />
                             )}
-                            <span className={c.passed ? 'text-emerald-400' : 'text-slate-500'}>
+                            <span className={c.passed ? 'text-emerald-400' : 'text-ink-3'}>
                               {c.label}
                             </span>
                           </li>
@@ -271,12 +298,12 @@ export default function SetPasswordPage() {
                   )}
 
                   <div className="mb-6">
-                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300 mb-2">
+                    <label htmlFor="confirmPassword" className="block font-mono uppercase mb-2" style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(248,249,250,.45)' }}>
                       Confirmar contraseña
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock className="w-5 h-5 text-slate-500" />
+                        <Lock className="w-5 h-5 text-ink-3" />
                       </div>
                       <input
                         id="confirmPassword"
@@ -287,17 +314,17 @@ export default function SetPasswordPage() {
                         }}
                         onBlur={() => setConfirmTouched(true)}
                         placeholder="••••••••"
-                        className={`w-full pl-12 pr-12 py-3 bg-white/5 border rounded-xl text-white placeholder-slate-500 outline-none transition-all duration-200 focus:ring-2 focus:ring-primary/40 ${
+                        className={`w-full pl-12 pr-12 py-3 bg-bg-1 border text-ink outline-none transition-colors duration-200 ${
                           confirmError && confirmTouched
-                            ? 'border-red-500/50 focus:border-red-500'
-                            : 'border-white/10 focus:border-primary/50'
+                            ? 'border-danger focus:border-danger'
+                            : 'border-white/10 focus:border-primary'
                         }`}
                         autoComplete="new-password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-300 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-ink-3 hover:text-primary transition-colors"
                       >
                         {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
@@ -308,7 +335,7 @@ export default function SetPasswordPage() {
                           initial={{ opacity: 0, y: -4 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -4 }}
-                          className="text-red-400 text-xs mt-2"
+                          className="text-danger text-xs mt-2"
                         >
                           {confirmError}
                         </motion.p>
@@ -319,15 +346,15 @@ export default function SetPasswordPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 px-6 rounded-xl font-display font-semibold text-white bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className={KROM_CTA}
                   >
                     {loading ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Estableciendo...
+                        Estableciendo
                       </>
                     ) : (
-                      'Establecer Contraseña'
+                      'Establecer contraseña'
                     )}
                   </button>
                 </form>
@@ -335,7 +362,7 @@ export default function SetPasswordPage() {
                 <div className="mt-6 text-center">
                   <Link
                     href="/login"
-                    className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                    className="inline-flex items-center gap-2 text-sm text-primary hover:text-secondary transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Volver a iniciar sesión
@@ -348,25 +375,25 @@ export default function SetPasswordPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, ease: 'easeOut' }}
-                className="text-center py-4"
+                className="py-2"
               >
-                <div className="flex justify-center mb-5">
-                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                    <CheckCircle className="w-8 h-8 text-emerald-400" />
+                <div className="mb-6">
+                  <div className="w-12 h-12 flex items-center justify-center border" style={{ background: 'rgba(16,185,129,.10)', borderColor: 'rgba(16,185,129,.28)' }}>
+                    <CheckCircle className="w-6 h-6 text-emerald-400" />
                   </div>
                 </div>
-                <h2 className="text-xl font-display font-bold text-white mb-3">
+                <h2 className="font-display font-semibold text-ink text-[24px] leading-none mb-3" style={{ letterSpacing: '-0.035em' }}>
                   ¡Contraseña establecida!
                 </h2>
-                <p className="text-slate-400 text-sm leading-relaxed mb-2">
+                <p className="text-[15px] font-light leading-relaxed mb-2" style={{ color: 'rgba(248,249,250,.6)' }}>
                   Tu contraseña se ha actualizado correctamente.
                 </p>
-                <p className="text-slate-500 text-xs mb-6">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] mb-6" style={{ color: 'rgba(248,249,250,.34)' }}>
                   Serás redirigido a iniciar sesión en unos segundos...
                 </p>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                  className="inline-flex items-center gap-2 text-sm text-primary hover:text-secondary transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   Ir a iniciar sesión

@@ -84,7 +84,7 @@ function Spinner() {
         style={{
           width: 32,
           height: 32,
-          border: '2px solid #a855f7',
+          border: '2px solid var(--pr-accent-cyan)',
           borderTopColor: 'transparent',
           borderRadius: '50%',
           animation: 'pd-spin 1s linear infinite',
@@ -233,11 +233,11 @@ export default function TabNotas({ projectId, onShowToast }) {
           style={{
             padding: 24,
             textAlign: 'center',
-            borderColor: 'rgba(239,68,68,0.35)',
-            background: 'rgba(239,68,68,0.08)',
+            borderColor: 'rgba(255, 23, 68,0.35)',
+            background: 'rgba(255, 23, 68,0.08)',
           }}
         >
-          <p style={{ color: '#f87171', marginBottom: 16, fontSize: 13 }}>{error}</p>
+          <p style={{ color: '#FF5C7A', marginBottom: 16, fontSize: 13 }}>{error}</p>
           <button type="button" className="pd-btn pd-btn-ghost pd-sm" onClick={refetch}>
             Reintentar
           </button>
@@ -288,7 +288,7 @@ export default function TabNotas({ projectId, onShowToast }) {
         <div className="pd-section-actions">
           {showSavedBadge && (
             <span style={{ fontSize: 12, color: 'var(--pd-text-muted)' }}>
-              <Check size={12} style={{ display: 'inline', verticalAlign: -1, color: '#10b981' }} /> Guardado
+              <Check size={12} style={{ display: 'inline', verticalAlign: -1, color: 'var(--pr-accent-green)' }} /> Guardado
             </span>
           )}
           <button type="button" className="pd-btn pd-btn-primary pd-sm" onClick={addNote}>
@@ -321,7 +321,7 @@ export default function TabNotas({ projectId, onShowToast }) {
                   width: '100%',
                   padding: 16,
                   borderBottom: '1px solid var(--pd-border)',
-                  background: n.id === activeId ? 'rgba(168,85,247,0.08)' : 'transparent',
+                  background: n.id === activeId ? 'rgba(0, 229, 255,0.08)' : 'transparent',
                   textAlign: 'left',
                   cursor: 'pointer',
                   transition: 'background 200ms',
@@ -363,7 +363,7 @@ export default function TabNotas({ projectId, onShowToast }) {
               color: 'var(--pd-text-primary)',
               fontSize: 14,
               lineHeight: 1.7,
-              fontFamily: "ui-monospace, 'JetBrains Mono', monospace",
+              fontFamily: 'var(--pr-font-mono)',
             }}
           />
           <div

@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useCallback } from 'react'
-import { api, setAccessToken, setRefreshToken, clearTokens, getRefreshToken, BASE_URL } from '../services/api'
+import { api, setAccessToken, setRefreshToken, clearTokens, getRefreshToken, refreshAccessToken } from '../services/api'
 
 export const AuthContext = createContext(null)
 
@@ -31,24 +31,10 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const refreshResponse = await fetch(`${BASE_URL}/auth/refresh`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({ refresh_token: refreshToken }),
-        })
-
-        if (!refreshResponse.ok) {
-          throw new Error('Refresh failed')
-        }
-
-        const refreshData = await refreshResponse.json()
-        setAccessToken(refreshData.access_token)
-        if (refreshData.refresh_token) {
-          setRefreshToken(refreshData.refresh_token)
-        }
+        // Un único camino de refresco (el de api.js, con guard de single-flight).
+        // Hacer aquí un fetch propio provocaba dos refrescos concurrentes: con
+        // tokens rotatorios el segundo llegaba caducado y tumbaba la sesión.
+        await refreshAccessToken()
 
         const userData = await api.get('/auth/me')
         setClient(userData.data || userData)

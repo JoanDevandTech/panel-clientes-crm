@@ -25,7 +25,10 @@ export const clearTokens = () => {
 let isRefreshing = false
 let refreshPromise = null
 
-const refreshAccessToken = async () => {
+// Se exporta para que AuthContext use ESTE camino y no haga su propio fetch a
+// /auth/refresh: dos refrescos concurrentes con tokens rotatorios hacían que el
+// segundo llegase con un token ya consumido.
+export const refreshAccessToken = async () => {
   if (isRefreshing) {
     return refreshPromise
   }
@@ -59,9 +62,11 @@ const refreshAccessToken = async () => {
       return data.access_token
     } catch (error) {
       clearTokens()
-      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
+      // Antes se hacía window.location.href = '/login', que es una recarga
+      // completa: si un refresco en vuelo terminaba después y volvía a guardar el
+      // token, la app arrancaba de nuevo y repetía el ciclo (hasta agotar el
+      // límite de 60/min de /auth/refresh y devolver 429). Se deja que
+      // ProtectedRoute redirija por router, sin recargar.
       throw error
     } finally {
       isRefreshing = false

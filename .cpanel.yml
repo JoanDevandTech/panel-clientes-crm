@@ -4,7 +4,7 @@ deployment:
     - |
       case "$USER" in
         vlyyfgxf)
-          DEPLOYPATH="/home/vlyyfgxf/clientes.joandev.com/"
+          DEPLOYPATH="/home/vlyyfgxf/portal.kromagency.es/"
           ;;
         fkfnfdgk)
           DEPLOYPATH="/home/fkfnfdgk/clientes.novalintelligence.com/"

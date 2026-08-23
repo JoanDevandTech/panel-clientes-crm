@@ -2,10 +2,10 @@
 set -euo pipefail
 
 CLIENTE="${1:-}"
-CLIENTES_VALIDOS=("joandev" "noval" "mycapstore")
+CLIENTES_VALIDOS=("krom" "noval" "mycapstore")
 
 if [[ -z "$CLIENTE" ]]; then
-  echo "Uso: $0 <cliente>  (joandev | noval | mycapstore)"
+  echo "Uso: $0 <cliente>  (krom | noval | mycapstore)"
   exit 1
 fi
 

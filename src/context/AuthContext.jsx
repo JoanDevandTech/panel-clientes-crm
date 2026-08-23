@@ -24,6 +24,19 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const restoreSession = async () => {
+      // Si la app arranca en el flujo de impersonación, NO se restaura la sesión
+      // anterior: de eso se encarga ImpersonatePage con los tokens del enlace.
+      // Hacer ambas cosas a la vez era una carrera y, según cuál terminara
+      // última, la impersonación se quedaba con la sesión ya guardada.
+      const entrandoAImpersonar =
+        typeof window !== "undefined" &&
+        (window.location.pathname === "/auth/impersonate" ||
+          window.location.search.includes("impersonation_token"))
+      if (entrandoAImpersonar) {
+        setLoading(false)
+        return
+      }
+
       const refreshToken = getRefreshToken()
       if (!refreshToken) {
         setLoading(false)

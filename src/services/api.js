@@ -1,4 +1,4 @@
-export const BASE_URL = import.meta.env.VITE_API_URL || 'https://crm.joandev.com/api/v1'
+export const BASE_URL = import.meta.env.VITE_API_URL || 'https://crm.kromagency.es/api/v1'
 
 // Access token stored in memory only (not localStorage) for security
 let accessToken = null

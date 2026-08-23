@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/vlyyfgxf/clientes.joandev.com/
+    - export DEPLOYPATH=/home/vlyyfgxf/portal.kromagency.es/
     - /bin/cp -R dist/* $DEPLOYPATH
     - /bin/cp dist/.htaccess $DEPLOYPATH

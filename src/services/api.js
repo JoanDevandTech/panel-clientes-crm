@@ -116,7 +116,14 @@ export const apiRequest = async (endpoint, options = {}) => {
     const errorData = await response.json().catch(() => ({}))
 
     if (response.status === 403 && errorData.message && errorData.message.toLowerCase().includes('cambiar')) {
-      window.location.href = '/portal/profile'
+      // Cambio de contraseña pendiente: hay que llevar al usuario a su perfil.
+      // Sin la guarda de abajo esto era un bucle infinito: estando YA en
+      // /portal/profile, cualquier petición seguía devolviendo 403 y se volvía
+      // a forzar la misma recarga una y otra vez, agotando el límite de
+      // 60 peticiones/min de la API (de ahí el "Too Many Attempts").
+      if (typeof window !== 'undefined' && window.location.pathname !== '/portal/profile') {
+        window.location.href = '/portal/profile'
+      }
       throw new Error(errorData.message)
     }
 

@@ -24,7 +24,9 @@ import {
   Check,
 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { useAuth } from '../../hooks/useAuth'
 import { api, BASE_URL, getAccessToken } from '../../services/api'
+import { clientCurrency, formatMoney, resolveCurrency } from '../../utils/money'
 import './contracts.css'
 
 /* ---------- helpers (same map as list) ---------- */
@@ -61,16 +63,6 @@ function deriveType(contract) {
   const hit = TYPE_HEURISTICS.find((h) => h.match.test(haystack))
   if (hit) return { type: hit.type, accent: hit.accent, Icon: hit.icon }
   return { type: 'Servicio', accent: 'cyan', Icon: Server }
-}
-
-function formatAmount(amount, currency = 'EUR') {
-  const n = Number(amount || 0)
-  return (
-    new Intl.NumberFormat('es-ES', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(n) + (currency === 'EUR' ? ' €' : ` ${currency}`)
-  )
 }
 
 function formatDate(dateString) {
@@ -129,6 +121,7 @@ function Kpi({ icon: Icon, accent, value, label, sub }) {
 /* ---------- Page ---------- */
 
 export default function ContractDetailPage() {
+  const { client } = useAuth()
   const [, params] = useRoute('/portal/contracts/:id')
   const id = params?.id
 
@@ -303,6 +296,8 @@ export default function ContractDetailPage() {
   const totalPerCycle = Number(contract.total_per_cycle || 0)
   const monthlyFee = contract.monthly_fee ?? null
   const yearlyTotal = monthlyFee ? monthlyFee * 12 : totalPerCycle
+  // Contrato y sus líneas comparten moneda; si no viene, la del cliente.
+  const currency = resolveCurrency(contract.currency, clientCurrency(client))
   const hasMore =
     notesMeta &&
     notesMeta.current_page <
@@ -398,11 +393,11 @@ export default function ContractDetailPage() {
         <Kpi
           icon={CreditCard}
           accent="cyan"
-          value={formatAmount(monthlyFee ?? totalPerCycle, contract.currency)}
+          value={formatMoney(monthlyFee ?? totalPerCycle, currency)}
           label={monthlyFee ? 'Cuota mensual' : contract.billing_cycle_label || 'Importe'}
           sub={
             monthlyFee
-              ? `${formatAmount(yearlyTotal, contract.currency)} / año`
+              ? `${formatMoney(yearlyTotal, currency)} / año`
               : 'por ciclo'
           }
         />
@@ -478,10 +473,10 @@ export default function ContractDetailPage() {
                       <td className="t-desc">{item.description}</td>
                       <td className="t-center">{item.quantity}</td>
                       <td className="t-num">
-                        {formatAmount(item.unit_price, contract.currency)}
+                        {formatMoney(item.unit_price, currency)}
                       </td>
                       <td className="t-num t-total">
-                        {formatAmount(item.total, contract.currency)}
+                        {formatMoney(item.total, currency)}
                       </td>
                     </tr>
                   ))}
@@ -599,7 +594,7 @@ export default function ContractDetailPage() {
             )}
             <div className="pr-contract-info-row">
               <span className="label">Importe total año</span>
-              <span className="value">{formatAmount(yearlyTotal, contract.currency)}</span>
+              <span className="value">{formatMoney(yearlyTotal, currency)}</span>
             </div>
           </div>
         </motion.div>

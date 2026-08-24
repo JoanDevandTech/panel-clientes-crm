@@ -14,7 +14,9 @@ import {
   Loader2,
 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { useAuth } from '../../hooks/useAuth'
 import { getAccessToken, BASE_URL } from '../../services/api'
+import { clientCurrency, detectCurrency, formatMoney, resolveCurrency } from '../../utils/money'
 import './invoices.css'
 
 const statusConfig = {
@@ -39,12 +41,9 @@ const monthsShort = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Se
 const currentYear = new Date().getFullYear()
 const years = [currentYear, currentYear - 1, currentYear - 2]
 
-function formatAmount(amount) {
-  return Number(amount || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
-}
-
-function formatAmountShort(amount) {
-  return Number(amount || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' €'
+// Totales de KPI y gráfico: cifra redonda, sin decimales.
+function formatAmountShort(amount, currency) {
+  return formatMoney(amount ?? 0, currency, { decimals: 0 })
 }
 
 function formatShortDate(dateString) {
@@ -100,6 +99,7 @@ function KpiTile({ icon: Icon, accent, value, label, sub }) {
 }
 
 export default function InvoicesPage() {
+  const { client } = useAuth()
   const [activeTab, setActiveTab] = useState('all')
   const [selectedYear, setSelectedYear] = useState(currentYear)
   const [query, setQuery] = useState('')
@@ -181,6 +181,22 @@ export default function InvoicesPage() {
     const count = pick('count', 'invoices_count') ?? allInvoices.length
     return { totalBilled, totalPaid, pending, overdue, pendingCount, overdueCount, count }
   }, [summaryData, fallbackKpis, allInvoices.length])
+
+  // Respaldo cuando una factura no trae moneda propia.
+  const fallbackCurrency = clientCurrency(client)
+
+  // Moneda de los agregados (KPIs y gráfico). Si las facturas del año mezclan
+  // monedas, `mixed` queda a true: sumarlas no significa nada, así que en ese
+  // caso no mostramos el total en vez de etiquetarlo con una moneda inventada.
+  const { currency: rowsCurrency, mixed: mixedCurrency } = useMemo(
+    () => detectCurrency(allInvoices),
+    [allInvoices],
+  )
+  const totalsCurrency = mixedCurrency
+    ? null
+    : resolveCurrency(summaryData?.currency, rowsCurrency, fallbackCurrency)
+  const totalValue = (amount) =>
+    mixedCurrency ? '—' : formatAmountShort(amount, totalsCurrency)
 
   const tabCounts = useMemo(() => {
     const c = { all: allInvoices.length, open: 0, paid: 0, overdue: 0 }
@@ -291,6 +307,8 @@ export default function InvoicesPage() {
             <h1 className="pr-page-title">Facturas</h1>
             <p className="pr-page-sub">
               Tu historial completo y tu salud financiera con {import.meta.env.VITE_BRAND_NAME || 'Krom'}.
+              {mixedCurrency &&
+                ' Tus facturas de este año están en varias monedas, así que no mostramos totales agregados.'}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -315,28 +333,28 @@ export default function InvoicesPage() {
           <KpiTile
             icon={TrendingUp}
             accent="cyan"
-            value={`${formatAmountShort(kpis.totalBilled)}`}
+            value={totalValue(kpis.totalBilled)}
             label={`Facturado ${selectedYear}`}
             sub={`${kpis.count} ${kpis.count === 1 ? 'factura emitida' : 'facturas emitidas'}`}
           />
           <KpiTile
             icon={CheckCircle2}
             accent="green"
-            value={formatAmountShort(kpis.totalPaid)}
+            value={totalValue(kpis.totalPaid)}
             label="Cobrado"
             sub={`${paymentRate}% de lo facturado`}
           />
           <KpiTile
             icon={Clock}
             accent="amber"
-            value={formatAmountShort(kpis.pending)}
+            value={totalValue(kpis.pending)}
             label="Pendiente"
             sub={`${kpis.pendingCount} ${kpis.pendingCount === 1 ? 'factura por cobrar' : 'facturas por cobrar'}`}
           />
           <KpiTile
             icon={AlertTriangle}
             accent="red"
-            value={formatAmountShort(kpis.overdue)}
+            value={totalValue(kpis.overdue)}
             label="Vencidas"
             sub={kpis.overdueCount > 0 ? `${kpis.overdueCount} ${kpis.overdueCount === 1 ? 'requiere atención' : 'requieren atención'}` : 'Sin vencidos'}
           />
@@ -363,7 +381,7 @@ export default function InvoicesPage() {
                   <div
                     key={i}
                     className="inv-chart-col"
-                    title={`${c.month}: ${formatAmountShort(c.billed)} facturado, ${formatAmountShort(c.paid)} cobrado`}
+                    title={`${c.month}: ${formatAmountShort(c.billed, totalsCurrency)} facturado, ${formatAmountShort(c.paid, totalsCurrency)} cobrado`}
                   >
                     <div className="inv-chart-col-bars">
                       {pendH > 0 && (
@@ -493,7 +511,9 @@ export default function InvoicesPage() {
                         </td>
                         <td>{formatShortDate(inv.issue_date)}</td>
                         <td className={`due-date ${dueClass}`}>{formatShortDate(inv.due_date)}</td>
-                        <td className="total">{formatAmount(inv.total)}</td>
+                        <td className="total">
+                          {formatMoney(inv.total, resolveCurrency(inv.currency, fallbackCurrency))}
+                        </td>
                         <td>
                           <StatusBadge status={overdue && !paid ? 'overdue' : inv.status} />
                           {paid && (inv.paid_at || inv.payments?.[0]?.payment_date) && (
@@ -591,7 +611,9 @@ export default function InvoicesPage() {
                     </div>
                     <div className="inv-mobile-row">
                       <span className="label">Total</span>
-                      <span className="value strong">{formatAmount(inv.total)}</span>
+                      <span className="value strong">
+                        {formatMoney(inv.total, resolveCurrency(inv.currency, fallbackCurrency))}
+                      </span>
                     </div>
                     <div className="inv-mobile-actions">
                       {!paid && (

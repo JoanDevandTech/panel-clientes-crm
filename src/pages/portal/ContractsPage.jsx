@@ -18,7 +18,15 @@ import {
   Download,
 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { useAuth } from '../../hooks/useAuth'
 import { BASE_URL, getAccessToken } from '../../services/api'
+import {
+  clientCurrency,
+  detectCurrency,
+  formatMoney,
+  formatMoneyParts,
+  resolveCurrency,
+} from '../../utils/money'
 import './contracts.css'
 
 /* ---------- helpers ---------- */
@@ -73,14 +81,6 @@ async function downloadBlob(endpoint, filename) {
   URL.revokeObjectURL(url)
 }
 
-function formatAmount(amount, currency = 'EUR') {
-  const n = Number(amount || 0)
-  return new Intl.NumberFormat('es-ES', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(n) + (currency === 'EUR' ? ' €' : ` ${currency}`)
-}
-
 function formatDate(dateString) {
   if (!dateString) return '—'
   return new Date(dateString).toLocaleDateString('es-ES', {
@@ -127,11 +127,15 @@ function StatusBadge({ status }) {
 
 /* ---------- Contract card ---------- */
 
-function ContractCard({ c, onNav }) {
+function ContractCard({ c, onNav, fallbackCurrency }) {
   const { type, accent, Icon } = deriveType(c)
   const status = c.status || 'active'
   const monthlyFee = c.monthly_fee ?? null
   const totalPerCycle = Number(c.total_per_cycle || 0)
+  const currency = resolveCurrency(c.currency, fallbackCurrency)
+  // La tarjeta pinta la cifra grande y el símbolo pequeño detrás, sea cual sea
+  // la moneda: por eso pedimos las partes en vez de la cadena ya montada.
+  const amount = formatMoneyParts(monthlyFee ?? totalPerCycle, currency)
   const cyclePct = safePct(c.progress?.cycle_percent)
   const daysToBill = c.progress?.days_until_next_invoice
   const services = useMemo(() => {
@@ -281,12 +285,12 @@ function ContractCard({ c, onNav }) {
               {monthlyFee ? 'Cuota mensual' : c.billing_cycle_label || 'Importe'}
             </div>
             <div className="pr-contract-money-amount">
-              {formatAmount(monthlyFee ?? totalPerCycle, c.currency).replace(/ €$/, '')}
-              <span className="pr-cur">{c.currency === 'EUR' ? '€' : c.currency || ''}</span>
+              {amount.value}
+              {amount.symbol && <span className="pr-cur">{amount.symbol}</span>}
             </div>
             {monthlyFee && (
               <div className="pr-contract-money-sub">
-                {formatAmount(monthlyFee * 12, c.currency)} / año
+                {formatMoney(monthlyFee * 12, currency)} / año
               </div>
             )}
           </div>
@@ -315,6 +319,7 @@ function ContractCard({ c, onNav }) {
 /* ---------- Page ---------- */
 
 export default function ContractsPage() {
+  const { client } = useAuth()
   const [filter, setFilter] = useState('all')
   const [query, setQuery] = useState('')
   const [exporting, setExporting] = useState(false)
@@ -337,6 +342,8 @@ export default function ContractsPage() {
   }
 
   const list = Array.isArray(contracts) ? contracts : []
+  // Respaldo cuando un contrato no trae moneda propia.
+  const fallbackCurrency = clientCurrency(client)
 
   const groups = useMemo(() => {
     const count = (k) => list.filter((c) => c.status === k).length
@@ -353,9 +360,16 @@ export default function ContractsPage() {
   const kpi = useMemo(() => {
     const active = list.filter((c) => c.status === 'active')
     const pending = list.filter((c) => c.status === 'pending_signature').length
-    const monthlyRecurring = active
-      .filter((c) => /mensual|monthly/i.test(c.billing_cycle_label || ''))
-      .reduce((s, c) => s + Number(c.total_per_cycle || 0), 0)
+    const monthlyContracts = active.filter((c) =>
+      /mensual|monthly/i.test(c.billing_cycle_label || ''),
+    )
+    const monthlyRecurring = monthlyContracts.reduce(
+      (s, c) => s + Number(c.total_per_cycle || 0),
+      0,
+    )
+    // Sumar mensualidades de monedas distintas no da un importe real: si las
+    // hay, el KPI no muestra cifra en lugar de inventar una moneda común.
+    const monthlyCurrency = detectCurrency(monthlyContracts)
     const soonest = active
       .filter((c) => c.progress?.days_until_next_invoice != null)
       .sort(
@@ -368,6 +382,7 @@ export default function ContractsPage() {
       active: active.length,
       pending,
       monthlyRecurring,
+      monthlyCurrency,
       soonest,
     }
   }, [list])
@@ -454,12 +469,21 @@ export default function ContractsPage() {
         <Kpi
           icon={RotateCcw}
           accent="cyan"
-          value={`${kpi.monthlyRecurring.toLocaleString('es-ES', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-          })} €/mes`}
+          value={
+            kpi.monthlyCurrency.mixed
+              ? '—'
+              : `${formatMoney(
+                  kpi.monthlyRecurring,
+                  resolveCurrency(kpi.monthlyCurrency.currency, fallbackCurrency),
+                  { decimals: 0 },
+                )}/mes`
+          }
           label="Recurrente mensual"
-          sub="suma de mensualidades"
+          sub={
+            kpi.monthlyCurrency.mixed
+              ? 'Contratos en varias monedas'
+              : 'suma de mensualidades'
+          }
         />
         <Kpi
           icon={Calendar}
@@ -540,6 +564,7 @@ export default function ContractsPage() {
               <ContractCard
                 c={c}
                 onNav={(id) => setLocation(`/portal/contracts/${id}`)}
+                fallbackCurrency={fallbackCurrency}
               />
             </motion.div>
           ))}

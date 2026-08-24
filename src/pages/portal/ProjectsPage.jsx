@@ -22,6 +22,14 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { useAuth } from '../../hooks/useAuth'
+import {
+  clientCurrency,
+  detectCurrency,
+  formatMoney,
+  formatMoneyCompact,
+  resolveCurrency,
+} from '../../utils/money'
 import './projects-list.css'
 
 /* ============================================================
@@ -270,7 +278,7 @@ function ProgressWithMarkers({ progress, milestones, deliverables, phase }) {
   )
 }
 
-function ProjectCard({ project }) {
+function ProjectCard({ project, fallbackCurrency }) {
   const phaseKey = getPhaseKey(project)
   const phase = PHASE_META[phaseKey] ?? { label: project?.phase_label || project?.status_label || 'En curso', badge: 'gray' }
   const phaseLabel = project?.phase_label || phase.label
@@ -285,6 +293,7 @@ function ProjectCard({ project }) {
   const deliverables = project?.deliverables_count ?? project?.deliverables
   const budget = deriveBudget(project)
   const budgetPct = budget?.total ? Math.round((budget.paid / budget.total) * 100) : 0
+  const budgetCurrency = resolveCurrency(budget?.currency, project?.currency, fallbackCurrency)
   const alerts = Array.isArray(project?.alerts) ? project.alerts : []
   const code = project?.code || `PROJ-${String(project?.id ?? '').padStart(4, '0')}`
   const sub = project?.sub || project?.short_description || project?.category
@@ -429,7 +438,9 @@ function ProjectCard({ project }) {
             </div>
             {budget ? (
               <>
-                <div className="pl-money">{Number(budget.total).toLocaleString('es-ES')} €</div>
+                <div className="pl-money">
+                  {formatMoney(budget.total, budgetCurrency, { decimals: 0 })}
+                </div>
                 <div className="pl-money-row">
                   <div className="pl-money-bar">
                     <div
@@ -502,6 +513,7 @@ function ProjectCard({ project }) {
    ============================================================ */
 
 export default function ProjectsPage() {
+  const { client } = useAuth()
   const [filter, setFilter] = useState('all')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState('recent')
@@ -566,6 +578,23 @@ export default function ProjectsPage() {
       totalPaid: s.total_paid ?? local.totalPaid,
     }
   }, [projects, summaryData, summaryError])
+
+  // Respaldo para proyectos cuyo presupuesto no trae moneda propia.
+  const fallbackCurrency = clientCurrency(client)
+
+  // Los totales de KPI suman presupuestos de todos los proyectos: si mezclan
+  // monedas la suma no representa nada y dejamos de mostrarla.
+  const { currency: budgetsCurrency, mixed: mixedCurrency } = useMemo(
+    () => detectCurrency(projects, (p) => deriveBudget(p)?.currency ?? p?.currency),
+    [projects],
+  )
+  const totalsCurrency = mixedCurrency
+    ? null
+    : resolveCurrency(
+        (summaryData?.data ?? summaryData)?.currency, // mismo desempaquetado que el KPI
+        budgetsCurrency,
+        fallbackCurrency,
+      )
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -682,9 +711,13 @@ export default function ProjectsPage() {
         <KpiTile
           Icon={CreditCard}
           accent="green"
-          value={`${(kpi.totalPaid / 1000).toFixed(1)}k €`}
+          value={mixedCurrency ? '—' : formatMoneyCompact(kpi.totalPaid, totalsCurrency)}
           label="Pagado este año"
-          sub={`de ${(kpi.totalBudget / 1000).toFixed(1)}k € presupuestado`}
+          sub={
+            mixedCurrency
+              ? 'Proyectos en varias monedas'
+              : `de ${formatMoneyCompact(kpi.totalBudget, totalsCurrency)} presupuestado`
+          }
         />
       </div>
 
@@ -740,7 +773,7 @@ export default function ProjectsPage() {
                   <div className="pl-pinned-label divider">Todos los proyectos</div>
                 )}
                 <motion.div variants={fadeUp}>
-                  <ProjectCard project={p} />
+                  <ProjectCard project={p} fallbackCurrency={fallbackCurrency} />
                 </motion.div>
               </div>
             ))}

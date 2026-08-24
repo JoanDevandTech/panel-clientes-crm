@@ -25,16 +25,15 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useApi } from '../../hooks/useApi'
+import { clientCurrency, formatMoney, resolveCurrency } from '../../utils/money'
 import './dashboard.css'
 
 /* ============================== helpers ============================== */
 
-function formatEur(amount, withDecimals = false) {
-  const n = Number(amount) || 0
-  return n.toLocaleString('es-ES', {
-    minimumFractionDigits: withDecimals ? 2 : 0,
-    maximumFractionDigits: withDecimals ? 2 : 0,
-  }) + ' €'
+// Los KPIs del dashboard se muestran redondeados (sin decimales); el detalle
+// de un importe concreto (próxima factura, próximo cobro) sí los lleva.
+function formatRound(amount, currency) {
+  return formatMoney(amount ?? 0, currency, { decimals: 0 })
 }
 
 function formatDateLong(dateString) {
@@ -232,6 +231,9 @@ export default function DashboardPage() {
   const quotes = d.quotes || {}
   const recurring = d.recurring_services || {}
   const recentActivity = Array.isArray(d.recent_activity) ? d.recent_activity : []
+  // El dashboard llega ya agregado (sin moneda por fila): si el backend no
+  // manda la moneda del resumen, usamos la del cliente autenticado.
+  const currency = resolveCurrency(d.currency, invoices.currency, clientCurrency(client))
   const recentProjects = Array.isArray(projects.recent) ? projects.recent : []
   const recentMessages = Array.isArray(d.recent_messages) ? d.recent_messages : []
   const upcomingMilestones = Array.isArray(d.upcoming_milestones) ? d.upcoming_milestones : []
@@ -269,7 +271,7 @@ export default function DashboardPage() {
       value: quotes.pending ?? 0,
       label: 'Presupuestos por revisar',
       sub: quotes.pending_amount
-        ? `${formatEur(quotes.pending_amount)} en juego`
+        ? `${formatRound(quotes.pending_amount, resolveCurrency(quotes.currency, currency))} en juego`
         : 'Nada pendiente',
       spark: [1, 2, 2, 3, 2, 3, quotes.pending ?? 0],
     },
@@ -277,7 +279,7 @@ export default function DashboardPage() {
       key: 'pending',
       icon: Receipt,
       accent: invoices.pending_amount > 0 ? 'red' : 'green',
-      value: formatEur(invoices.pending_amount ?? 0),
+      value: formatRound(invoices.pending_amount ?? 0, currency),
       label: 'Pendiente de pago',
       sub: invoices.next_due
         ? `Vence ${nextInvoiceDays != null ? `en ${nextInvoiceDays} días` : formatDateLong(invoices.next_due.due_date)}`
@@ -296,7 +298,7 @@ export default function DashboardPage() {
       icon: CreditCard,
       accent: 'red',
       title: `Factura pendiente de pago`,
-      desc: `${formatEur(invoices.next_due.amount, true)} · vence ${formatDateLong(invoices.next_due.due_date)}`,
+      desc: `${formatMoney(invoices.next_due.amount, resolveCurrency(invoices.next_due.currency, currency))} · vence ${formatDateLong(invoices.next_due.due_date)}`,
       due: nextInvoiceDays != null
         ? nextInvoiceDays <= 0
           ? 'Vencida'
@@ -450,7 +452,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <FinancialSummary invoices={invoices} />
+        <FinancialSummary invoices={invoices} currency={currency} />
       </div>
 
       {/* ============== Active projects ============== */}
@@ -503,8 +505,8 @@ export default function DashboardPage() {
       {/* ============== Recurring services + Quotes overview ============== */}
       {(recurring.active_count > 0 || (quotes.latest && quotes.latest.length > 0)) && (
         <div className="dash-grid-half">
-          <RecurringCard recurring={recurring} />
-          <QuotesOverviewCard quotes={quotes} />
+          <RecurringCard recurring={recurring} currency={currency} />
+          <QuotesOverviewCard quotes={quotes} currency={currency} />
         </div>
       )}
 
@@ -910,7 +912,7 @@ function RecentMessagesCard({ messages }) {
 
 /* ============================== Financial summary ============================== */
 
-function FinancialSummary({ invoices }) {
+function FinancialSummary({ invoices, currency }) {
   const ys = invoices?.year_summary
   const hasYear = ys && (ys.invoiced || ys.paid || ys.pending)
   const monthly = Array.isArray(invoices?.monthly_history) ? invoices.monthly_history : null
@@ -948,15 +950,15 @@ function FinancialSummary({ invoices }) {
           <div className="dash-fin-stats">
             <div>
               <div className="label">Facturado</div>
-              <div className="value">{formatEur(totalInvoiced)}</div>
+              <div className="value">{formatRound(totalInvoiced, currency)}</div>
             </div>
             <div>
               <div className="label">Cobrado</div>
-              <div className="value green">{formatEur(totalPaid)}</div>
+              <div className="value green">{formatRound(totalPaid, currency)}</div>
             </div>
             <div>
               <div className="label">Pendiente</div>
-              <div className={`value ${pending > 0 ? 'amber' : ''}`}>{formatEur(pending)}</div>
+              <div className={`value ${pending > 0 ? 'amber' : ''}`}>{formatRound(pending, currency)}</div>
             </div>
           </div>
 
@@ -1027,7 +1029,7 @@ function FinancialBars({ history }) {
 
 /* ============================== Recurring services ============================== */
 
-function RecurringCard({ recurring }) {
+function RecurringCard({ recurring, currency }) {
   if (!recurring || !recurring.active_count) return null
   return (
     <div className="pr-card" style={{ padding: 20 }}>
@@ -1065,7 +1067,10 @@ function RecurringCard({ recurring }) {
             </div>
           </div>
           <span className="dash-recurring-amount">
-            {formatEur(recurring.next_billing.total, true)}
+            {formatMoney(
+              recurring.next_billing.total,
+              resolveCurrency(recurring.next_billing.currency, recurring.currency, currency),
+            )}
           </span>
         </div>
       )}
@@ -1088,7 +1093,7 @@ function RecurringCard({ recurring }) {
 
 /* ============================== Quotes overview ============================== */
 
-function QuotesOverviewCard({ quotes }) {
+function QuotesOverviewCard({ quotes, currency }) {
   const list = Array.isArray(quotes?.latest) ? quotes.latest : []
   if (list.length === 0 && !(quotes?.pending > 0)) return null
 
@@ -1102,7 +1107,9 @@ function QuotesOverviewCard({ quotes }) {
           <div style={{ fontSize: 14, fontWeight: 600 }}>Presupuestos por revisar</div>
           <div style={{ fontSize: 11, color: 'var(--pr-text-muted)', marginTop: 2 }}>
             {quotes.pending ?? list.length} {(quotes.pending ?? list.length) === 1 ? 'pendiente' : 'pendientes'}
-            {quotes.pending_amount ? ` · ${formatEur(quotes.pending_amount)} en total` : ''}
+            {quotes.pending_amount
+              ? ` · ${formatRound(quotes.pending_amount, resolveCurrency(quotes.currency, currency))} en total`
+              : ''}
           </div>
         </div>
         <Link
@@ -1154,7 +1161,7 @@ function QuotesOverviewCard({ quotes }) {
               marginLeft: 12,
               flexShrink: 0,
             }}>
-              {formatEur(q.total, true)}
+              {formatMoney(q.total, resolveCurrency(q.currency, quotes.currency, currency))}
             </div>
           </Link>
         ))}

@@ -15,7 +15,9 @@ import {
   Bell,
 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { useAuth } from '../../hooks/useAuth'
 import { api, getAccessToken, BASE_URL } from '../../services/api'
+import { clientCurrency, formatMoney, resolveCurrency } from '../../utils/money'
 import './invoices.css'
 
 const statusConfig = {
@@ -27,10 +29,6 @@ const statusConfig = {
   cancelled: { cls: 'gray', label: 'Cancelada', icon: Clock },
 }
 const fallbackStatus = { cls: 'gray', label: '—', icon: Clock }
-
-function formatAmount(amount) {
-  return Number(amount || 0).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
-}
 
 function formatLongDate(dateString) {
   if (!dateString) return '—'
@@ -52,6 +50,7 @@ function daysUntil(dateString) {
 }
 
 export default function InvoiceDetailPage() {
+  const { client } = useAuth()
   const [, params] = useRoute('/portal/invoices/:id')
   const [downloading, setDownloading] = useState(false)
   const [paying, setPaying] = useState(false)
@@ -188,6 +187,10 @@ export default function InvoiceDetailPage() {
 
   const cfg = statusConfig[invoice.status] ?? fallbackStatus
   const StatusIcon = cfg.icon
+
+  // Toda la factura (subtotal, IVA, conceptos y pagos) va en su propia moneda.
+  const currency = resolveCurrency(invoice.currency, clientCurrency(client))
+  const money = (amount) => formatMoney(amount, currency)
 
   const total = Number(invoice.total || 0)
   const amountPaid = Number(invoice.amount_paid || 0)
@@ -331,31 +334,31 @@ export default function InvoiceDetailPage() {
 
             <div className="inv-side-row">
               <span className="label">Subtotal</span>
-              <span className="value">{formatAmount(invoice.subtotal ?? total)}</span>
+              <span className="value">{money(invoice.subtotal ?? total)}</span>
             </div>
             {invoice.tax_amount != null && (
               <div className="inv-side-row">
                 <span className="label">
                   IVA{invoice.tax_rate != null ? ` (${invoice.tax_rate}%)` : ''}
                 </span>
-                <span className="value">{formatAmount(invoice.tax_amount)}</span>
+                <span className="value">{money(invoice.tax_amount)}</span>
               </div>
             )}
             <div className="inv-side-row total">
               <span className="label" style={{ color: 'var(--pr-text-primary)' }}>Total</span>
-              <span className="value">{formatAmount(total)}</span>
+              <span className="value">{money(total)}</span>
             </div>
 
             {amountPaid > 0 && (
               <div className="inv-side-row paid">
                 <span className="label">Pagado</span>
-                <span className="value">- {formatAmount(amountPaid)}</span>
+                <span className="value">- {money(amountPaid)}</span>
               </div>
             )}
             {!isPaid && balanceDue > 0 && (
               <div className="inv-side-row balance">
                 <span className="label">Pendiente</span>
-                <span className="value">{formatAmount(balanceDue)}</span>
+                <span className="value">{money(balanceDue)}</span>
               </div>
             )}
           </div>
@@ -401,7 +404,7 @@ export default function InvoiceDetailPage() {
                 {items.map((item, idx) => (
                   <div key={idx} className="inv-side-item">
                     <span className="desc">{item.description || '—'}</span>
-                    <span className="amount">{formatAmount(item.total)}</span>
+                    <span className="amount">{money(item.total)}</span>
                   </div>
                 ))}
               </div>
@@ -424,7 +427,7 @@ export default function InvoiceDetailPage() {
                       {p.payment_date ? formatLongDate(p.payment_date) : (p.reference || `Pago ${idx + 1}`)}
                       {p.reference && p.payment_date ? ` · ${p.reference}` : ''}
                     </span>
-                    <span className="amount">{formatAmount(p.amount)}</span>
+                    <span className="amount">{money(p.amount)}</span>
                   </div>
                 ))}
               </div>
@@ -463,7 +466,7 @@ export default function InvoiceDetailPage() {
             disabled={paying}
           >
             {paying ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
-            Pagar {formatAmount(balanceDue)}
+            Pagar {money(balanceDue)}
           </button>
         )}
       </div>

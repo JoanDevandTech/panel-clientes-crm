@@ -12,6 +12,8 @@ import {
   MessageSquare,
 } from 'lucide-react'
 import { useApi } from '../../../hooks/useApi'
+import { useAuth } from '../../../hooks/useAuth'
+import { clientCurrency, formatMoney, resolveCurrency } from '../../../utils/money'
 
 const ACCENT_BY_BADGE = {
   green: 'pd-accent-green',
@@ -54,14 +56,11 @@ function getInitials(name) {
     .slice(0, 2)
 }
 
-function formatCurrency(amount, currency = 'EUR') {
+// Algunos importes llegan ya formateados desde el backend: se respetan tal cual.
+function formatAmount(amount, currency) {
   if (amount == null) return ''
   if (typeof amount === 'string') return amount
-  const safeCurrency = currency || 'EUR'
-  return new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: safeCurrency,
-  }).format(amount)
+  return formatMoney(amount, currency, { fallback: '' })
 }
 
 function daysUntil(dateStr) {
@@ -80,6 +79,7 @@ function unwrap(payload) {
 }
 
 export default function TabResumen({ project, stats, onJumpTab, onShowToast }) { // eslint-disable-line no-unused-vars
+  const { client } = useAuth()
   const [, params] = useRoute('/portal/projects/:id')
   const projectId = params?.id
 
@@ -117,6 +117,11 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
     return list
   }, [quickLinksRaw])
 
+  // Cada documento (presupuesto, contrato, factura) trae su propia moneda; si
+  // falta, la del cliente autenticado. Aquí no se suma nada: cada línea se
+  // muestra por separado, así que no hay riesgo de mezclar monedas.
+  const fallbackCurrency = clientCurrency(client)
+
   const financialItems = useMemo(() => {
     const payload = unwrap(financialsRaw) || {}
     const budgets = Array.isArray(payload.budgets) ? payload.budgets : []
@@ -129,7 +134,7 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
         key: `budget-${b.id}`,
         label: `Presupuesto ${b.number ?? ''}`.trim(),
         total: b.total,
-        currency: b.currency || 'EUR',
+        currency: resolveCurrency(b.currency, fallbackCurrency),
         status: b.status,
       })
     })
@@ -138,7 +143,7 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
         key: `contract-${c.id}`,
         label: `Contrato ${c.number ?? ''}`.trim(),
         total: c.total,
-        currency: c.currency || 'EUR',
+        currency: resolveCurrency(c.currency, fallbackCurrency),
         status: c.status,
       })
     })
@@ -147,12 +152,12 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
         key: `invoice-${inv.id}`,
         label: `Factura ${inv.number ?? ''}`.trim(),
         total: inv.total,
-        currency: inv.currency || 'EUR',
+        currency: resolveCurrency(inv.currency, fallbackCurrency),
         status: inv.status,
       })
     })
     return items
-  }, [financialsRaw])
+  }, [financialsRaw, fallbackCurrency])
 
   const nextMilestone = useMemo(() => {
     if (!showNextMilestoneSection) return null
@@ -443,7 +448,7 @@ export default function TabResumen({ project, stats, onJumpTab, onShowToast }) {
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 500 }}>{f.label}</div>
                     <div style={{ fontSize: 11, color: 'var(--pd-text-muted)' }}>
-                      {formatCurrency(f.total, f.currency)}
+                      {formatAmount(f.total, f.currency)}
                     </div>
                   </div>
                   <span className={`pd-badge ${badgeColor}`}>

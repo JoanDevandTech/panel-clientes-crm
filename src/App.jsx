@@ -24,6 +24,7 @@ const ContractDetailPage = lazy(() => import('./pages/portal/ContractDetailPage'
 const DocumentsPage = lazy(() => import('./pages/portal/DocumentsPage'))
 const ActivityPage = lazy(() => import('./pages/portal/ActivityPage'))
 const ProfilePage = lazy(() => import('./pages/portal/ProfilePage'))
+const PaymentMethodsPage = lazy(() => import('./pages/portal/PaymentMethodsPage'))
 
 function LazyFallback() {
   return (
@@ -114,6 +115,9 @@ export default function App() {
           </Route>
           <Route path="/portal/profile">
             {() => <PortalLayout title="Mi Perfil"><ProfilePage /></PortalLayout>}
+          </Route>
+          <Route path="/portal/payment-methods">
+            {() => <PortalLayout title="Métodos de pago"><PaymentMethodsPage /></PortalLayout>}
           </Route>
           <Route path="/portal">
             {() => <Redirect to="/portal/dashboard" />}

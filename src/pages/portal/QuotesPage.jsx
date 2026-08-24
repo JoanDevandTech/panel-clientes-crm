@@ -3,7 +3,9 @@ import { motion } from 'framer-motion'
 import { Link, useLocation } from 'wouter'
 import { Eye, Download, Loader2 } from 'lucide-react'
 import { useApi } from '../../hooks/useApi'
+import { useAuth } from '../../hooks/useAuth'
 import { getAccessToken, BASE_URL } from '../../services/api'
+import { clientCurrency, formatMoney, resolveCurrency } from '../../utils/money'
 
 const statusConfig = {
   sent: { label: 'Pendiente', bg: 'bg-amber-500/20', text: 'text-amber-400' },
@@ -22,13 +24,6 @@ const tabs = [
 
 const currentYear = new Date().getFullYear()
 const years = [currentYear, currentYear - 1]
-
-function formatAmount(amount, currency = 'EUR') {
-  const symbols = { EUR: '€', USD: '$', COP: 'COP ' }
-  const symbol = symbols[currency] ?? (currency + ' ')
-  const formatted = Number(amount).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  return currency === 'EUR' ? `${formatted} ${symbol}` : `${symbol}${formatted}`
-}
 
 function formatDate(dateString) {
   if (!dateString) return '—'
@@ -50,6 +45,7 @@ const fadeUp = {
 }
 
 export default function QuotesPage() {
+  const { client } = useAuth()
   const [activeTab, setActiveTab] = useState('all')
   const [selectedYear, setSelectedYear] = useState(currentYear)
   const [, setLocation] = useLocation()
@@ -108,6 +104,8 @@ export default function QuotesPage() {
   }
 
   const filteredQuotes = quotes || []
+  // Cada presupuesto trae su moneda; si falta, la del cliente autenticado.
+  const fallbackCurrency = clientCurrency(client)
 
   return (
     <div>
@@ -180,7 +178,7 @@ export default function QuotesPage() {
                   <td className="px-6 py-4 text-sm text-ink/72 max-w-xs truncate">{quote.title || '—'}</td>
                   <td className="px-6 py-4 text-sm text-ink/60">{formatDate(quote.issue_date)}</td>
                   <td className="px-6 py-4 text-sm text-ink/60">{formatDate(quote.valid_until)}</td>
-                  <td className="px-6 py-4 text-sm text-ink text-right font-medium">{formatAmount(quote.total, quote.currency)}</td>
+                  <td className="px-6 py-4 text-sm text-ink text-right font-medium">{formatMoney(quote.total, resolveCurrency(quote.currency, fallbackCurrency))}</td>
                   <td className="px-6 py-4 text-center">
                     <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${status.bg} ${status.text}`}>
                       {status.label}
@@ -248,7 +246,7 @@ export default function QuotesPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-ink/45">Total</span>
-                    <span className="text-ink font-bold">{formatAmount(quote.total, quote.currency)}</span>
+                    <span className="text-ink font-bold">{formatMoney(quote.total, resolveCurrency(quote.currency, fallbackCurrency))}</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-end gap-3 mt-4 pt-3 border-t border-ink/[0.09]">

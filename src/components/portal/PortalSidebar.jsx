@@ -10,6 +10,7 @@ import {
   FileText,
   Activity,
   User,
+  Wallet,
   LogOut,
   X,
 } from 'lucide-react'
@@ -29,7 +30,10 @@ const NAV_MAIN = [
   { icon: Activity, label: 'Actividad', href: '/portal/activity' },
 ]
 
-const NAV_ACCOUNT = [{ icon: User, label: 'Mi Perfil', href: '/portal/profile' }]
+const NAV_ACCOUNT = [
+  { icon: User, label: 'Mi Perfil', href: '/portal/profile' },
+  { icon: Wallet, label: 'Métodos de pago', href: '/portal/payment-methods' },
+]
 
 function NavItem({ icon: Icon, label, href, isActive, onClick }) {
   return (

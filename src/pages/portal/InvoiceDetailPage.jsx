@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useRoute } from 'wouter'
 import {
@@ -18,6 +18,7 @@ import { useApi } from '../../hooks/useApi'
 import { useAuth } from '../../hooks/useAuth'
 import { api, getAccessToken, BASE_URL } from '../../services/api'
 import { clientCurrency, formatMoney, resolveCurrency } from '../../utils/money'
+import { PaymentDialog } from '../../components/portal/PaymentMethods'
 import './invoices.css'
 
 const statusConfig = {
@@ -53,15 +54,17 @@ export default function InvoiceDetailPage() {
   const { client } = useAuth()
   const [, params] = useRoute('/portal/invoices/:id')
   const [downloading, setDownloading] = useState(false)
-  const [paying, setPaying] = useState(false)
+  const [payOpen, setPayOpen] = useState(false)
   const [reminding, setReminding] = useState(false)
   const [toasts, setToasts] = useState([])
 
-  const showToast = (msg) => {
+  const showToast = useCallback((msg) => {
     const id = Math.random().toString(36).slice(2)
     setToasts((ts) => [...ts, { id, msg }])
     setTimeout(() => setToasts((ts) => ts.filter((t) => t.id !== id)), 2800)
-  }
+  }, [])
+
+  const closePay = useCallback(() => setPayOpen(false), [])
 
   const { data: invoice, loading, error, refetch } = useApi(`/client/invoices/${params?.id}`, {
     immediate: !!params?.id,
@@ -126,19 +129,12 @@ export default function InvoiceDetailPage() {
     }
   }
 
+  // El método de pago lo elige el cliente entre los que el CRM tiene
+  // habilitados para su cuenta (GET /client/payment-methods): aquí solo se
+  // abre el selector, no se impone ninguna pasarela.
   const handlePay = () => {
     if (!params?.id) return
-    setPaying(true)
-    // Pasarela actual: Revolut.me. El cliente introduce el importe y paga.
-    // Cuando el backend integre Stripe/Redsys via /client/invoices/{id}/pay
-    // y devuelva redirect_url, sustituir por esa URL.
-    const win = window.open('https://revolut.me/joantorres27', '_blank', 'noopener,noreferrer')
-    if (!win) {
-      showToast('El navegador bloqueó la nueva pestaña. Permite popups e intenta de nuevo.')
-    } else {
-      showToast('Abriendo pasarela de pago en una pestaña nueva.')
-    }
-    setPaying(false)
+    setPayOpen(true)
   }
 
   const handleRemind = async () => {
@@ -463,13 +459,24 @@ export default function InvoiceDetailPage() {
             type="button"
             className="pr-btn primary"
             onClick={handlePay}
-            disabled={paying}
           >
-            {paying ? <Loader2 size={14} className="animate-spin" /> : <CreditCard size={14} />}
+            <CreditCard size={14} />
             Pagar {money(balanceDue)}
           </button>
         )}
       </div>
+
+      {/* Selector de método de pago */}
+      {payOpen && (
+        <PaymentDialog
+          onClose={closePay}
+          amount={balanceDue}
+          currency={currency}
+          reference={invoice.invoice_number}
+          fallbackUrl={invoice.payment_url}
+          onNotify={showToast}
+        />
+      )}
 
       {/* Toasts */}
       <div className="pr-toast-stack">

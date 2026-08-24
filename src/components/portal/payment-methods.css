@@ -1,5 +1,7 @@
 /* ============================================================
-   PaymentMethodsPage — catálogo de métodos de pago del cliente
+   PaymentMethods — catálogo de métodos de pago del cliente.
+   Lo usan la página /portal/payment-methods y el modal de cobro
+   del detalle de factura (mismas tarjetas en los dos sitios).
    ============================================================ */
 
 .pm-grid {
@@ -150,6 +152,117 @@
   font-size: var(--pr-fs-caption);
   line-height: 1.5;
   color: var(--pr-text-muted);
+}
+
+/* ============================================================
+   Modal de cobro — elegir método para pagar un importe concreto
+   ============================================================ */
+
+/* Velo opaco, NO backdrop-filter: la topbar y el sidebar ya difuminan el
+   fondo y dos capas superpuestas dejan una franja negra arriba. */
+.pm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  /* Por encima del chrome del portal (topbar 40, banner 80) pero por debajo de
+     .pr-toast-stack (100): el velo es opaco y taparía el «IBAN copiado». */
+  z-index: 95;
+  background: rgba(13, 14, 17, 0.92);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 8vh 16px 24px;
+  overflow-y: auto;
+}
+
+.pm-modal {
+  width: 100%;
+  max-width: 520px;
+  max-height: 84vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--pr-bg-primary);
+  border: 1px solid var(--pr-border);
+  border-radius: var(--pr-r-modal);
+  box-shadow: var(--pr-shadow-lg), var(--pr-glow-cyan);
+  outline: none;
+}
+
+.pm-modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px;
+  border-bottom: 1px solid var(--pr-border);
+}
+.pm-modal-heading { min-width: 0; }
+.pm-modal-title {
+  margin: 0;
+  font-family: var(--pr-font-display);
+  font-weight: 600;
+  font-size: var(--pr-fs-h3);
+  line-height: 1.25;
+  color: var(--pr-text-primary);
+}
+.pm-modal-sub {
+  margin: 4px 0 0;
+  font-size: var(--pr-fs-caption);
+  line-height: 1.45;
+  color: var(--pr-text-muted);
+}
+.pm-modal-close {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.pm-modal-amount {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--pr-bg-card);
+  border-bottom: 1px solid var(--pr-border);
+}
+.pm-modal-amount-label {
+  font-family: var(--pr-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pr-text-faint);
+}
+.pm-modal-amount-value {
+  font-family: var(--pr-font-mono);
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--pr-accent-cyan);
+}
+
+.pm-modal-body {
+  padding: 18px;
+  overflow-y: auto;
+}
+
+.pm-modal-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 22px 8px;
+}
+.pm-modal-state-title {
+  margin: 0;
+  font-family: var(--pr-font-display);
+  font-weight: 600;
+  font-size: var(--pr-fs-body);
+  color: var(--pr-text-primary);
+}
+.pm-modal-state .pm-note { max-width: 360px; }
+
+@media (max-width: 560px) {
+  .pm-modal-overlay { padding: 4vh 12px 16px; }
+  .pm-modal { max-height: 92vh; }
 }
 
 /* --- Pie de página --- */

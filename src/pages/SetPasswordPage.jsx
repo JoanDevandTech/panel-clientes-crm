@@ -74,6 +74,15 @@ export default function SetPasswordPage() {
   const [, params] = useRoute('/set-password/:token')
   const [, setLocation] = useLocation()
   const token = params?.token || ''
+  const [email] = useState(() => new URLSearchParams(window.location.search).get('email') || '')
+
+  // El email solo hace falta para el POST (React ya lo guardó en el state de arriba);
+  // lo quitamos de la URL para que no quede en el historial del navegador.
+  useEffect(() => {
+    if (window.location.search) {
+      window.history.replaceState({}, '', window.location.pathname)
+    }
+  }, [])
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -131,6 +140,7 @@ export default function SetPasswordPage() {
     try {
       await api.post('/auth/reset-password', {
         token,
+        email,
         password,
         password_confirmation: confirmPassword,
       })
@@ -301,6 +311,9 @@ export default function SetPasswordPage() {
                     <label htmlFor="confirmPassword" className="block font-mono uppercase mb-2" style={{ fontSize: '10px', letterSpacing: '0.2em', color: 'rgba(248,249,250,.45)' }}>
                       Confirmar contraseña
                     </label>
+                    <p className="text-xs mb-2" style={{ color: 'rgba(248,249,250,.34)' }}>
+                      Escríbela de nuevo — no se puede pegar aquí.
+                    </p>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <Lock className="w-5 h-5 text-ink-3" />
@@ -313,6 +326,9 @@ export default function SetPasswordPage() {
                           setConfirmPassword(e.target.value)
                         }}
                         onBlur={() => setConfirmTouched(true)}
+                        onPaste={(e) => e.preventDefault()}
+                        onCopy={(e) => e.preventDefault()}
+                        onDrop={(e) => e.preventDefault()}
                         placeholder="••••••••"
                         className={`w-full pl-12 pr-12 py-3 bg-bg-1 border text-ink outline-none transition-colors duration-200 ${
                           confirmError && confirmTouched

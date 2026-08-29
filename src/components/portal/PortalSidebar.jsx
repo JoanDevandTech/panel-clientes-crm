@@ -105,7 +105,10 @@ export default function PortalSidebar({ isOpen, onClose }) {
 
   return (
     <>
-      <aside className="pr-sidebar" style={{ display: 'flex' }}>
+      {/* Sin display inline: lo gobierna .pr-sidebar en el CSS, que ya trae
+          display:flex. Puesto aquí ganaba a la media query de 900px y hacía
+          imposible ocultarla en móvil. */}
+      <aside className="pr-sidebar">
         <SidebarBody location={location} onLogout={logout} />
       </aside>
 

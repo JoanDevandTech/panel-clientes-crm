@@ -24,15 +24,23 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const restoreSession = async () => {
-      // Si la app arranca en el flujo de impersonación, NO se restaura la sesión
-      // anterior: de eso se encarga ImpersonatePage con los tokens del enlace.
-      // Hacer ambas cosas a la vez era una carrera y, según cuál terminara
-      // última, la impersonación se quedaba con la sesión ya guardada.
-      const entrandoAImpersonar =
+      // Si la app arranca en un flujo que trae su PROPIA sesión por enlace, no
+      // se restaura la anterior: de eso se encargan ImpersonatePage y
+      // MagicLoginPage con el token del enlace. Hacer ambas cosas a la vez es
+      // una carrera y, según cuál termine última, el enlace se queda con la
+      // sesión ya guardada en vez de con la suya.
+      //
+      // En el magic link hay además un segundo daño: si restoreSession gana,
+      // api.js manda el Bearer recién restaurado en el POST de canje, y
+      // entonces un 401 se va por el camino del refresco y acaba lanzando
+      // "Session expired" — sin .status— en lugar del mensaje real de enlace
+      // caducado, que es justo lo que la pantalla necesita distinguir.
+      const entrandoPorEnlace =
         typeof window !== "undefined" &&
         (window.location.pathname === "/auth/impersonate" ||
-          window.location.search.includes("impersonation_token"))
-      if (entrandoAImpersonar) {
+          window.location.search.includes("impersonation_token") ||
+          window.location.pathname === "/magic-login")
+      if (entrandoPorEnlace) {
         setLoading(false)
         return
       }
@@ -86,6 +94,48 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(true)
 
     return { success: true }
+  }, [])
+
+  /**
+   * Solicita un enlace de acceso por email.
+   *
+   * La API responde SIEMPRE 200 con el mismo mensaje exista o no la cuenta:
+   * es anti-enumeración, así que el mensaje se muestra tal cual y no se
+   * interpreta como "existe" ni "no existe". El único error que sí llega es
+   * el 429 del límite (3 solicitudes / 5 min), que la vista sí distingue.
+   */
+  const requestMagicLink = useCallback(async (email) => {
+    return api.post('/auth/magic-link', { email })
+  }, [])
+
+  /**
+   * Canjea el token del enlace por una sesión.
+   *
+   * Devuelve lo mismo que login(): o {requires2FA} —el enlace sustituye a la
+   * contraseña, no al segundo factor— o {success} con la sesión ya guardada.
+   * A partir de ahí no hay nada especial: es la sesión estándar.
+   */
+  const loginWithMagicToken = useCallback(async (token) => {
+    const response = await api.post('/auth/magic-login', { token })
+
+    if (response.requires_2fa) {
+      return {
+        requires2FA: true,
+        tempToken: response.temp_token,
+        method: response.method,
+      }
+    }
+
+    setAccessToken(response.access_token)
+    if (response.refresh_token) {
+      setRefreshToken(response.refresh_token)
+    }
+
+    const userData = await api.get('/auth/me')
+    setClient(userData.data || userData)
+    setIsAuthenticated(true)
+
+    return { success: true, mustChangePassword: !!response.must_change_password }
   }, [])
 
   const verify2FA = useCallback(async (tempToken, code, method) => {
@@ -173,6 +223,8 @@ export function AuthProvider({ children }) {
     loading,
     login,
     verify2FA,
+    requestMagicLink,
+    loginWithMagicToken,
     logout,
     updateClient,
     applyImpersonation,

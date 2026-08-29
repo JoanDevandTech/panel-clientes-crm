@@ -150,6 +150,15 @@
 @media (max-width: 900px) {
   .pr-app { grid-template-columns: 1fr; }
   .pr-content { padding: 20px; }
+  /* La barra de escritorio se ocultaba... nunca. El grid pasaba a una columna
+     pero el <aside> seguía ahí, con height:100vh, así que se apilaba ENCIMA
+     del contenido y se comía la pantalla entera: medido en 390x844, empujaba
+     el contenido a y=864, fuera de vista. Se notaba sobre todo en el cambio
+     de contraseña forzado, donde el formulario quedaba bajo el pliegue y
+     parecía que la pantalla estuviera rota.
+     El :not() es imprescindible: el cajón deslizante comparte la clase
+     .pr-sidebar y sin él se ocultaría también, dejando el menú móvil muerto. */
+  .pr-sidebar:not(.pr-sidebar-mobile) { display: none; }
 }
 
 /* ====================== Topbar ====================== */

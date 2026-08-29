@@ -96,7 +96,7 @@ function Spinner() {
 }
 
 export default function LoginPage() {
-  const { login, verify2FA, isAuthenticated, loading: authLoading } = useAuth()
+  const { login, verify2FA, requestMagicLink, isAuthenticated, loading: authLoading } = useAuth()
   const [, setLocation] = useLocation()
 
   const [step, setStep] = useState('login')
@@ -108,6 +108,11 @@ export default function LoginPage() {
   const [touched, setTouched] = useState({})
   const [loginLoading, setLoginLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
+
+  // Enlace de acceso: reutiliza el email ya escrito arriba, para no pedirlo dos veces.
+  const [magicLoading, setMagicLoading] = useState(false)
+  const [magicMessage, setMagicMessage] = useState(null)
+  const [magicError, setMagicError] = useState(null)
 
   const [tempToken, setTempToken] = useState(null)
   const [twoFAMethod, setTwoFAMethod] = useState('totp')
@@ -125,6 +130,30 @@ export default function LoginPage() {
       setLocation('/portal/dashboard')
     }
   }, [authLoading, isAuthenticated, setLocation])
+
+  // Reanudación del 2FA cuando se viene de un enlace de acceso: MagicLoginPage
+  // deja el temp_token en sessionStorage y redirige aquí con ?2fa=1. Se lee una
+  // sola vez y se borra en el acto — es una credencial temporal, no un ajuste.
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('2fa')) return
+
+    let guardado = null
+    try {
+      guardado = JSON.parse(sessionStorage.getItem('magic_2fa') || 'null')
+      sessionStorage.removeItem('magic_2fa')
+    } catch {
+      guardado = null
+    }
+    window.history.replaceState({}, '', window.location.pathname)
+
+    if (guardado?.tempToken) {
+      setTempToken(guardado.tempToken)
+      setTwoFAMethod(guardado.method || 'totp')
+      setStep('2fa')
+    } else {
+      setErrorMessage('No hemos podido continuar la verificación en dos pasos. Vuelve a pedir el enlace de acceso.')
+    }
+  }, [])
 
   const handleBlur = (field) => {
     setTouched((prev) => ({ ...prev, [field]: true }))
@@ -178,6 +207,35 @@ export default function LoginPage() {
       setLoginLoading(false)
     }
   }, [email, password, login])
+
+  const handleMagicLink = useCallback(async () => {
+    setMagicMessage(null)
+    setMagicError(null)
+    setErrorMessage(null)
+
+    const trimmed = email.trim()
+    if (!trimmed || !/\S+@\S+\.\S+/.test(trimmed)) {
+      setTouched((prev) => ({ ...prev, email: true }))
+      setErrors((prev) => ({ ...prev, email: 'Escribe tu email para enviarte el enlace' }))
+      return
+    }
+
+    setMagicLoading(true)
+    try {
+      const res = await requestMagicLink(trimmed)
+      // La API responde igual exista o no la cuenta (anti-enumeración): se
+      // muestra su mensaje tal cual, sin deducir nada sobre si el email existe.
+      setMagicMessage(res?.message || 'Si el email corresponde a una cuenta, te hemos enviado un enlace de acceso.')
+    } catch (err) {
+      if (err?.status === 429) {
+        setMagicError(err?.data?.message || 'Has pedido demasiados enlaces. Espera unos minutos e inténtalo de nuevo.')
+      } else {
+        setMagicError(err?.data?.message || err?.message || 'No hemos podido enviar el enlace. Inténtalo de nuevo.')
+      }
+    } finally {
+      setMagicLoading(false)
+    }
+  }, [email, requestMagicLink])
 
   const handleDigitChange = (index, value) => {
     if (value && !/^\d$/.test(value)) return
@@ -407,6 +465,38 @@ export default function LoginPage() {
                     'Iniciar sesión'
                   )}
                 </button>
+
+                {/* Acceso sin contraseña. Va DESPUÉS del botón principal y con
+                    estilo secundario: es una alternativa, no la vía por
+                    defecto. Reutiliza el email del campo de arriba. */}
+                <div className="pt-2 border-t border-white/5">
+                  <button
+                    type="button"
+                    onClick={handleMagicLink}
+                    disabled={magicLoading || loginLoading}
+                    className="w-full flex items-center justify-center gap-2 py-3 text-sm text-white/70 border border-white/10 hover:border-white/30 hover:text-white transition-colors disabled:opacity-50"
+                  >
+                    {magicLoading ? (
+                      <>
+                        <Spinner />
+                        <span>Enviando enlace</span>
+                      </>
+                    ) : (
+                      'Envíame un enlace de acceso'
+                    )}
+                  </button>
+
+                  {magicMessage && (
+                    <p className="mt-3 text-xs leading-relaxed text-white/60" role="status">
+                      {magicMessage}
+                    </p>
+                  )}
+                  {magicError && (
+                    <p className="mt-3 text-xs leading-relaxed text-danger" role="alert">
+                      {magicError}
+                    </p>
+                  )}
+                </div>
               </form>
             </motion.div>
           ) : (
